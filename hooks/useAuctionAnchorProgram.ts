@@ -632,43 +632,67 @@ export function useAuctionAnchorProgram() {
                 throw new Error("Wallet not ready");
             }
 
-            const feeTreasuryAta = await getAtaAddress(
-                connection,
-                args.feeMint,
-                auctionConfigPda,
-                true
-            );
+            const tx = new Transaction();
 
-            const receiverFeeAta = await getAtaAddress(
-                connection,
-                args.feeMint,
-                args.receiver,
-                true
-            );
-
+            /* ---------------- Token program ---------------- */
             const tokenProgram = await getTokenProgramFromMint(
                 connection,
                 args.feeMint
             );
 
-            return await auctionProgram.methods
+            /* ---------------- ATAs ---------------- */
+            // Fee treasury ATA (owner = auction config PDA)
+            const treasuryRes = await ensureAtaIx({
+                connection,
+                mint: args.feeMint,
+                owner: auctionConfigPda,
+                payer: wallet.publicKey,
+                tokenProgram,
+                allowOwnerOffCurve: true, // PDA owner
+            });
+
+            const feeTreasuryAta = treasuryRes.ata;
+            if (treasuryRes.ix) tx.add(treasuryRes.ix);
+
+            // Receiver ATA (owner = receiver wallet or PDA)
+            const receiverRes = await ensureAtaIx({
+                connection,
+                mint: args.feeMint,
+                owner: args.receiver,
+                payer: wallet.publicKey,
+                tokenProgram,
+                allowOwnerOffCurve: true,
+            });
+
+            const receiverFeeAta = receiverRes.ata;
+            if (receiverRes.ix) tx.add(receiverRes.ix);
+
+            /* ---------------- Anchor Instruction ---------------- */
+            const ix = await auctionProgram.methods
                 .withdrawSplFees(new BN(args.amount))
                 .accounts({
                     auctionConfig: auctionConfigPda,
                     owner: wallet.publicKey,
+
                     feeMint: args.feeMint,
                     feeTreasuryAta,
                     receiverFeeAta,
+
                     tokenProgram,
                     systemProgram,
                 })
-                .rpc();
+                .instruction();
+
+            tx.add(ix);
+
+            /* ---------------- Send TX ---------------- */
+            return await provider.sendAndConfirm(tx);
         },
         onSuccess: (tx) => {
-            console.log("SPL fees withdrawn:", tx);
+            console.log("Auction SPL Fees withdrawn:", tx);
         },
         onError: (error) => {
-            console.error("Withdraw SPL fees failed:", error);
+            console.log("Withdraw Auction SPL Fees Failed:", error);
         },
     });
 
