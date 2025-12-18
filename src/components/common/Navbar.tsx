@@ -147,13 +147,7 @@ export const Navbar = () => {
         <div className="hidden lg:flex items-center gap-5">
           <DynamicNewLink isAuth={isAuth} />
 
-          <WalletMultiButton className="!h-11 !px-6 !py-2.5 !rounded-full !bg-linear-to-r from-black-1000 via-neutral-500 to-black-1000 hover:!from-primary-color hover:!via-primary-color hover:!to-primary-color !text-white font-semibold" />
-
-          {isAuth && (
-            <span className="text-sm font-semibold text-neutral-800">
-              {shortAddress}
-            </span>
-          )}
+          <WalletMultiButton className="h-11 px-6 py-2.5 rounded-full bg-linear-to-r from-black-1000 via-neutral-500 to-black-1000 hover:from-primary-color hover:via-primary-color hover:to-primary-color text-white  font-semibold" />
 
           {isAuth && (
             <Link

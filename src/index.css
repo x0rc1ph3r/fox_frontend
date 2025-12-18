@@ -169,3 +169,51 @@ input[type="number"]::-webkit-outer-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
+
+/* Reset Solana wallet adapter button styles to allow Tailwind classes */
+.wallet-adapter-button {
+  all: unset;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background-color: var(--color-primary-color);
+  color: var(--color-white-1000);
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 100px;
+  padding: 10px 20px;
+  border: none;
+  outline: none;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  color: black;
+}
+
+.wallet-adapter-button:focus {
+  outline: none;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+}
+
+.wallet-adapter-button:not([disabled]):hover {
+  background-color: var(--color-primary-color);
+  transform: scale(1.05);
+} 
+
+.wallet-adapter-button[disabled] {
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.wallet-adapter-button-start-icon {
+  display: flex;
+  align-items: center;
+  margin-right: 8px;
+}
+
+.wallet-adapter-button-start-icon img {
+  width: 20px;
+  height: 20px;
+}
