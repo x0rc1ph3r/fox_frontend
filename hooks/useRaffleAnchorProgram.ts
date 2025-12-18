@@ -246,8 +246,6 @@ export function useRaffleAnchorProgram() {
                     args.startRaffle
                 )
                 .accounts({
-                    raffleConfig: raffleConfigPda,
-                    raffle: rafflePda,
                     creator: wallet.publicKey,
                     raffleAdmin: RAFFLE_ADMIN_KEYPAIR.publicKey,
 
@@ -260,7 +258,6 @@ export function useRaffleAnchorProgram() {
 
                     ticketTokenProgram,
                     prizeTokenProgram,
-                    systemProgram,
                 })
                 .instruction();
 
@@ -290,8 +287,6 @@ export function useRaffleAnchorProgram() {
             return await raffleProgram.methods
                 .activateRaffle(raffleId)
                 .accounts({
-                    raffleConfig: raffleConfigPda,
-                    raffle: rafflePda(raffleId),
                     raffleAdmin: RAFFLE_ADMIN_KEYPAIR.publicKey,
                 })
                 .signers([RAFFLE_ADMIN_KEYPAIR])
@@ -373,8 +368,6 @@ export function useRaffleAnchorProgram() {
                     args.winners
                 )
                 .accounts({
-                    raffleConfig: raffleConfigPda,
-                    raffle: raffleAccountPda,
                     raffleAdmin: RAFFLE_ADMIN_KEYPAIR.publicKey,
 
                     ticketMint,
@@ -382,7 +375,6 @@ export function useRaffleAnchorProgram() {
                     ticketFeeTreasury,
 
                     ticketTokenProgram,
-                    systemProgram,
                 })
                 .instruction();
 
@@ -475,10 +467,6 @@ export function useRaffleAnchorProgram() {
                     args.ticketsToBuy
                 )
                 .accounts({
-                    raffleConfig: raffleConfigPda,
-                    raffle: raffleAccountPda,
-
-                    buyerAccount: buyerAccountPda,
                     buyer: wallet.publicKey,
                     raffleAdmin: RAFFLE_ADMIN_KEYPAIR.publicKey,
 
@@ -487,7 +475,6 @@ export function useRaffleAnchorProgram() {
                     ticketEscrow,
 
                     ticketTokenProgram,
-                    systemProgram,
                 })
                 .instruction();
 
@@ -576,10 +563,6 @@ export function useRaffleAnchorProgram() {
             const ix = await raffleProgram.methods
                 .buyerClaimPrize(args.raffleId)
                 .accounts({
-                    raffleConfig: raffleConfigPda,
-                    raffle: raffleAccountPda,
-                    buyerAccount: buyerAccountPda,
-
                     raffleAdmin: RAFFLE_ADMIN_KEYPAIR.publicKey,
                     winner: wallet.publicKey,
 
@@ -588,7 +571,6 @@ export function useRaffleAnchorProgram() {
                     winnerPrizeAta,
 
                     prizeTokenProgram,
-                    systemProgram,
                 })
                 .instruction();
 
@@ -672,9 +654,6 @@ export function useRaffleAnchorProgram() {
             const ix = await raffleProgram.methods
                 .cancelRaffle(args.raffleId)
                 .accounts({
-                    raffleConfig: raffleConfigPda,
-                    raffle: raffleAccountPda,
-
                     creator: wallet.publicKey,
                     raffleAdmin: RAFFLE_ADMIN_KEYPAIR.publicKey,
 
@@ -683,7 +662,6 @@ export function useRaffleAnchorProgram() {
                     creatorPrizeAta,
 
                     prizeTokenProgram,
-                    systemProgram,
                 })
                 .instruction();
 
@@ -806,9 +784,6 @@ export function useRaffleAnchorProgram() {
             const ix = await raffleProgram.methods
                 .claimAmountBack(args.raffleId)
                 .accounts({
-                    raffleConfig: raffleConfigPda,
-                    raffle: raffleAccountPda,
-
                     creator: wallet.publicKey,
                     raffleAdmin: RAFFLE_ADMIN_KEYPAIR.publicKey,
 
@@ -823,8 +798,6 @@ export function useRaffleAnchorProgram() {
 
                     prizeTokenProgram,
                     ticketTokenProgram,
-
-                    systemProgram,
                 })
                 .instruction();
 
@@ -864,8 +837,6 @@ export function useRaffleAnchorProgram() {
                     args.newMaxPerWalletPct
                 )
                 .accounts({
-                    raffleConfig: raffleConfigPda,
-                    raffle: rafflePda(args.raffleId),
                     creator: wallet.publicKey,
                     raffleAdmin: RAFFLE_ADMIN_KEYPAIR.publicKey,
                 })
@@ -899,8 +870,6 @@ export function useRaffleAnchorProgram() {
                     new BN(args.newEndTime)
                 )
                 .accounts({
-                    raffleConfig: raffleConfigPda,
-                    raffle: rafflePda(args.raffleId),
                     creator: wallet.publicKey,
                     raffleAdmin: RAFFLE_ADMIN_KEYPAIR.publicKey,
                 })
@@ -934,8 +903,6 @@ export function useRaffleAnchorProgram() {
                     args.isUniqueWinners
                 )
                 .accounts({
-                    raffleConfig: raffleConfigPda,
-                    raffle: rafflePda(args.raffleId),
                     creator: wallet.publicKey,
                     raffleAdmin: RAFFLE_ADMIN_KEYPAIR.publicKey,
                 })
@@ -964,10 +931,8 @@ export function useRaffleAnchorProgram() {
             return await raffleProgram.methods
                 .withdrawSolFees(new BN(args.amount))
                 .accounts({
-                    raffleConfig: raffleConfigPda,
                     owner: wallet.publicKey,
                     receiver: args.receiver,
-                    systemProgram,
                 })
                 .rpc();
         },
@@ -1030,15 +995,12 @@ export function useRaffleAnchorProgram() {
             const ix = await raffleProgram.methods
                 .withdrawSplFees(new BN(args.amount))
                 .accounts({
-                    raffleConfig: raffleConfigPda,
                     owner: wallet.publicKey,
 
                     feeMint: args.feeMint,
-                    feeTreasuryAta,
                     receiverFeeAta,
 
                     tokenProgram,
-                    systemProgram,
                 })
                 .instruction();
 
@@ -1080,9 +1042,7 @@ export function useRaffleAnchorProgram() {
                     args.maximumRafflePeriod
                 )
                 .accounts({
-                    raffleConfig: raffleConfigPda,
                     payer: wallet.publicKey,
-                    systemProgram,
                 })
                 .rpc();
         },
@@ -1105,7 +1065,6 @@ export function useRaffleAnchorProgram() {
             return await raffleProgram.methods
                 .updateRaffleConfigOwner(newOwner)
                 .accounts({
-                    raffleConfig: raffleConfigPda,
                     raffleOwner: wallet.publicKey,
                 })
                 .rpc();
@@ -1129,7 +1088,6 @@ export function useRaffleAnchorProgram() {
             return await raffleProgram.methods
                 .updateRaffleConfigAdmin(newAdmin)
                 .accounts({
-                    raffleConfig: raffleConfigPda,
                     raffleOwner: wallet.publicKey,
                 })
                 .rpc();
@@ -1153,7 +1111,6 @@ export function useRaffleAnchorProgram() {
             return await raffleProgram.methods
                 .updatePauseAndUnpause(pauseFlags)
                 .accounts({
-                    raffleConfig: raffleConfigPda,
                     raffleOwner: wallet.publicKey,
                 })
                 .rpc();
@@ -1187,7 +1144,6 @@ export function useRaffleAnchorProgram() {
                     args.maximumRafflePeriod
                 )
                 .accounts({
-                    raffleConfig: raffleConfigPda,
                     raffleOwner: wallet.publicKey,
                 })
                 .rpc();

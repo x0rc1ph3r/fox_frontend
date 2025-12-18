@@ -1,15 +1,15 @@
 import { useState, useRef, useEffect } from "react";
-import { useAmountStore } from "../../../store/globalStore";
+import { useCreateRaffleStore } from "../../../store/createRaffleStore";
 
 export default function AmountInput() {
-  const { amount, currency, setAmount, setCurrency } = useAmountStore();
+  const { ticketPrice, ticketCurrency, setTicketPrice, setTicketCurrency } = useCreateRaffleStore();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const toggleDropdown = () => setIsOpen((prev) => !prev);
 
   const handleSelect = (value: string) => {
-    setCurrency(value);
+    setTicketCurrency(value);
     setIsOpen(false);
   };
 
@@ -31,8 +31,8 @@ export default function AmountInput() {
       <input
         id="amount"
         type="text"
-        value={amount}
-        onChange={(e) => setAmount(e.target.value)}
+        value={ticketPrice}
+        onChange={(e) => setTicketPrice(e.target.value)}
         className="text-black-1000 focus:outline-0 focus:border-primary-color placeholder:text-gray-1200 text-base w-full font-inter px-5 h-12 border border-solid border-gray-1100 rounded-lg font-medium"
         placeholder="Enter Amount"
       />
@@ -45,7 +45,7 @@ export default function AmountInput() {
           className="flex items-center gap-1.5 px-3 cursor-pointer font-inter text-base font-medium text-black-1000 py-1"
           onClick={toggleDropdown}
         >
-          <p>{currency}</p>
+          <p>{ticketCurrency}</p>
           <span>
             <img
               src="icons/down-arw.svg"

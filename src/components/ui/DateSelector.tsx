@@ -1,16 +1,54 @@
-import React, { useRef } from "react";
+import React, { useRef, useMemo } from "react";
 
 interface DateSelectorProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange'> {
   label?: string;
+  value?: Date | null;
+  onChange?: (date: Date | null) => void;
+  minDate?: Date;
 }
 
-export default function DateSelector({ label, ...props }: DateSelectorProps) {
+// Helper to format Date to YYYY-MM-DD string for input[type="date"]
+const formatDateToString = (date: Date | null | undefined): string => {
+  if (!date) return "";
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+export default function DateSelector({ 
+  label, 
+  value, 
+  onChange, 
+  minDate,
+  ...props 
+}: DateSelectorProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleIconClick = () => {
     inputRef.current?.showPicker?.();
   };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (onChange) {
+      const dateValue = e.target.value;
+      if (dateValue) {
+        // Parse YYYY-MM-DD format
+        const [year, month, day] = dateValue.split("-").map(Number);
+        const date = new Date(year, month - 1, day);
+        onChange(date);
+      } else {
+        onChange(null);
+      }
+    }
+  };
+
+  // Format the value for the input
+  const inputValue = useMemo(() => formatDateToString(value), [value]);
+  
+  // Format the min date
+  const minValue = useMemo(() => formatDateToString(minDate), [minDate]);
 
   return (
     <div className="w-full flex flex-col justify-end relative">
@@ -26,6 +64,9 @@ export default function DateSelector({ label, ...props }: DateSelectorProps) {
         <input
           type="date"
           ref={inputRef}
+          value={inputValue}
+          onChange={handleChange}
+          min={minValue}
           {...props}
           className="w-full text-sm md:text-base font-medium text-gray-1200 placeholder:text-gray-1200 outline outline-gray-1100 focus:outline-primary-color h-12 md:px-5 px-3 md:pr-5 py-3 rounded-lg border-transparent appearance-none"
         />

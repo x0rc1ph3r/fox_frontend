@@ -64,12 +64,12 @@ function RafflesPage() {
         endTime: now + 60 * 60, // end in 1 hour
 
         totalTickets: 10,
-        ticketPrice: 100000000, // 0.1 SOL
+        ticketPrice: 1000000000, // 0.1 SOL
         isTicketSol: true,
 
         maxPerWalletPct: 10,
         prizeType: 2,
-        prizeAmount: 100000000, // 1 SOL
+        prizeAmount: 2000000000, // 1 SOL
         numWinners: 1,
         winShares: [100],
         isUniqueWinners: true,
@@ -86,7 +86,9 @@ function RafflesPage() {
       console.error("Create raffle failed:", e);
     }
   };
-
+  useEffect(() => {
+    console.log(getAllRaffles.data);
+  }, [getAllRaffles]);
   return (
     <main className="flex-1 font-inter">
       <div>

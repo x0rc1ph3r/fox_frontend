@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Dialog, Transition } from "@headlessui/react";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useMemo } from "react";
 import { AgreeCheckbox } from "@/components/common/AgreeCheckbox";
 import AdvancedSettingsAccordion from "@/components/home/AdvancedSettings";
 import AmountInput from "@/components/home/AmountInput";
@@ -11,30 +11,78 @@ import DateSelector from "@/components/ui/DateSelector";
 import CreateTokenModel from "@/components/gumballs/CreateTokenModel";
 
 import { useRaffleAnchorProgram } from "../../../hooks/useRaffleAnchorProgram";
+import { useCreateRaffleStore } from "../../../store/createRaffleStore";
 
 export const Route = createFileRoute("/raffles/create_raffles")({
   component: CreateRaffles,
 });
 
 function CreateRaffles() {
-  const [isOpen, setIsOpen] = useState(false);
+  useRaffleAnchorProgram(); // Hook for future raffle operations
 
-  const { raffleProgram, raffleConfig } = useRaffleAnchorProgram();
+  // Store state
+  const {
+    // UI States
+    isVerifiedCollectionsModalOpen,
+    isCreateTokenModalOpen,
+    openVerifiedCollectionsModal,
+    closeVerifiedCollectionsModal,
+    openCreateTokenModal,
+    closeCreateTokenModal,
 
-  function closeModal() {
-    setIsOpen(false);
-  }
+    // Date & Time
+    endDate,
+    setEndDate,
+    endTimeHour,
+    endTimeMinute,
+    endTimePeriod,
+    setEndTimeHour,
+    setEndTimeMinute,
+    setEndTimePeriod,
+    selectedDuration,
+    applyDurationPreset,
 
-  function openModal() {
-    setIsOpen(true);
-  }
-  const [showModel, setShowModel] = useState(false);
+    // Ticket Configuration
+    supply,
+    setSupply,
+    ticketPrice,
 
-  useEffect(() => {
-    console.log("raffleConfig loaded");
-    console.log(raffleConfig);
-  }, [raffleConfig.isPending]);
+    // Prize Configuration
+    tokenPrizeAmount,
+    setTokenPrizeAmount,
 
+    // Terms
+    agreedToTerms,
+    setAgreedToTerms,
+
+    // Search
+    collectionSearchQuery,
+    setCollectionSearchQuery,
+
+    // Computed
+    getComputedTTV,
+  } = useCreateRaffleStore();
+
+  const rent = useMemo(() => {
+    const supplyNum = parseInt(supply) || 0;
+    const rentAmount = Math.min(supplyNum * 0.00072, 0.72);
+    return Math.round(rentAmount * 100000) / 100000;
+  }, [supply]);
+
+  const ttv = useMemo(()=>{
+    return getComputedTTV();
+  },[supply, ticketPrice]);
+
+  // Get today's date for minimum date restriction
+  const today = useMemo(() => new Date(), []);
+
+  // Handler for time change
+  const handleTimeChange = (hour: string, minute: string, period: "AM" | "PM") => {
+    setEndTimeHour(hour);
+    setEndTimeMinute(minute);
+    setEndTimePeriod(period);
+  };
+  //TODO: Getting rent from the contract to match the create raffle in contract. 
   return (
     <div>
       <section className="pt-10 pb-[122px]">
@@ -72,9 +120,9 @@ function CreateRaffles() {
                             <path
                               d="M0.75 6.75H12.75M6.75 0.75V12.75"
                               stroke="#fff"
-                              stroke-width="1.5"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
                             />
                           </svg>
                         </span>
@@ -84,10 +132,10 @@ function CreateRaffles() {
                   </div>
                 </div>
                 <div>
-                  <Link
-                    to={"."}
-                    onClick={openModal}
-                    className="flex items-center justify-between border border-solid border-gray-1100 rounded-[20px] h-[60px] px-5"
+                  <button
+                    type="button"
+                    onClick={openVerifiedCollectionsModal}
+                    className="flex w-full cursor-pointer items-center justify-between border border-solid border-gray-1100 rounded-[20px] h-[60px] px-5"
                   >
                     <p className="text-black-1000 xl:text-lg text-base font-medium font-inter">
                       View all verified collections
@@ -95,7 +143,7 @@ function CreateRaffles() {
                     <span>
                       <img src="icons/right-arw.svg" alt="" />
                     </span>
-                  </Link>
+                  </button>
                   <p className="md:text-2xl text-xl font-bold font-inter text-black-1000/30 pt-[22px] pb-[31px] md:pt-10 md:pb-7 text-center">
                     or
                   </p>
@@ -104,14 +152,17 @@ function CreateRaffles() {
                       Add a token prize
                     </p>
                     <label
-                      htmlFor=""
+                      htmlFor="tokenAmount"
                       className="text-gray-1200 font-medium text-sm font-inter block pb-2.5"
                     >
                       Raffle tokens
                     </label>
                     <FormInput
+                      id="tokenAmount"
                       className="bg-white"
                       placeholder="Enter Amount"
+                      value={tokenPrizeAmount}
+                      onChange={(e) => setTokenPrizeAmount(e.target.value)}
                     />
                     <small className="md:text-sm text-xs font-medium text-red-1000 font-inter block pt-4">
                       No Available Tokens
@@ -140,36 +191,42 @@ function CreateRaffles() {
                     <div className="w-full my-5 md:my-10">
                       <div className="grid md:grid-cols-2 gap-5">
                         <div className="">
-                          <DateSelector label="Raffle end date" />
+                          <DateSelector 
+                            label="Raffle end date" 
+                            value={endDate}
+                            onChange={setEndDate}
+                            minDate={today}
+                          />
                           <ol className="flex items-center gap-4 pt-2.5">
-                            <li className="w-full">
-                              <Link
-                                to="."
-                                className=" rounded-[7px]  bg-gray-1300 px-2.5 h-10 flex items-center justify-center text-sm font-semibold font-inter text-black-1000 w-full"
-                              >
-                                24hr
-                              </Link>
-                            </li>
-                            <li className="w-full">
-                              <Link
-                                to="."
-                                className=" rounded-[7px]  bg-gray-1300 px-2.5 h-10 flex items-center justify-center text-sm font-semibold font-inter text-black-1000 w-full"
-                              >
-                                36hr
-                              </Link>
-                            </li>
-                            <li className="w-full">
-                              <Link
-                                to="."
-                                className=" rounded-[7px]  bg-gray-1300 px-2.5 h-10 flex items-center justify-center text-sm font-semibold font-inter text-black-1000 w-full"
-                              >
-                                48hr
-                              </Link>
-                            </li>
+                            {(["24hr", "36hr", "48hr"] as const).map(
+                              (duration) => (
+                                <li key={duration} className="w-full">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      applyDurationPreset(duration)
+                                    }
+                                    className={`rounded-[7px] cursor-pointer px-2.5 h-10 flex items-center justify-center text-sm font-semibold font-inter text-black-1000 w-full transition-colors ${
+                                      selectedDuration === duration
+                                        ? "bg-primary-color text-white"
+                                        : "bg-gray-1300 hover:bg-gray-1100"
+                                    }`}
+                                  >
+                                    {duration}
+                                  </button>
+                                </li>
+                              )
+                            )}
                           </ol>
                         </div>
                         <div className="">
-                          <TimeSelector label="End Time" />
+                          <TimeSelector 
+                            label="End Time"
+                            hour={endTimeHour}
+                            minute={endTimeMinute}
+                            period={endTimePeriod}
+                            onTimeChange={handleTimeChange}
+                          />
                         </div>
                       </div>
                     </div>
@@ -187,10 +244,14 @@ function CreateRaffles() {
                           type="number"
                           placeholder="Enter Count"
                           id="count"
+                          value={supply}
+                          onChange={(e) => setSupply(e.target.value)}
+                          min={3}
+                          max={10000}
                         />
 
                         <p className="text-sm font-medium text-black-1000 pt-2.5 font-inter">
-                          Rent: 0
+                          Rent: {rent} SOL
                         </p>
                       </div>
                       <div className="w-full">
@@ -202,7 +263,7 @@ function CreateRaffles() {
                         <AmountInput />
 
                         <p className="text-sm font-medium text-black-1000 pt-2.5 font-inter">
-                          TTV: 5,382 SOL
+                          TTV: {ttv.toLocaleString()} SOL
                         </p>
                       </div>
                     </div>
@@ -210,10 +271,16 @@ function CreateRaffles() {
 
                     <div>
                       <div className="mb-10 grid xl:grid-cols-2 gap-5 md:gap-4">
-                        <AgreeCheckbox />
+                        <AgreeCheckbox
+                          checked={agreedToTerms}
+                          onChange={setAgreedToTerms}
+                        />
                         <button
-                          onClick={() => setShowModel(true)}
-                          className="text-white cursor-pointer font-semibold hover:from-primary-color hover:to-primary-color hover:via-primary-color text-sm md:text-base leading-normal font-inter h-11 md:h-14 rounded-full inline-flex items-center justify-center w-full transition duration-500 hover:opacity-90 bg-linear-to-r from-neutral-800 via-neutral-500 to-neutral-800"
+                          onClick={openCreateTokenModal}
+                          disabled={!agreedToTerms}
+                          className={`text-white cursor-pointer font-semibold hover:from-primary-color hover:to-primary-color hover:via-primary-color text-sm md:text-base leading-normal font-inter h-11 md:h-14 rounded-full inline-flex items-center justify-center w-full transition duration-500 hover:opacity-90 bg-linear-to-r from-neutral-800 via-neutral-500 to-neutral-800 ${
+                            !agreedToTerms ? "opacity-50 cursor-not-allowed" : ""
+                          }`}
                         >
                           Create Raffle
                         </button>
@@ -369,8 +436,14 @@ function CreateRaffles() {
           </div>
         </div>
       </section>
-      <Transition appear show={isOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-50" onClose={closeModal}>
+
+      {/* Verified Collections Modal */}
+      <Transition appear show={isVerifiedCollectionsModalOpen} as={Fragment}>
+        <Dialog
+          as="div"
+          className="relative z-50"
+          onClose={closeVerifiedCollectionsModal}
+        >
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-300"
@@ -415,6 +488,10 @@ function CreateRaffles() {
                         <FormInput
                           className="h-10 pl-[46px] rounded-[80px]"
                           placeholder="Search"
+                          value={collectionSearchQuery}
+                          onChange={(e) =>
+                            setCollectionSearchQuery(e.target.value)
+                          }
                         />
                         <span className="absolute top-1/2 left-3 -translate-y-1/2">
                           <img src="icons/search-icon.svg" alt="" />
@@ -423,7 +500,7 @@ function CreateRaffles() {
                       <button
                         type="button"
                         className="inline-flex cursor-pointer justify-center md:static absolute top-[25px] right-4 border border-transparent focus:outline-none focus-visible:ring-0"
-                        onClick={closeModal}
+                        onClick={closeVerifiedCollectionsModal}
                       >
                         <img src="icons/cross-icon.svg" alt="" />
                       </button>
@@ -543,8 +620,8 @@ function CreateRaffles() {
       </Transition>
 
       <CreateTokenModel
-        isOpen={showModel}
-        onClose={() => setShowModel(false)}
+        isOpen={isCreateTokenModalOpen}
+        onClose={closeCreateTokenModal}
       />
     </div>
   );
