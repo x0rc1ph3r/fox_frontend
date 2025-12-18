@@ -312,8 +312,8 @@ export function useRaffleAnchorProgram() {
             raffleId: number;
             winners: PublicKey[];
         }) => {
-            if (!raffleProgram || !wallet.publicKey) {
-                throw new Error("Wallet not ready");
+            if (!raffleProgram) {
+                throw new Error("Program not ready");
             }
 
             const tx = new Transaction();
@@ -344,7 +344,7 @@ export function useRaffleAnchorProgram() {
                     connection,
                     mint: ticketMint,
                     owner: raffleAccountPda,
-                    payer: wallet.publicKey,
+                    payer: RAFFLE_ADMIN_KEYPAIR.publicKey,
                     tokenProgram: ticketTokenProgram,
                     allowOwnerOffCurve: true,
                 });
@@ -357,7 +357,7 @@ export function useRaffleAnchorProgram() {
                     connection,
                     mint: ticketMint,
                     owner: raffleConfigPda,
-                    payer: wallet.publicKey,
+                    payer: RAFFLE_ADMIN_KEYPAIR.publicKey,
                     tokenProgram: ticketTokenProgram,
                     allowOwnerOffCurve: true,
                 });
