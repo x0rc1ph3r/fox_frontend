@@ -1,4 +1,4 @@
-import { HELIUS_KEY } from "@/constants";
+import { HELIUS_KEY, NETWORK } from "@/constants";
 import { useQuery } from "@tanstack/react-query";
 
 export const useGetTokenPrice = (
@@ -7,10 +7,9 @@ export const useGetTokenPrice = (
     
     const fetchTokenPrice = async () => {   
         if (!tokenMint) return null;
-  
         try {
           const response = await fetch(
-            `https://devnet.helius-rpc.com/?api-key=${HELIUS_KEY}`,
+            `https://${NETWORK}.helius-rpc.com/?api-key=${HELIUS_KEY}`,
             {
               method: 'POST',
               headers: {

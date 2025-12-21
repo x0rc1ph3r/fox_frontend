@@ -9,7 +9,7 @@ export const VerifiedTokens = [
         name:"JUP",
         address:"JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
         symbol:"JUP",
-        image:"/images/token-img-1.png",
+        image:"/icons/jupiter-logo.png",
     }
 ]
 

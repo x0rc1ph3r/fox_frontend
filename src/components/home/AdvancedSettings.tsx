@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import FormInput from "../ui/FormInput";
+import { useCreateRaffleStore } from "store/createRaffleStore";
 
 export default function AdvancedSettingsAccordion() {
   const [isOpen, setIsOpen] = useState(true);
+  const {numberOfWinners, ticketLimitPerWallet, setNumberOfWinners, setTicketLimitPerWallet, getComputedRent} = useCreateRaffleStore();
 
   const toggleAccordion = () => setIsOpen((prev) => !prev);
 
@@ -67,7 +69,7 @@ export default function AdvancedSettingsAccordion() {
                 >
                   Ticket limit per wallet
                 </label>
-                <FormInput placeholder="No Limit" className="bg-white" />
+                <FormInput value={ticketLimitPerWallet} onChange={(e) => setTicketLimitPerWallet(e.target.value)} placeholder="No Limit" className="bg-white" />
                 <p className="md:text-sm text-xs font-medium font-inter text-black-1000 pt-2.5">
                   Users can purchase 40% of total tickets as standard
                 </p>
@@ -78,7 +80,10 @@ export default function AdvancedSettingsAccordion() {
                 >
                   Number of winners
                 </label>
-                <FormInput type="number" placeholder="250" className="bg-white" />
+                <FormInput value={(numberOfWinners ==="1" ? "" : numberOfWinners)} onChange={(e) => {
+                  setNumberOfWinners(e.target.value);
+                  getComputedRent();
+                }} type="number" placeholder="250" className="bg-white" />
                 <p className="md:text-sm text-xs font-medium font-inter text-black-1000 pt-2.5">
                   eg. WL spots
                 </p>

@@ -17,7 +17,8 @@ import TokenPrizeInput from "@/components/home/TokenPrizeInput";
 
 export const Route = createFileRoute("/raffles/create_raffles")({
   component: CreateRaffles,
-});
+}); 
+import { useCreateRaffle } from "../../../hooks/useCreateRaffle";
 
 function CreateRaffles() {
 
@@ -57,6 +58,7 @@ function CreateRaffles() {
     ttv,
     val,
     percentage,
+    rent,
 
     // Terms
     agreedToTerms,
@@ -68,18 +70,13 @@ function CreateRaffles() {
 
     // Computed
     getComputedTTV,
+    getComputedRent,
   } = useCreateRaffleStore();
 
-  const { data: tokenPrice } = useGetTokenPrice(tokenPrizeMint);
-  const {data:SolPrice} = useGetTokenPrice("So11111111111111111111111111111111111111112");
-
-  const rent = useMemo(() => {
-    const supplyNum = parseInt(supply) || 0;
-    const rentAmount = Math.min(supplyNum * 0.00072, 0.72);
-    return Math.round(rentAmount * 100000) / 100000;
-  }, [supply]);
+  const {createRaffleMutation} = useCreateRaffle();
 
   console.log("ttv",ttv)
+  console.log("rent",rent)
   // Get today's date for minimum date restriction
   const today = useMemo(() => new Date(), []);
 
@@ -279,13 +276,14 @@ function CreateRaffles() {
                           onChange={(e) => {
                             setSupply(e.target.value);
                             getComputedTTV();
+                            getComputedRent();
                           }}
                           min={3}
                           max={10000}
                         />
 
                         <p className="text-sm font-medium text-black-1000 pt-2.5 font-inter">
-                          Rent: {rent} SOL
+                          Rent: {rent.toFixed(4)} SOL
                         </p>
                       </div>
                       <div className="w-full">
@@ -310,7 +308,7 @@ function CreateRaffles() {
                           onChange={setAgreedToTerms}
                         />
                         <button
-                          onClick={openCreateTokenModal}
+                          onClick={() => createRaffleMutation.mutateAsync()}
                           disabled={!agreedToTerms}
                           className={`text-white cursor-pointer font-semibold hover:from-primary-color hover:to-primary-color hover:via-primary-color text-sm md:text-base leading-normal font-inter h-11 md:h-14 rounded-full inline-flex items-center justify-center w-full transition duration-500 hover:opacity-90 bg-linear-to-r from-neutral-800 via-neutral-500 to-neutral-800 ${
                             !agreedToTerms

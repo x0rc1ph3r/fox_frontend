@@ -1,3 +1,4 @@
+import { calculateRent } from "hooks/helpers";
 import { useGetTokenPrice } from "hooks/useGetTokenPrice";
 import { create } from "zustand";
 
@@ -32,6 +33,7 @@ interface CreateRaffleState {
   val:string;
   ttv:number;
   percentage:string;
+  rent:number;
 
   // Advanced Settings
   holderOnlyCollection: string;
@@ -96,7 +98,7 @@ interface CreateRaffleState {
   reset: () => void;
 
   // Computed values (as getters via selectors)
-  getComputedRent: () => number;
+  getComputedRent: () => Promise<number>;
   getComputedTTV: () => number;
   getEndTimestamp: () => number | null;
   getComputedVal: (tokenPrice:number, SolPrice:number) => number;
@@ -130,6 +132,7 @@ const initialState = {
   val:"0",
   ttv:0,
   percentage:"0",
+  rent:0,
   // Advanced Settings
   holderOnlyCollection: "",
   additionalCollections: [] as string[],
@@ -243,11 +246,13 @@ export const useCreateRaffleStore = create<CreateRaffleState>((set, get) => ({
   reset: () => set(initialState),
 
   // Computed values
-  getComputedRent: () => {
-    const supply = parseInt(get().supply) || 0;
-    // Example rent calculation: 0.00072 SOL per ticket, max 0.72 SOL
-    const rent = Math.min(supply * 0.00072, 0.72);
-    return Math.round(rent * 1000) / 1000;
+  getComputedRent: async () => {
+    const winner = parseInt(get().numberOfWinners) || 1;
+    console.log("winner",winner)
+    const rent = await calculateRent(winner);
+    console.log("rent",rent)
+    set({ rent: rent?.rentSol || 0 });
+    return Math.round(rent?.rentSol || 0 * 1000) / 1000;
   },
   getComputedVal:(tokenPrice:number, SolPrice:number)=>{
     set({ val: (Math.round((parseFloat(get().tokenPrizeAmount) * tokenPrice) / SolPrice * 1000) / 1000).toFixed(2) });

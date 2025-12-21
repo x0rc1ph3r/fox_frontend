@@ -60,6 +60,7 @@ export default function TokenPrizeInput() {
           className="flex items-center gap-1.5 px-3 cursor-pointer font-inter text-base font-medium text-black-1000 py-1"
           onClick={() => setIsOpen(!isOpen)}
         >
+          <img src={filteredVerifiedTokens.find((token) => token.address === tokenPrizeMint)?.image || "/icons/solana-sol-logo.svg"} alt={filteredVerifiedTokens.find((token) => token.address === tokenPrizeMint)?.name || "SOL"} className="w-4 h-4" />
           <p>{filteredVerifiedTokens.find((token) => token.address === tokenPrizeMint)?.symbol}</p>
           <span>
             <img

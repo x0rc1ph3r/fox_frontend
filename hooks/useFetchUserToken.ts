@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { VerifiedTokens } from "../src/utils/verifiedTokens";
+import { NETWORK } from "@/constants";
 
 export const useFetchUserToken = () => {
     const { connection } = useConnection();
@@ -40,7 +41,9 @@ export const useFetchUserToken = () => {
                     decimals: tokenAccount?.account.data.parsed.info.tokenAmount.decimals || 0
                 };
             });
-
+            if(NETWORK === "devnet"){
+                return VerifiedTokens.filter((token) => token.address === "So11111111111111111111111111111111111111112");
+            }
             return tokensWithBalance;
         },
         enabled: !!wallet.publicKey,
