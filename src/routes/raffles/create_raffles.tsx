@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Dialog, Transition } from "@headlessui/react";
-import { Fragment, useMemo } from "react";
+import { Fragment, useEffect, useMemo } from "react";
 import { AgreeCheckbox } from "@/components/common/AgreeCheckbox";
 import AdvancedSettingsAccordion from "@/components/home/AdvancedSettings";
 import AmountInput from "@/components/home/AmountInput";
@@ -10,21 +10,25 @@ import FormInput from "@/components/ui/FormInput";
 import DateSelector from "@/components/ui/DateSelector";
 import CreateTokenModel from "@/components/gumballs/CreateTokenModel";
 
-import { useRaffleAnchorProgram } from "../../../hooks/useRaffleAnchorProgram";
+import { useRaffleAnchorProgram  } from "../../../hooks/useRaffleAnchorProgram";
+import { useGetTokenPrice } from "../../../hooks/useGetTokenPrice";
 import { useCreateRaffleStore } from "../../../store/createRaffleStore";
+import TokenPrizeInput from "@/components/home/TokenPrizeInput";
 
 export const Route = createFileRoute("/raffles/create_raffles")({
   component: CreateRaffles,
 });
 
 function CreateRaffles() {
-  useRaffleAnchorProgram(); // Hook for future raffle operations
+
 
   // Store state
   const {
     // UI States
     isVerifiedCollectionsModalOpen,
     isCreateTokenModalOpen,
+    userVerifiedTokens,
+    tokenPrizeMint,
     openVerifiedCollectionsModal,
     closeVerifiedCollectionsModal,
     openCreateTokenModal,
@@ -50,6 +54,9 @@ function CreateRaffles() {
     // Prize Configuration
     tokenPrizeAmount,
     setTokenPrizeAmount,
+    ttv,
+    val,
+    percentage,
 
     // Terms
     agreedToTerms,
@@ -63,16 +70,16 @@ function CreateRaffles() {
     getComputedTTV,
   } = useCreateRaffleStore();
 
+  const { data: tokenPrice } = useGetTokenPrice(tokenPrizeMint);
+  const {data:SolPrice} = useGetTokenPrice("So11111111111111111111111111111111111111112");
+
   const rent = useMemo(() => {
     const supplyNum = parseInt(supply) || 0;
     const rentAmount = Math.min(supplyNum * 0.00072, 0.72);
     return Math.round(rentAmount * 100000) / 100000;
   }, [supply]);
 
-  const ttv = useMemo(()=>{
-    return getComputedTTV();
-  },[supply, ticketPrice]);
-
+  console.log("ttv",ttv)
   // Get today's date for minimum date restriction
   const today = useMemo(() => new Date(), []);
 
@@ -83,6 +90,9 @@ function CreateRaffles() {
     setEndTimePeriod(period);
   };
   //TODO: Getting rent from the contract to match the create raffle in contract. 
+
+
+ 
   return (
     <div>
       <section className="pt-10 pb-[122px]">
@@ -157,16 +167,37 @@ function CreateRaffles() {
                     >
                       Raffle tokens
                     </label>
-                    <FormInput
-                      id="tokenAmount"
-                      className="bg-white"
-                      placeholder="Enter Amount"
-                      value={tokenPrizeAmount}
-                      onChange={(e) => setTokenPrizeAmount(e.target.value)}
-                    />
-                    <small className="md:text-sm text-xs font-medium text-red-1000 font-inter block pt-4">
-                      No Available Tokens
-                    </small>
+                    <TokenPrizeInput />
+                  </div>
+                  <div className="w-full flex justify-end gap-2">
+                  {userVerifiedTokens?.length != 0 ?(
+                  <>
+                  {tokenPrizeAmount && (    
+                    <p className="text-xs text-black-1000 font-inter border rounded-md px-2 py-1 mb-5">
+                      VAL: {val}
+                    </p>
+                  )}
+                  {(ttv && ttv>0) ? (
+                    <p className="text-xs text-black-1000 font-inter border rounded-md px-2 py-1 mb-5">
+                      TTV: {ttv} 
+                    </p>
+                  ) : (
+                    <></>
+                  )}
+                  {(ttv && tokenPrizeAmount && ttv>0) ? (
+                    <p className="text-xs font-inter bg-primary-color text-white border rounded-md px-2 py-1 mb-5">
+                       {(ttv-parseFloat(tokenPrizeAmount)>0) ? '+' : ''}
+                       {percentage}%
+                    </p>
+                  ) : (
+                    <></>
+                  )}
+                  </>
+                  ) : (
+                    <p className="text-xs text-red-500 font-inter px-2 py-1 mb-5 w-full text-left">
+                      No verified tokens found in user's wallet.
+                    </p>
+                  )}
                   </div>
                   <Link
                     to={"."}
@@ -191,8 +222,8 @@ function CreateRaffles() {
                     <div className="w-full my-5 md:my-10">
                       <div className="grid md:grid-cols-2 gap-5">
                         <div className="">
-                          <DateSelector 
-                            label="Raffle end date" 
+                          <DateSelector
+                            label="Raffle end date"
                             value={endDate}
                             onChange={setEndDate}
                             minDate={today}
@@ -220,7 +251,7 @@ function CreateRaffles() {
                           </ol>
                         </div>
                         <div className="">
-                          <TimeSelector 
+                          <TimeSelector
                             label="End Time"
                             hour={endTimeHour}
                             minute={endTimeMinute}
@@ -245,7 +276,10 @@ function CreateRaffles() {
                           placeholder="Enter Count"
                           id="count"
                           value={supply}
-                          onChange={(e) => setSupply(e.target.value)}
+                          onChange={(e) => {
+                            setSupply(e.target.value);
+                            getComputedTTV();
+                          }}
                           min={3}
                           max={10000}
                         />
@@ -279,7 +313,9 @@ function CreateRaffles() {
                           onClick={openCreateTokenModal}
                           disabled={!agreedToTerms}
                           className={`text-white cursor-pointer font-semibold hover:from-primary-color hover:to-primary-color hover:via-primary-color text-sm md:text-base leading-normal font-inter h-11 md:h-14 rounded-full inline-flex items-center justify-center w-full transition duration-500 hover:opacity-90 bg-linear-to-r from-neutral-800 via-neutral-500 to-neutral-800 ${
-                            !agreedToTerms ? "opacity-50 cursor-not-allowed" : ""
+                            !agreedToTerms
+                              ? "opacity-50 cursor-not-allowed"
+                              : ""
                           }`}
                         >
                           Create Raffle

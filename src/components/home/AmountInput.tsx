@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useCreateRaffleStore } from "../../../store/createRaffleStore";
 
 export default function AmountInput() {
-  const { ticketPrice, ticketCurrency, setTicketPrice, setTicketCurrency } = useCreateRaffleStore();
+  const { ticketPrice, ticketCurrency, getComputedTTV,setTicketPrice, setTicketCurrency } = useCreateRaffleStore();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -30,10 +30,14 @@ export default function AmountInput() {
     <div className="relative">
       <input
         id="amount"
-        type="text"
+        type="number"
         value={ticketPrice}
-        onChange={(e) => setTicketPrice(e.target.value)}
-        className="text-black-1000 focus:outline-0 focus:border-primary-color placeholder:text-gray-1200 text-base w-full font-inter px-5 h-12 border border-solid border-gray-1100 rounded-lg font-medium"
+        onChange={(e) => {
+          setTicketPrice(e.target.value);
+          getComputedTTV();
+        }}
+        className="text-black-1000 focus:outline-0 bg-white focus:border-primary-color placeholder:text-gray-1200 text-base w-full font-inter px-5 h-12 border border-solid border-gray-1100 rounded-lg font-medium"
+        autoComplete="off"
         placeholder="Enter Amount"
       />
       <div
@@ -48,7 +52,7 @@ export default function AmountInput() {
           <p>{ticketCurrency}</p>
           <span>
             <img
-              src="icons/down-arw.svg"
+              src="/icons/down-arw.svg"
               alt="toggle"
               className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
             />

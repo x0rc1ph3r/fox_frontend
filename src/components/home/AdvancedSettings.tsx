@@ -23,14 +23,14 @@ export default function AdvancedSettingsAccordion() {
               isOpen ? "rotate-180" : "rotate-0"
             }`}
           >
-            <img src="icons/down-arw2.svg" alt="Toggle" />
+            <img src="/icons/down-arw2.svg" alt="Toggle" />
           </span>
         </button>
 
         {/* Accordion content */}
         {isOpen && (
           <div className="mt-5">
-            <div className="md:pb-10 pb-5">
+            {/* <div className="md:pb-10 pb-5">
               <div className="pt-6 pb-[18px]">
                 <div className="flex items-center justify-between pb-2.5">
                   <p className="text-gray-1200 font-inter text-sm font-medium md:max-w-full max-w-[159px]">
@@ -58,7 +58,7 @@ export default function AdvancedSettingsAccordion() {
                 </span>
                 Add another collection
               </Link>
-            </div>
+            </div> */}
 
             <div className="grid lg:grid-cols-2 gap-[18px] pb-5 lg:pb-11">
               <div>

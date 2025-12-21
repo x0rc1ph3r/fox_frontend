@@ -1,3 +1,4 @@
+import { useGetTokenPrice } from "hooks/useGetTokenPrice";
 import { create } from "zustand";
 
 /* ----------------------------- Types ----------------------------- */
@@ -28,6 +29,9 @@ interface CreateRaffleState {
   nftPrizeMint: string;
   tokenPrizeAmount: string;
   tokenPrizeMint: string;
+  val:string;
+  ttv:number;
+  percentage:string;
 
   // Advanced Settings
   holderOnlyCollection: string;
@@ -42,6 +46,9 @@ interface CreateRaffleState {
 
   // Search (for modals)
   collectionSearchQuery: string;
+
+  // User Verified Tokens
+  userVerifiedTokens: string[];
 
   // Actions - UI
   openVerifiedCollectionsModal: () => void;
@@ -78,7 +85,7 @@ interface CreateRaffleState {
   setNumberOfWinners: (winners: string) => void;
   setWinShares: (shares: number[]) => void;
   setIsUniqueWinners: (unique: boolean) => void;
-
+  setUserVerifiedTokens: (tokens: string[]) => void;
   // Actions - Terms
   setAgreedToTerms: (agreed: boolean) => void;
 
@@ -92,6 +99,7 @@ interface CreateRaffleState {
   getComputedRent: () => number;
   getComputedTTV: () => number;
   getEndTimestamp: () => number | null;
+  getComputedVal: (tokenPrice:number, SolPrice:number) => number;
 }
 
 /* ----------------------------- Initial State ----------------------------- */
@@ -118,8 +126,10 @@ const initialState = {
   prizeType: "nft" as PrizeType,
   nftPrizeMint: "",
   tokenPrizeAmount: "",
-  tokenPrizeMint: "",
-
+  tokenPrizeMint: "So11111111111111111111111111111111111111112",
+  val:"0",
+  ttv:0,
+  percentage:"0",
   // Advanced Settings
   holderOnlyCollection: "",
   additionalCollections: [] as string[],
@@ -133,6 +143,7 @@ const initialState = {
 
   // Search
   collectionSearchQuery: "",
+  userVerifiedTokens: [],
 };
 
 /* ----------------------------- Store ----------------------------- */
@@ -188,7 +199,9 @@ export const useCreateRaffleStore = create<CreateRaffleState>((set, get) => ({
   setNftPrizeMint: (mint) => set({ nftPrizeMint: mint }),
   setTokenPrizeAmount: (amount) => set({ tokenPrizeAmount: amount }),
   setTokenPrizeMint: (mint) => set({ tokenPrizeMint: mint }),
-
+  setVal: (val:string) => set({ val: val }),
+  setTtv: (ttv:number) => set({ ttv: ttv }),
+  setPercentage: (percentage:string) => set({ percentage: percentage }),
   // Actions - Advanced Settings
   setHolderOnlyCollection: (collection) =>
     set({ holderOnlyCollection: collection }),
@@ -217,6 +230,9 @@ export const useCreateRaffleStore = create<CreateRaffleState>((set, get) => ({
   setWinShares: (shares) => set({ winShares: shares }),
   setIsUniqueWinners: (unique) => set({ isUniqueWinners: unique }),
 
+  // Actions - User Verified Tokens
+  setUserVerifiedTokens: (tokens) => set({ userVerifiedTokens: tokens }),
+
   // Actions - Terms
   setAgreedToTerms: (agreed) => set({ agreedToTerms: agreed }),
 
@@ -233,10 +249,20 @@ export const useCreateRaffleStore = create<CreateRaffleState>((set, get) => ({
     const rent = Math.min(supply * 0.00072, 0.72);
     return Math.round(rent * 1000) / 1000;
   },
-
+  getComputedVal:(tokenPrice:number, SolPrice:number)=>{
+    set({ val: (Math.round((parseFloat(get().tokenPrizeAmount) * tokenPrice) / SolPrice * 1000) / 1000).toFixed(2) });
+    if(parseFloat(get().val)>0 && get().ttv>0){
+      set({ percentage: ((get().ttv-parseFloat(get().val) / get().ttv) * 100).toFixed(2)});
+    }
+    return Math.round((parseFloat(get().tokenPrizeAmount) * tokenPrice) / SolPrice * 1000) / 1000;
+  },
   getComputedTTV: () => {
     const supply = parseInt(get().supply) || 0;
     const ticketPrice = parseFloat(get().ticketPrice) || 0;
+    set({ ttv: Math.round(supply * ticketPrice * 1000) / 1000 });
+    if(parseFloat(get().val)>0 && get().ttv>0){
+      set({ percentage: ((get().ttv-parseFloat(get().val) / get().ttv) * 100).toFixed(2)});
+    }
     return Math.round(supply * ticketPrice * 1000) / 1000;
   },
 

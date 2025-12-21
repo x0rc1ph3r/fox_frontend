@@ -1,0 +1,1 @@
+export const HELIUS_KEY = import.meta.env.VITE_HELIUS_KEY as string;

@@ -17,10 +17,10 @@ import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import "@solana/wallet-adapter-react-ui/styles.css";
 import { AnchorProvider } from "@coral-xyz/anchor";
 
-const RPC_ENDPOINT = "https://api.devnet.solana.com";
+const RPC_ENDPOINT = import.meta.env.VITE_ENVIRONMENT === "development" ? "https://api.devnet.solana.com" : "https://solana-mainnet.g.alchemy.com/v2/DEsRBMlNZIATyz66p1-Vh";
 
 export const SolanaProvider: FC<{ children: ReactNode }> = ({ children }) => {
-  const network = WalletAdapterNetwork.Devnet;
+  const network = import.meta.env.VITE_ENVIRONMENT === "development" ? WalletAdapterNetwork.Devnet : WalletAdapterNetwork.Mainnet;
 
   const wallets = useMemo(
     () => [new PhantomWalletAdapter(), new SolflareWalletAdapter({ network })],
