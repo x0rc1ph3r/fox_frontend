@@ -4,8 +4,7 @@ import { ticketTokens } from "@/utils/ticketTokens";
 import { useGetTokenPrice } from "hooks/useGetTokenPrice";
 
 export default function AmountInput() {
-  const { ticketPrice, ticketCurrency, getComputedTTV,setTicketPrice, setTicketCurrency } = useCreateRaffleStore();
-  const [ticketAmount, setTicketAmount] = useState("");
+  const { ticketPrice, ticketCurrency, getComputedTTV,setTicketPrice, setTicketCurrency, setTicketPricePerSol } = useCreateRaffleStore();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { data: ticketTokenPrice } = useGetTokenPrice(ticketCurrency.address);
@@ -15,7 +14,7 @@ export default function AmountInput() {
 
   const handleSelect = (value: string) => {
     setTicketCurrency(ticketTokens.find((token) => token.symbol === value) || { symbol: "", address: "" });
-    setTicketPrice((parseFloat(ticketAmount) * (ticketTokenPrice?.price/solPrice?.price)).toFixed(2));
+    setTicketPricePerSol((parseFloat(ticketPrice) * (ticketTokenPrice?.price/solPrice?.price)).toFixed(2));
     getComputedTTV();
     setIsOpen(false);
   };
@@ -38,10 +37,10 @@ export default function AmountInput() {
       <input
         id="amount"
         type="number"
-        value={ticketAmount}
+        value={ticketPrice}
         onChange={(e) => {
-          setTicketAmount(e.target.value);
-          setTicketPrice((parseFloat(e.target.value) * (ticketTokenPrice?.price/solPrice?.price)).toFixed(2));
+          setTicketPrice(e.target.value);
+          setTicketPricePerSol((parseFloat(e.target.value) * (ticketTokenPrice?.price/solPrice?.price)).toFixed(2));
           getComputedTTV();
         }}
         className="text-black-1000 focus:outline-0 bg-white focus:border-primary-color placeholder:text-gray-1200 text-base w-full font-inter px-5 h-12 border border-solid border-gray-1100 rounded-lg font-medium"

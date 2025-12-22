@@ -4,11 +4,12 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 
 import { useNavbarStore } from "../../../store/globalStore";
-
+import { requestMessage, verifyMessage } from "../../../api/routes/userRoutes";
 import SettingsModel from "./SettingsModel";
 import NotificationsModel from "./NotificationsModel";
 import DynamicNewLink from "./DynamicNewLink";
 import StatsDropdown from "./StatsDropdown";
+import { bs58 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 
 export const Navbar = () => {
   const {
@@ -25,16 +26,40 @@ export const Navbar = () => {
     setAuth,
   } = useNavbarStore();
 
-  const { publicKey, connected } = useWallet();
+  const { publicKey, connected ,signMessage} = useWallet();
   const location = useLocation();
-
+  
+  const signAndVerifyMessage = async (message: string) => {
+    if (!publicKey || !signMessage) {
+        throw new Error("Wallet not connected");
+    }
+    const encodedMessage = new TextEncoder().encode(message);
+    const signature = await signMessage(encodedMessage);
+    const data = await verifyMessage(publicKey.toBase58(), message, bs58.encode(signature));
+    if(!data.error){
+      localStorage.setItem("authToken", data.token.toString());
+    }
+    return {
+        data
+    }
+}
   /* ----------------------- Sync wallet → Zustand ----------------------- */
   useEffect(() => {
-    if (connected && publicKey) {
-      setAuth(true, publicKey.toBase58());
-    } else {
-      setAuth(false, null);
+    const fetchMessage = async () => {
+      if (connected && publicKey) {
+        const authToken = localStorage.getItem("authToken");
+        if(authToken){
+          setAuth(true, publicKey.toBase58());
+        }else {
+        const message = await requestMessage(publicKey.toBase58());
+        const signData = await signAndVerifyMessage(message.message);
+        setAuth(true, publicKey.toBase58());
+        }
+      }else {
+        setAuth(false, null);
+      }
     }
+    fetchMessage();
   }, [connected, publicKey, setAuth]);
 
   /* ----------------------------- Navigation ----------------------------- */

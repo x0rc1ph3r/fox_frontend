@@ -1,5 +1,5 @@
 import { RafflesData } from "../data/raffles-data";
-
+import { getRaffles } from "./routes/raffleRoutes";
 interface RafflesPage {
   items: typeof RafflesData[number][];
   nextPage: number | null;
@@ -19,7 +19,6 @@ export const fetchRaffles = async ({
   if (filter === "All Raffles") filteredData = RafflesData;
   if (filter === "Past Raffles") 
     filteredData = RafflesData.filter((r) => (r.totalTickets - r.soldTickets) < 1);
-
   const pageItems = filteredData.slice((pageParam - 1) * pageSize, pageParam * pageSize);
 
   return new Promise((resolve) => {

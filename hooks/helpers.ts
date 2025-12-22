@@ -9,6 +9,8 @@ import {
 import { useState, useEffect } from "react";
 import { Connection, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { SOLANA_RPC } from "@/constants";
+import type { RaffleTypeBackend } from "types/backend/raffleTypes";
+import type { Raffle } from "types/raffle";
 
 // audit: can we use connnection form different imports
 export async function ensureAtaIx(params: {
@@ -116,3 +118,4 @@ export const calculateRent = async (winners: number) => {
     return null;
   }
 };
+

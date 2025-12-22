@@ -22,6 +22,7 @@ interface CreateRaffleState {
   // Ticket Configuration
   supply: string;
   ticketPrice: string;
+  ticketPricePerSol: string;
   ticketCurrency: {
     symbol: string;
     address: string;
@@ -80,7 +81,7 @@ interface CreateRaffleState {
   setNftPrizeMint: (mint: string) => void;
   setTokenPrizeAmount: (amount: string) => void;
   setTokenPrizeMint: (mint: string) => void;
-
+  setTicketPricePerSol: (price: string) => void;
   // Actions - Advanced Settings
   setHolderOnlyCollection: (collection: string) => void;
   addCollection: (collection: string) => void;
@@ -124,6 +125,7 @@ const initialState = {
   // Ticket Configuration
   supply: "",
   ticketPrice: "",
+  ticketPricePerSol: "0",
   ticketCurrency: {
     symbol: "SOL",
     address: "So11111111111111111111111111111111111111112",
@@ -201,15 +203,27 @@ export const useCreateRaffleStore = create<CreateRaffleState>((set, get) => ({
   setSupply: (supply) => set({ supply,ticketLimitPerWallet: "40" }),
   setTicketPrice: (price) => set({ ticketPrice: price }),
   setTicketCurrency: (currency: { symbol: string; address: string }) => set({ ticketCurrency: currency }),
-
+  setTicketPricePerSol: (price: string) => set({ ticketPricePerSol: price }),
   // Actions - Prize Configuration
   setPrizeType: (type) => set({ prizeType: type }),
   setNftPrizeMint: (mint) => set({ nftPrizeMint: mint }),
   setTokenPrizeAmount: (amount) => set({ tokenPrizeAmount: amount }),
   setTokenPrizeMint: (mint) => set({ tokenPrizeMint: mint }),
-  setVal: (val:string) => set({ val: val }),
-  setTtv: (ttv:number) => set({ ttv: ttv }),
-  setPercentage: (percentage:string) => set({ percentage: percentage }),
+  setVal: (val:string) => {
+    set({ val: val });
+    if(parseFloat(val)>0 && get().ttv>0){
+      set({ percentage: ((get().ttv-parseFloat(val) / get().ttv) * 100).toFixed(2)});
+    }
+  },
+  setTtv: (ttv:number) => {
+    set({ ttv: ttv });
+    if(parseFloat(get().val)>0 && get().ttv>0){
+      set({ percentage: ((get().ttv-parseFloat(get().val) / get().ttv) * 100).toFixed(2)});
+    }
+  },
+  setPercentage: (percentage:string) => {
+    set({ percentage: percentage });
+  },
   // Actions - Advanced Settings
   setHolderOnlyCollection: (collection) =>
     set({ holderOnlyCollection: collection }),
@@ -268,7 +282,7 @@ export const useCreateRaffleStore = create<CreateRaffleState>((set, get) => ({
   },
   getComputedTTV: () => {
     const supply = parseInt(get().supply) || 0;
-    const ticketPrice = parseFloat(get().ticketPrice) || 0;
+    const ticketPrice = parseFloat(get().ticketPricePerSol) || 0;
     set({ ttv: Math.round(supply * ticketPrice * 1000) / 1000 });
     if(parseFloat(get().val)>0 && get().ttv>0){
       set({ percentage: ((get().ttv-parseFloat(get().val) / get().ttv) * 100).toFixed(2)});
