@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 const prizeDataSchema = z.object({
+    type: z.enum(["TOKEN", "NFT"]).default("TOKEN"),
     address: z.string().min(1),
     mintAddress: z.string().min(1),
     mint: z.string().min(1),
@@ -20,6 +21,9 @@ const prizeDataSchema = z.object({
 });
 
 const raffleSchema = z.object({
+    id: z.number().gt(0).optional(),
+    state: z.enum(["active", "ended", "cancelled", "successEnded", "failedEnded"]).optional(),
+    ticketSold: z.number().gt(0).optional(),
     raffle: z.string().min(1).optional(),
     createdAt: z.coerce.date().optional(),
     endsAt: z.coerce.date().min(new Date()),

@@ -13,19 +13,17 @@ export const fetchRaffles = async ({
   filter?: string;
 }): Promise<RafflesPage> => {
   const pageSize = 8;
-  let filteredData = RafflesData;
-
-  if (filter === "Featured") filteredData = RafflesData.filter((r) => r.isFavorite);
-  if (filter === "All Raffles") filteredData = RafflesData;
-  if (filter === "Past Raffles") 
-    filteredData = RafflesData.filter((r) => (r.totalTickets - r.soldTickets) < 1);
-  const pageItems = filteredData.slice((pageParam - 1) * pageSize, pageParam * pageSize);
-
+  let filteredData = await getRaffles(pageParam, pageSize);
+  filteredData = filteredData.raffles;
+  if (filter === "Featured") filteredData = filteredData.filter((r: any) => r.isFavorite);
+  if (filter === "All Raffles") filteredData = filteredData;
+  if (filter === "Past Raffles") filteredData = filteredData.filter((r: any) => r.state === "failedEnded" || r.state === "successEnded");
+  
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve({
-        items: pageItems,
-        nextPage: pageItems.length < pageSize ? null : pageParam + 1,
+        items: filteredData,
+        nextPage: filteredData.length < pageSize ? null : pageParam + 1,
       });
     }, 500); 
   });

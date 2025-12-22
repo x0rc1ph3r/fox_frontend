@@ -9,7 +9,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import FilterModel from "../../components/home/FilterModel";
 import { useRafflesStore } from "../../../store/rafflesStore";
 import { useRaffles } from "../../../hooks/useRaffles";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import CryptoCardSkeleton from "@/components/skeleton/RafflesCardSkeleton";
 import { TryToolsSection } from "@/components/home/TryToolsSection";
 import { ToolsSection } from "@/components/home/ToolsSection";
@@ -17,6 +17,7 @@ import { useGlobalStore } from "../../../store/globalStore";
 import { useRaffleAnchorProgram } from "hooks/useRaffleAnchorProgram";
 import { useQuery } from "@tanstack/react-query";
 import { PublicKey } from "@solana/web3.js";
+import type { RaffleTypeBackend } from "types/backend/raffleTypes";
 
 const sortingOptions = [
   { label: "Recently Added", value: "Recently Added" },
@@ -36,66 +37,25 @@ export const Route = createFileRoute("/raffles/")({
 
 function RafflesPage() {
   const { filter, setFilter } = useRafflesStore();
-  const { data, fetchNextPage, hasNextPage, isLoading } = useRaffles(filter);
-  const { sort, setSort } = useGlobalStore();
+    const { data, fetchNextPage, hasNextPage, isLoading,isError,error } = useRaffles(filter);
+    const { sort, setSort } = useGlobalStore();
+    console.log("Data",data);
+    const [filters, setFilters] = useState<string[]>([]);
+    const raffles = useMemo(() => 
+      data?.pages.map((p) => p.items).flat() as unknown as RaffleTypeBackend[],
+      [data]
+    );
+    const activeFilters = [
+      { id: "all", label: "All Raffles" },
+      { id: "past", label: "Past Raffles" },
+    ];
 
-  const raffles = data?.pages.flatMap((p) => p.items) || [];
-
-  const [filters, setFilters] = useState<string[]>([]);
-
-  const activeFilters = [
-    { id: "all", label: "All Raffles" },
-    { id: "past", label: "Past Raffles" },
-  ];
-
-  const {
-    getAllRaffles,
-    getRaffleConfig,
-    getAllRaffleBuyers,
-    createRaffleMutation,
-  } = useRaffleAnchorProgram();
-
-  const createSampleRaffle = async () => {
-    try {
-      const now = Math.floor(Date.now() / 1000);
-
-      await createRaffleMutation.mutateAsync({
-        startTime: now + 60, // start in 1 min
-        endTime: now + 60 * 60, // end in 1 hour
-
-        totalTickets: 100,
-        ticketPrice: 1000000000, // 0.1 SOL
-        isTicketSol: true,
-
-        maxPerWalletPct: 10,
-        prizeType: 2,
-        prizeAmount: 2000000000, // 1 SOL
-        numWinners: 5,
-        winShares: [20, 20, 20, 20, 20],
-        isUniqueWinners: false,
-        startRaffle: true,
-
-        ticketMint: new PublicKey(
-          "So11111111111111111111111111111111111111112"
-        ),
-        prizeMint: new PublicKey("So11111111111111111111111111111111111111112"),
-      });
-
-      console.log("Raffle created successfully");
-    } catch (e) {
-      console.error("Create raffle failed:", e);
-    }
-  };
-  useEffect(() => {
-    console.log(getAllRaffles.data);
-  }, [getAllRaffles]);
+    console.log("Raffles",raffles);
+    console.log("Is Error",isError);
+    console.log("Error",error);
+    console.log("Is Loading",isLoading);
   return (
     <main className="flex-1 font-inter">
-      <div>
-        <button onClick={createSampleRaffle} className="hover:bg-gray-600">
-          Test create raffle
-        </button>
-      </div>
       <section className="w-full md:pt-0 pt-5">
         <div className="w-full max-w-[1440px] md:px-5 px-4 mx-auto">
           <Link
@@ -104,7 +64,7 @@ function RafflesPage() {
           >
             Buy tickets, earn Juice! 🥤
           </Link>
-          <div className="p-10 pb-2 md:pt-10 pt-5 px-0 border border-gray-1100 rounded-[30px] bg-gray-1300 mt-5 relative">
+          {/* <div className="p-10 pb-2 md:pt-10 pt-5 px-0 border border-gray-1100 rounded-[30px] bg-gray-1300 mt-5 relative">
             <div className="absolute top-10 left-0 w-full hidden md:block h-[150px] bg-linear-to-b from-gray-1300 to-transparent pointer-events-none"></div>
             <div className="w-full md:px-10 px-4 flex items-center justify-between relative xl:pb-0 pb-0 md:pb-10">
               <p className="md:text-base text-sm bg-gray-1400 py-2.5 md:py-3 px-8 text-black-1000 text-center items-center justify-center inline-flex font-semibold font-inter rounded-full md:w-auto w-full">
@@ -121,7 +81,7 @@ function RafflesPage() {
               Fox9 Featured
             </h1>
             <FeaturedSwiper />
-          </div>
+          </div> */}
         </div>
       </section>
 
@@ -229,9 +189,9 @@ function RafflesPage() {
                   <CryptoCardSkeleton key={i} />
                 ))}
             </div>
-          ) : raffles.length > 0 ? (
+          ) : raffles && raffles?.length > 0 ? (
             <InfiniteScroll
-              dataLength={raffles.length}
+              dataLength={raffles?.length || 0}
               next={fetchNextPage}
               hasMore={!!hasNextPage}
               loader={
@@ -245,8 +205,9 @@ function RafflesPage() {
               }
             >
               <div className="grid lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 gap-4">
-                {raffles.map((r) => (
-                  <CryptoCard key={r.id} {...r} />
+                {raffles?.map((r) => (
+                  // <></>
+                  <CryptoCard key={r.id} raffle={r as unknown as RaffleTypeBackend} soldTickets={r.ticketSold!} />
                 ))}
               </div>
             </InfiniteScroll>

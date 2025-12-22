@@ -6,10 +6,13 @@ import { PublicKey } from "@solana/web3.js";
 import type { RaffleTypeBackend } from "types/backend/raffleTypes";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { VerifiedTokens } from "../src/utils/verifiedTokens";
-import { createRaffleOverBackend, verifyRaffleCreation } from "../api/routes/raffleRoutes";
+import {
+  createRaffleOverBackend,
+  verifyRaffleCreation,
+} from "../api/routes/raffleRoutes";
 
 export const useCreateRaffle = () => {
-    const {publicKey} = useWallet();
+  const { publicKey } = useWallet();
   const {
     endDate,
     endTimeHour,
@@ -31,6 +34,7 @@ export const useCreateRaffle = () => {
     isUniqueWinners,
     agreedToTerms,
     getEndTimestamp,
+    setIsCreatingRaffle,
   } = useCreateRaffleStore();
 
   const { createRaffleMutation } = useRaffleAnchorProgram();
@@ -109,33 +113,52 @@ export const useCreateRaffle = () => {
   const now = Math.floor(Date.now() / 1000);
 
   const raffleBackendPayload: RaffleTypeBackend = {
-    createdAt: new Date(now*1000),
-    endsAt: new Date(getEndTimestamp()!*1000),
+    createdAt: new Date(now * 1000),
+    endsAt: new Date(getEndTimestamp()! * 1000),
     createdBy: publicKey?.toBase58() || "",
-    ticketPrice: parseFloat(ticketPrice) * 10 ** (VerifiedTokens.find((token) => token.address === ticketCurrency.address)?.decimals || 0),
+    ticketPrice:
+      parseFloat(ticketPrice) *
+      10 **
+        (VerifiedTokens.find(
+          (token) => token.address === ticketCurrency.address
+        )?.decimals || 0),
     ticketSupply: parseInt(supply),
     ticketTokenAddress: ticketCurrency.address,
     val: parseFloat(val),
     ttv: ttv,
     roi: parseFloat(percentage),
-    maxEntries: Math.floor(parseInt(ticketLimitPerWallet)*parseInt(supply)/100),
+    maxEntries: Math.floor(
+      (parseInt(ticketLimitPerWallet) * parseInt(supply)) / 100
+    ),
     numberOfWinners: parseInt(numberOfWinners),
     prizeData: {
-        address: tokenPrizeMint,
-        mintAddress: tokenPrizeMint,
-        mint: tokenPrizeMint,
-        name: VerifiedTokens.find((token) => token.address === tokenPrizeMint)?.name || "",
-        symbol: VerifiedTokens.find((token) => token.address === tokenPrizeMint)?.symbol || "",
-        decimals: VerifiedTokens.find((token) => token.address === tokenPrizeMint)?.decimals || 0,
-        verified: true,
-        image: URL.createObjectURL(new Blob([VerifiedTokens.find((token) => token.address === tokenPrizeMint)?.image || ""])) || "",
-        amount: parseFloat(tokenPrizeAmount) * 10 ** (VerifiedTokens.find((token) => token.address === tokenPrizeMint)?.decimals || 0),
+      type: prizeType === "nft" ? "NFT" : "TOKEN",
+      address: tokenPrizeMint,
+      mintAddress: tokenPrizeMint,
+      mint: tokenPrizeMint,
+      name:
+        VerifiedTokens.find((token) => token.address === tokenPrizeMint)
+          ?.name || "",
+      symbol:
+        VerifiedTokens.find((token) => token.address === tokenPrizeMint)
+          ?.symbol || "",
+      decimals:
+        VerifiedTokens.find((token) => token.address === tokenPrizeMint)
+          ?.decimals || 0,
+      verified: true,
+      image:VerifiedTokens.find((token) => token.address === tokenPrizeMint)?.image || "",
+      amount:
+        parseFloat(tokenPrizeAmount) *
+        10 **
+          (VerifiedTokens.find((token) => token.address === tokenPrizeMint)
+            ?.decimals || 0),
     },
   };
   const createRaffle = useMutation({
     mutationKey: ["createRaffle"],
     mutationFn: async () => {
       if (!validateForm()) {
+        setIsCreatingRaffle(false);
         return;
       }
       const data = await createRaffleOverBackend(raffleBackendPayload);
@@ -144,12 +167,21 @@ export const useCreateRaffle = () => {
         endTime: getEndTimestamp()!,
 
         totalTickets: parseInt(supply),
-        ticketPrice: parseFloat(ticketPrice) * 10 ** (VerifiedTokens.find((token) => token.address === ticketCurrency.address)?.decimals || 0),
+        ticketPrice:
+          parseFloat(ticketPrice) *
+          10 **
+            (VerifiedTokens.find(
+              (token) => token.address === ticketCurrency.address
+            )?.decimals || 0),
         isTicketSol: ticketCurrency.symbol === "SOL",
 
         maxPerWalletPct: parseInt(ticketLimitPerWallet),
         prizeType: prizeType === "sol" ? 2 : prizeType === "spl" ? 1 : 0,
-        prizeAmount: parseFloat(tokenPrizeAmount) * 10 ** (VerifiedTokens.find((token) => token.address === tokenPrizeMint)?.decimals || 0),
+        prizeAmount:
+          parseFloat(tokenPrizeAmount) *
+          10 **
+            (VerifiedTokens.find((token) => token.address === tokenPrizeMint)
+              ?.decimals || 0),
         numWinners: parseInt(numberOfWinners),
         winShares: winShares,
         isUniqueWinners: parseInt(numberOfWinners) == 1,
@@ -158,23 +190,27 @@ export const useCreateRaffle = () => {
         ticketMint: new PublicKey(ticketCurrency.address),
         prizeMint: new PublicKey(tokenPrizeMint),
       });
-      if(!tx || data.error){
+      if (!tx || data.error) {
         throw new Error("Failed to create raffle");
-      }else{
-        await new Promise((resolve)=>setTimeout(()=>{
-          resolve(true);
-        }, 5000));
+      } else {
+        await new Promise((resolve) =>
+          setTimeout(() => {
+            resolve(true);
+          }, 5000)
+        );
         const verifyData = await verifyRaffleCreation(data.raffle.id, tx);
-        if(verifyData.error){
+        if (verifyData.error) {
           throw new Error("Failed to verify raffle creation");
         }
       }
     },
     onSuccess: () => {
+      setIsCreatingRaffle(false);
       toast.success("Raffle created successfully");
     },
     onError: (error: any) => {
       toast.error(error.message);
+      setIsCreatingRaffle(false);
     },
   });
 

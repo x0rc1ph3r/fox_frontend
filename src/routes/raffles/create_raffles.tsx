@@ -20,6 +20,8 @@ export const Route = createFileRoute("/raffles/create_raffles")({
 }); 
 import { useCreateRaffle } from "../../../hooks/useCreateRaffle";
 
+import { Loader } from "lucide-react";
+
 function CreateRaffles() {
   const {
     isVerifiedCollectionsModalOpen,
@@ -52,6 +54,7 @@ function CreateRaffles() {
     rent,
 
     agreedToTerms,
+    isCreatingRaffle,
     setAgreedToTerms,
 
     collectionSearchQuery,
@@ -59,6 +62,7 @@ function CreateRaffles() {
 
     getComputedTTV,
     getComputedRent,
+    setIsCreatingRaffle,
   } = useCreateRaffleStore();
 
   const {createRaffle} = useCreateRaffle();
@@ -292,15 +296,18 @@ function CreateRaffles() {
                           onChange={setAgreedToTerms}
                         />
                         <button
-                          onClick={() => createRaffle.mutate()}
-                          disabled={!agreedToTerms}
+                          onClick={() => {
+                            setIsCreatingRaffle(true);
+                            createRaffle.mutate();
+                          }}
+                          disabled={!agreedToTerms || isCreatingRaffle}
                           className={`text-white cursor-pointer font-semibold hover:from-primary-color hover:to-primary-color hover:via-primary-color text-sm md:text-base leading-normal font-inter h-11 md:h-14 rounded-full inline-flex items-center justify-center w-full transition duration-500 hover:opacity-90 bg-linear-to-r from-neutral-800 via-neutral-500 to-neutral-800 ${
-                            !agreedToTerms
+                            !agreedToTerms || isCreatingRaffle
                               ? "opacity-50 cursor-not-allowed"
                               : ""
                           }`}
                         >
-                          Create Raffle
+                          {isCreatingRaffle ? <Loader className="w-6 h-6 animate-spin" /> : "Create Raffle"}
                         </button>
                       </div>
                       <div className="bg-gray-1300 rounded-[20px] md:p-6 px-4 py-5">

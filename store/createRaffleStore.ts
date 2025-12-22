@@ -11,7 +11,7 @@ interface CreateRaffleState {
   isVerifiedCollectionsModalOpen: boolean;
   isCreateTokenModalOpen: boolean;
   isAdvancedSettingsOpen: boolean;
-
+  isCreatingRaffle: boolean;    
   // Date & Time
   endDate: Date | null;
   endTimeHour: string;
@@ -62,7 +62,7 @@ interface CreateRaffleState {
   closeCreateTokenModal: () => void;
   toggleAdvancedSettings: () => void;
   setAdvancedSettingsOpen: (open: boolean) => void;
-
+  setIsCreatingRaffle: (isCreating: boolean) => void;
   // Actions - Date & Time
   setEndDate: (date: Date | null) => void;
   setEndTimeHour: (hour: string) => void;
@@ -114,6 +114,7 @@ const initialState = {
   isVerifiedCollectionsModalOpen: false,
   isCreateTokenModalOpen: false,
   isAdvancedSettingsOpen: true,
+  isCreatingRaffle: false,
 
   // Date & Time
   endDate: null as Date | null,
@@ -162,6 +163,7 @@ export const useCreateRaffleStore = create<CreateRaffleState>((set, get) => ({
   ...initialState,
 
   // Actions - UI
+  setIsCreatingRaffle: (isCreating: boolean) => set({ isCreatingRaffle: isCreating }),
   openVerifiedCollectionsModal: () =>
     set({ isVerifiedCollectionsModalOpen: true }),
   closeVerifiedCollectionsModal: () =>

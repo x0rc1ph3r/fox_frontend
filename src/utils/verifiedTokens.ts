@@ -3,14 +3,14 @@ export const VerifiedTokens = [
         name:"SOL",
         address:"So11111111111111111111111111111111111111112",
         symbol:"SOL",
-        image:"/icons/solana-sol-logo.svg",
+        image:"https://cryptologos.cc/logos/solana-sol-logo.png?v=040",
         decimals: 9,
     },
     {
         name:"JUP",
         address:"JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
         symbol:"JUP",
-        image:"/icons/jupiter-logo.png",
+        image:"https://cryptologos.cc/logos/jupiter-ag-jup-logo.png?v=040",
         decimals: 6,
     },
     {
