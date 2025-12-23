@@ -1,52 +1,11 @@
-interface TransactionRow {
-  id: number;
-  tx: string;
-  buyer: string;
-  date: string; 
-  time: string;
-  tickets: number;
-}
+import type { TransactionTypeBackend } from "types/backend/raffleTypes";
 
-const dummyTransactions: TransactionRow[] = [
-  {
-    id: 1,
-    tx: "3gcT...tt3v",
-    buyer: "3Yrq...HVRh",
-    date: "24 Oct '25",
-    time: "06:20",
-    tickets: 1,
-  },
-  {
-    id: 2,
-    tx: "3gcT...tt3v",
-    buyer: "3Yrq...HVRh",
-    date: "24 Oct '25",
-    time: "06:20",
-    tickets: 1,
-  },
-  {
-    id: 3,
-    tx: "3gcT...tt3v",
-    buyer: "3Yrq...HVRh",
-    date: "24 Oct '25",
-    time: "06:20",
-    tickets: 1,
-  },
-  {
-    id: 4,
-    tx: "3gcT...tt3v",
-    buyer: "3Yrq...HVRh",
-    date: "24 Oct '25",
-    time: "06:20",
-    tickets: 1,
-  },
-];
 
 export const TransactionsTable = ({
-  transactions = dummyTransactions,
+  transactions,
   isLoading = false,
 }: {
-  transactions?: TransactionRow[];
+  transactions?: TransactionTypeBackend[];
   isLoading?: boolean;
 }) => {
   return (
@@ -61,7 +20,9 @@ export const TransactionsTable = ({
               <div className="px-5 h-6 border-l border-gray-1600">Buyer</div>
             </th>
             <th className="text-base md:w-1/5 text-start font-inter text-gray-1600 font-medium">
-              <div className="px-5 h-6 border-l border-gray-1600">Date & time</div>
+              <div className="px-5 h-6 border-l border-gray-1600">
+                Date & time
+              </div>
             </th>
             <th className="text-base md:w-1/5 text-start font-inter text-gray-1600 font-medium">
               <div className="px-5 h-6 border-l border-gray-1600">Tickets</div>
@@ -71,8 +32,7 @@ export const TransactionsTable = ({
 
         <tbody>
           {isLoading
-            ? 
-              Array(4)
+            ? Array(4)
                 .fill(0)
                 .map((_, i) => (
                   <tr key={i} className="animate-pulse">
@@ -102,16 +62,17 @@ export const TransactionsTable = ({
                     </td>
                   </tr>
                 ))
-            : 
-              transactions.map((t) => (
+            : transactions?.map((t) => (
                 <tr key={t.id}>
                   <td>
                     <div className="md:px-10 px-4 flex items-center gap-2.5 md:py-6 py-4 border-b border-gray-1100">
                       <p className="text-base text-black-1000 font-medium font-inter">
-                        {t.tx}
+                        {t.transactionId.slice(0, 6)}...
+                        {t.transactionId.slice(-4)}
                       </p>
                       <img
                         src="/icons/external-link-icon.svg"
+                        onClick={() => window.open(`https://solscan.io/tx/${t.transactionId}`, "_blank")}
                         className="w-5 h-5"
                         alt="link"
                       />
@@ -121,7 +82,7 @@ export const TransactionsTable = ({
                   <td>
                     <div className="px-5 md:py-6 py-4 border-b border-gray-1100">
                       <p className="text-base text-black-1000 font-medium font-inter">
-                        {t.buyer}
+                        {t.sender.slice(0, 6)}...{t.sender.slice(-4)}
                       </p>
                     </div>
                   </td>
@@ -129,7 +90,17 @@ export const TransactionsTable = ({
                   <td>
                     <div className="px-5 md:py-6 py-4 border-b border-gray-1100">
                       <p className="text-base text-black-1000 font-medium font-inter">
-                        {t.date} <span className="text-gray-1200">|</span> {t.time}
+                        {new Date(t.createdAt)
+                          .toLocaleString("en-GB", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "2-digit",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: false,
+                          })
+                          .replace(",", "")
+                          .replace(/ (\d{2})$/, "'$1")}
                       </p>
                     </div>
                   </td>
@@ -137,7 +108,7 @@ export const TransactionsTable = ({
                   <td>
                     <div className="px-5 md:py-6 py-4 border-b border-gray-1100">
                       <p className="text-base text-black-1000 font-medium font-inter">
-                        {t.tickets}
+                        {t.metadata?.quantity??0}
                       </p>
                     </div>
                   </td>

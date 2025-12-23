@@ -52,6 +52,7 @@ function RouteComponent() {
   const {publicKey} = useWallet();
   const { buyTicket } = useBuyRaffleTicket();
   const { ticketQuantity} = useBuyRaffleTicketStore();
+  const { connect } = useWallet();
   const [tabs, setTabs] = useState([
     { name: "Participants", active: true },
     { name: "Transactions", active: false },
@@ -285,7 +286,7 @@ function RouteComponent() {
                           Raffler
                         </p>
                         <h4 className="text-base text-black-1000 font-inter font-semibold">
-                          OzzyyySOL
+                          {raffle?.createdBy.slice(0, 6)}...{raffle?.createdBy.slice(-4)}
                         </h4>
                       </div>
                     </div>
@@ -431,9 +432,9 @@ function RouteComponent() {
                     <h3 className="md:text-base text-sm text-black-1000 font-inter font-medium text-center">
                       Please connect your wallet first to enter a raffle.
                     </h3>
-                    <PrimaryLink link="" text="Select Wallet" />
+                    
                   </div> : <></>}
-
+                    {publicKey ? 
                   <div className="w-full mt-6">
                     <div className="w-full items-center grid lg:grid-cols-2 sm:grid-cols-2 grid-cols-1 gap-5">
                       <QuantityBox max={raffle?.maxEntries || 1}/>
@@ -455,6 +456,7 @@ function RouteComponent() {
                       
                     </div>
                   </div>
+                  : <></>}
 
                   <div className="w-full">
                     <div className="w-full overflow-x-auto">
@@ -477,9 +479,9 @@ function RouteComponent() {
                         ))}
                       </ul>
                     </div>
-                    {tabs[0].active && <ParticipantsTable />}
+                    {tabs[0].active && <ParticipantsTable participants={raffle?.raffleEntries} ticketSupply={raffle?.ticketSupply || 0} />}
 
-                    {tabs[1].active && <TransactionsTable />}
+                    {tabs[1].active && <TransactionsTable transactions={raffle?.raffleEntries?.flatMap((entry) => entry.transactions)} />}
 
                     {tabs[2].active && <TermsConditions />}
                   </div>

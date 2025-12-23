@@ -19,6 +19,32 @@ const prizeDataSchema = z.object({
     amount: z.number().gt(0).optional(),
     floor: z.number().gt(0).optional(),
 });
+enum TransactionType {
+    RAFFLE_CREATION,
+    RAFFLE_ENTRY,
+    RAFFLE_WIN,
+    RAFFLE_CANCEL,
+    RAFFLE_END,
+    RAFFLE_CLAIM,
+    RAFFLE_REFUND,
+    RAFFLE_PURCHASE,
+    RAFFLE_DEPOSIT,
+  }
+
+  const transactionSchema = z.object({
+    id: z.string().min(1),
+    transactionId: z.string().min(1),
+    type: z.enum(Object.values(TransactionType) as [string, ...string[]]),
+    sender: z.string().min(1),
+    receiver: z.string().min(1),
+    createdAt: z.coerce.date(),
+    amount: z.number().gt(0),
+    isNft: z.boolean(),
+    mintAddress: z.string().min(1),
+    metadata: z.object({
+        quantity: z.number().gt(0),
+    }).optional(),
+});
 
 const raffleSchema = z.object({
     id: z.number().gt(0).optional(),
@@ -40,6 +66,14 @@ const raffleSchema = z.object({
     maxEntries: z.number().gt(0),
     numberOfWinners: z.number().gt(0),
     prizeData: prizeDataSchema,
+    raffleEntries: z.array(z.object({
+        id: z.number().gt(0),
+        userAddress: z.string().min(1),
+        raffleId: z.number().gt(0),
+        quantity: z.number().gt(0),
+        transactions: z.array(transactionSchema),
+    })).optional(),
 });
 
 export type RaffleTypeBackend = z.infer<typeof raffleSchema>;
+export type TransactionTypeBackend = z.infer<typeof transactionSchema>;
