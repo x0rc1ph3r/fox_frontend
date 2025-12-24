@@ -393,7 +393,7 @@ function AuctionDetails() {
                             </ul>
                             </div>
                             {tabs[0].active &&
-                             <ParticipantsTable/>
+                             <ParticipantsTable ticketSupply={2}/>
                             }
 
                             {tabs[1].active &&
