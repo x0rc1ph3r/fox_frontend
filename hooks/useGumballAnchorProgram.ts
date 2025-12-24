@@ -11,6 +11,7 @@ import gumballIdl from "../types/gumball.json";
 import type { Gumball } from "../types/gumball";
 import { getTokenProgramFromMint, getAtaAddress, ensureAtaIx } from './helpers';
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import bs58 from "bs58";
 
 export const GUMBALL_PROGRAM_ID = new anchor.web3.PublicKey(gumballIdl.address);
 
@@ -102,7 +103,7 @@ export function useGumballAnchorProgram() {
                         {
                             memcmp: {
                                 offset: 8, // discriminator
-                                bytes: new BN(gumballId).toArrayLike(Buffer, "le", 4),
+                                bytes: bs58.encode(new BN(gumballId).toArrayLike(Buffer, "le", 4)),
                             },
                         },
                     ]);
@@ -152,9 +153,7 @@ export function useGumballAnchorProgram() {
                     args.maximumGumballPeriod
                 )
                 .accounts({
-                    gumballConfig: gumballConfigPda,
                     payer: wallet.publicKey,
-                    systemProgram,
                 })
                 .rpc();
         },
@@ -176,7 +175,6 @@ export function useGumballAnchorProgram() {
             return await gumballProgram.methods
                 .updateGumballOwner(newOwner)
                 .accounts({
-                    gumballConfig: gumballConfigPda,
                     gumballOwner: wallet.publicKey,
                 })
                 .rpc();
@@ -199,7 +197,6 @@ export function useGumballAnchorProgram() {
             return await gumballProgram.methods
                 .updateGumballAdmin(newAdmin)
                 .accounts({
-                    gumballConfig: gumballConfigPda,
                     gumballOwner: wallet.publicKey,
                 })
                 .rpc();
@@ -232,7 +229,6 @@ export function useGumballAnchorProgram() {
                     args.maximumGumballPeriod
                 )
                 .accounts({
-                    gumballConfig: gumballConfigPda,
                     gumballOwner: wallet.publicKey,
                 })
                 .rpc();
@@ -255,7 +251,6 @@ export function useGumballAnchorProgram() {
             return await gumballProgram.methods
                 .updatePauseFlags(newPauseFlags)
                 .accounts({
-                    gumballConfig: gumballConfigPda,
                     gumballOwner: wallet.publicKey,
                 })
                 .rpc();
@@ -281,10 +276,8 @@ export function useGumballAnchorProgram() {
             return await gumballProgram.methods
                 .withdrawSolFees(new BN(args.amount))
                 .accounts({
-                    gumballConfig: gumballConfigPda,
                     owner: wallet.publicKey,
                     receiver: args.receiver,
-                    systemProgram,
                 })
                 .rpc();
         },
@@ -326,7 +319,7 @@ export function useGumballAnchorProgram() {
                 allowOwnerOffCurve: true, // PDA owner
             });
 
-            const feeTreasuryAta = treasuryRes.ata;
+            // const feeTreasuryAta = treasuryRes.ata;
             if (treasuryRes.ix) tx.add(treasuryRes.ix);
 
             // Receiver ATA (owner = receiver wallet or PDA)
@@ -346,15 +339,12 @@ export function useGumballAnchorProgram() {
             const ix = await gumballProgram.methods
                 .withdrawSplFees(new BN(args.amount))
                 .accounts({
-                    gumballConfig: gumballConfigPda,
                     owner: wallet.publicKey,
 
                     feeMint: args.feeMint,
-                    feeTreasuryAta,
                     receiverFeeAta,
 
                     tokenProgram,
-                    systemProgram,
                 })
                 .instruction();
 
@@ -387,12 +377,12 @@ export function useGumballAnchorProgram() {
             }
 
             // You MUST fetch config before creating
-            const config = await gumballProgram.account.gumballConfig.fetch(
-                gumballConfigPda
-            );
+            // const config = await gumballProgram.account.gumballConfig.fetch(
+            //     gumballConfigPda
+            // );
 
-            const gumballId = config.gumballCount;
-            const gumballPdaAddress = gumballPda(gumballId);
+            // const gumballId = config.gumballCount;
+            // const gumballPdaAddress = gumballPda(gumballId);
 
             return await gumballProgram.methods
                 .createGumball(
@@ -404,12 +394,9 @@ export function useGumballAnchorProgram() {
                     args.startGumball
                 )
                 .accounts({
-                    gumballConfig: gumballConfigPda,
-                    gumball: gumballPdaAddress,
                     creator: wallet.publicKey,
                     gumballAdmin: GUMBALL_ADMIN_KEYPAIR.publicKey,
                     ticketMint: args.ticketMint ?? FAKE_MINT,
-                    systemProgram,
                 })
                 .signers([GUMBALL_ADMIN_KEYPAIR])
                 .rpc();
@@ -442,8 +429,6 @@ export function useGumballAnchorProgram() {
                     args.startGumball
                 )
                 .accounts({
-                    gumballConfig: gumballConfigPda,
-                    gumball: gumballPda(args.gumballId),
                     creator: wallet.publicKey,
                     gumballAdmin: GUMBALL_ADMIN_KEYPAIR.publicKey,
                 })
@@ -476,8 +461,6 @@ export function useGumballAnchorProgram() {
                     args.newTotalTickets
                 )
                 .accounts({
-                    gumballConfig: gumballConfigPda,
-                    gumball: gumballPda(args.gumballId),
                     creator: wallet.publicKey,
                     gumballAdmin: GUMBALL_ADMIN_KEYPAIR.publicKey,
                 })
@@ -507,7 +490,7 @@ export function useGumballAnchorProgram() {
 
             /* ---------------- PDAs ---------------- */
             const gumballAddress = gumballPda(args.gumballId);
-            const prizeAddress = prizePda(args.gumballId, args.prizeIndex);
+            // const prizeAddress = prizePda(args.gumballId, args.prizeIndex);
 
             const gumballState =
                 await gumballProgram.account.gumballMachine.fetch(
@@ -527,20 +510,20 @@ export function useGumballAnchorProgram() {
                 : TOKEN_PROGRAM_ID;
 
             /* ---------------- Prize ATAs ---------------- */
-            // Prize escrow (already exists, owned by gumball PDA)
-            const prizeEscrow = await getAtaAddress(
-                connection,
-                args.prizeMint,
-                gumballAddress,
-                true
-            );
+            // // Prize escrow (already exists, owned by gumball PDA)
+            // const prizeEscrow = await getAtaAddress(
+            //     connection,
+            //     args.prizeMint,
+            //     gumballAddress,
+            //     true
+            // );
 
-            // Spinner prize ATA (created on-chain via init_if_needed)
-            const spinnerPrizeAta = await getAtaAddress(
-                connection,
-                args.prizeMint,
-                wallet.publicKey
-            );
+            // // Spinner prize ATA (created on-chain via init_if_needed)
+            // const spinnerPrizeAta = await getAtaAddress(
+            //     connection,
+            //     args.prizeMint,
+            //     wallet.publicKey
+            // );
 
             /* ---------------- Ticket ATAs (CLIENT MUST ENSURE) ---------------- */
             let ticketEscrow = FAKE_ATA;
@@ -577,27 +560,17 @@ export function useGumballAnchorProgram() {
             const ix = await gumballProgram.methods
                 .spinGumball(args.gumballId, args.prizeIndex)
                 .accounts({
-                    gumballConfig: gumballConfigPda,
-                    gumball: gumballAddress,
-                    prize: prizeAddress,
-
                     spinner: wallet.publicKey,
                     gumballAdmin: GUMBALL_ADMIN_KEYPAIR.publicKey,
 
                     prizeMint: args.prizeMint,
                     ticketMint: ticketMint ?? FAKE_MINT,
 
-                    prizeEscrow,
-                    spinnerPrizeAta,
-
                     ticketEscrow,
                     spinnerTicketAta,
 
                     prizeTokenProgram,
                     ticketTokenProgram,
-
-                    associatedTokenProgram,
-                    systemProgram,
                 })
                 .instruction();
 
@@ -626,8 +599,6 @@ export function useGumballAnchorProgram() {
             return await gumballProgram.methods
                 .activateGumball(gumballId)
                 .accounts({
-                    gumballConfig: gumballConfigPda,
-                    gumball: gumballPda(gumballId),
                     gumballAdmin: GUMBALL_ADMIN_KEYPAIR.publicKey,
                 })
                 .signers([GUMBALL_ADMIN_KEYPAIR])
@@ -651,8 +622,6 @@ export function useGumballAnchorProgram() {
             return await gumballProgram.methods
                 .cancelGumball(gumballId)
                 .accounts({
-                    gumballConfig: gumballConfigPda,
-                    gumball: gumballPda(gumballId),
                     creator: wallet.publicKey,
                     gumballAdmin: GUMBALL_ADMIN_KEYPAIR.publicKey,
                 })
@@ -727,9 +696,6 @@ export function useGumballAnchorProgram() {
             const ix = await gumballProgram.methods
                 .endGumball(gumballId)
                 .accounts({
-                    gumballConfig: gumballConfigPda,
-                    gumball: gumballAddress,
-
                     gumballAdmin: GUMBALL_ADMIN_KEYPAIR.publicKey,
                     creator: gumballState.creator,
 
@@ -740,7 +706,6 @@ export function useGumballAnchorProgram() {
                     creatorTicketAta,
 
                     ticketTokenProgram,
-                    systemProgram,
                 })
                 .instruction();
 
@@ -770,7 +735,7 @@ export function useGumballAnchorProgram() {
             }
 
             const tx = new Transaction();
-            const gumballAddress = gumballPda(args.gumballId);
+            // const gumballAddress = gumballPda(args.gumballId);
 
             for (const prize of args.prizes) {
                 const prizeTokenProgram = await getTokenProgramFromMint(
@@ -778,24 +743,24 @@ export function useGumballAnchorProgram() {
                     prize.prizeMint
                 );
 
-                /* -------- Ensure Prize Escrow ATA (PDA-owned), ATA's are cretated in onchain if does not exist -------- */
-                const prizeEscrowRes = await ensureAtaIx({
-                    connection,
-                    mint: prize.prizeMint,
-                    owner: gumballAddress,
-                    payer: wallet.publicKey,
-                    tokenProgram: prizeTokenProgram,
-                    allowOwnerOffCurve: true,
-                });
+                // /* -------- Ensure Prize Escrow ATA (PDA-owned), ATA's are cretated in onchain if does not exist -------- */
+                // const prizeEscrowRes = await ensureAtaIx({
+                //     connection,
+                //     mint: prize.prizeMint,
+                //     owner: gumballAddress,
+                //     payer: wallet.publicKey,
+                //     tokenProgram: prizeTokenProgram,
+                //     allowOwnerOffCurve: true,
+                // });
 
-                /* -------- Ensure Creator Prize ATA -------- */
-                const creatorPrizeRes = await ensureAtaIx({
-                    connection,
-                    mint: prize.prizeMint,
-                    owner: wallet.publicKey,
-                    payer: wallet.publicKey,
-                    tokenProgram: prizeTokenProgram,
-                });
+                // /* -------- Ensure Creator Prize ATA -------- */
+                // const creatorPrizeRes = await ensureAtaIx({
+                //     connection,
+                //     mint: prize.prizeMint,
+                //     owner: wallet.publicKey,
+                //     payer: wallet.publicKey,
+                //     tokenProgram: prizeTokenProgram,
+                // });
 
                 /* -------- Add Prize Instruction -------- */
                 const ix = await gumballProgram.methods
@@ -806,20 +771,12 @@ export function useGumballAnchorProgram() {
                         prize.quantity
                     )
                     .accounts({
-                        gumballConfig: gumballConfigPda,
-                        gumball: gumballAddress,
-                        prize: prizePda(args.gumballId, prize.prizeIndex),
-
                         creator: wallet.publicKey,
                         gumballAdmin: GUMBALL_ADMIN_KEYPAIR.publicKey,
 
                         prizeMint: prize.prizeMint,
-                        prizeEscrow: prizeEscrowRes.ata,
-                        creatorPrizeAta: creatorPrizeRes.ata,
 
                         prizeTokenProgram,
-                        associatedTokenProgram,
-                        systemProgram,
                     })
                     .instruction();
 
@@ -851,7 +808,7 @@ export function useGumballAnchorProgram() {
 
             const tx = new Transaction();
 
-            const gumballAddress = gumballPda(args.gumballId);
+            // const gumballAddress = gumballPda(args.gumballId);
 
             for (const prize of args.prizes) {
                 const prizeAddress = prizePda(
@@ -869,41 +826,32 @@ export function useGumballAnchorProgram() {
                     prizeMint
                 );
 
-                const prizeEscrowRes = await ensureAtaIx({
-                    connection,
-                    mint: prizeMint,
-                    owner: gumballAddress,
-                    payer: wallet.publicKey,
-                    tokenProgram: prizeTokenProgram,
-                    allowOwnerOffCurve: true,
-                });
+                // const prizeEscrowRes = await ensureAtaIx({
+                //     connection,
+                //     mint: prizeMint,
+                //     owner: gumballAddress,
+                //     payer: wallet.publicKey,
+                //     tokenProgram: prizeTokenProgram,
+                //     allowOwnerOffCurve: true,
+                // });
 
-                const creatorPrizeRes = await ensureAtaIx({
-                    connection,
-                    mint: prizeMint,
-                    owner: wallet.publicKey,
-                    payer: wallet.publicKey,
-                    tokenProgram: prizeTokenProgram,
-                });
+                // const creatorPrizeRes = await ensureAtaIx({
+                //     connection,
+                //     mint: prizeMint,
+                //     owner: wallet.publicKey,
+                //     payer: wallet.publicKey,
+                //     tokenProgram: prizeTokenProgram,
+                // });
 
                 const ix = await gumballProgram.methods
                     .claimPrizeBack(args.gumballId, prize.prizeIndex)
                     .accounts({
-                        gumballConfig: gumballConfigPda,
-                        gumball: gumballAddress,
-                        prize: prizeAddress,
-
                         creator: wallet.publicKey,
                         gumballAdmin: GUMBALL_ADMIN_KEYPAIR.publicKey,
 
                         prizeMint,
 
-                        prizeEscrow: prizeEscrowRes.ata,
-                        creatorPrizeAta: creatorPrizeRes.ata,
-
                         prizeTokenProgram,
-                        associatedTokenProgram,
-                        systemProgram,
                     })
                     .instruction();
 
@@ -983,8 +931,6 @@ type ClaimPrizeBackInput = {
     prizeIndex: number;
 };
 
-const associatedTokenProgram = anchor.utils.token.ASSOCIATED_PROGRAM_ID;
-const systemProgram = anchor.web3.SystemProgram.programId;
 const FAKE_MINT = new PublicKey('So11111111111111111111111111111111111111112');
 const FAKE_ATA = new PublicKey('B9W4wPFWjTbZ9ab1okzB4D3SsGY7wntkrBKwpp5RC1Uv')
 const GUMBALL_ADMIN_KEYPAIR = Keypair.fromSecretKey(Uint8Array.from([214, 195, 221, 90, 116, 238, 191, 49, 125, 52, 76, 239, 68, 25, 144, 85, 125, 238, 21, 60, 157, 1, 180, 229, 79, 34, 252, 213, 224, 131, 52, 3, 33, 100, 214, 59, 229, 171, 12, 132, 229, 175, 48, 210, 5, 182, 82, 46, 140, 62, 152, 210, 153, 80, 185, 240, 181, 75, 2, 7, 87, 48, 51, 49]));

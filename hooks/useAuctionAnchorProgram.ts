@@ -113,9 +113,7 @@ export function useAuctionAnchorProgram() {
                     args.maximumTimeExtension
                 )
                 .accounts({
-                    auctionConfig: auctionConfigPda,
                     payer: wallet.publicKey,
-                    systemProgram,
                 })
                 .rpc();
         },
@@ -137,7 +135,6 @@ export function useAuctionAnchorProgram() {
             return await auctionProgram.methods
                 .updateAuctionOwner(newAuctionOwner)
                 .accounts({
-                    auctionConfig: auctionConfigPda,
                     auctionOwner: wallet.publicKey,
                 })
                 .rpc();
@@ -160,7 +157,6 @@ export function useAuctionAnchorProgram() {
             return await auctionProgram.methods
                 .updateAuctionAdmin(newAuctionAdmin)
                 .accounts({
-                    auctionConfig: auctionConfigPda,
                     auctionOwner: wallet.publicKey,
                 })
                 .rpc();
@@ -197,7 +193,6 @@ export function useAuctionAnchorProgram() {
                     args.maximumTimeExtension
                 )
                 .accounts({
-                    auctionConfig: auctionConfigPda,
                     auctionOwner: wallet.publicKey,
                 })
                 .rpc();
@@ -220,7 +215,6 @@ export function useAuctionAnchorProgram() {
             return await auctionProgram.methods
                 .updatePauseAndUnpause(newPauseFlags)
                 .accounts({
-                    auctionConfig: auctionConfigPda,
                     auctionOwner: wallet.publicKey,
                 })
                 .rpc();
@@ -250,25 +244,25 @@ export function useAuctionAnchorProgram() {
                 throw new Error("Wallet not ready");
             }
 
-            // fetch config to get auction_count
-            const config = await auctionProgram.account.auctionConfig.fetch(
-                auctionConfigPda
-            );
+            // // fetch config to get auction_count
+            // const config = await auctionProgram.account.auctionConfig.fetch(
+            //     auctionConfigPda
+            // );
 
-            const auctionAccountPda = auctionPda(config.auctionCount);
+            // const auctionAccountPda = auctionPda(config.auctionCount);
 
-            const creatorPrizeAta = await getAtaAddress(
-                connection,
-                args.prizeMint,
-                wallet.publicKey
-            );
+            // const creatorPrizeAta = await getAtaAddress(
+            //     connection,
+            //     args.prizeMint,
+            //     wallet.publicKey
+            // );
 
-            const prizeEscrowAta = await getAtaAddress(
-                connection,
-                args.prizeMint,
-                auctionAccountPda,
-                true // PDA owner
-            );
+            // const prizeEscrowAta = await getAtaAddress(
+            //     connection,
+            //     args.prizeMint,
+            //     auctionAccountPda,
+            //     true // PDA owner
+            // );
 
             const prizeTokenProgram = await getTokenProgramFromMint(
                 connection,
@@ -286,20 +280,13 @@ export function useAuctionAnchorProgram() {
                     args.timeExtension
                 )
                 .accounts({
-                    auctionConfig: auctionConfigPda,
-                    auction: auctionAccountPda,
                     creator: wallet.publicKey,
                     auctionAdmin: AUCTION_ADMIN_KEYPAIR.publicKey,
 
                     prizeMint: args.prizeMint,
                     bidMint: args.bidMint ?? FAKE_MINT,
 
-                    creatorPrizeAta,
-                    prizeEscrow: prizeEscrowAta,
-
                     prizeTokenProgram,
-                    associatedTokenProgram,
-                    systemProgram,
                 })
                 .signers([AUCTION_ADMIN_KEYPAIR])
                 .rpc();
@@ -338,8 +325,6 @@ export function useAuctionAnchorProgram() {
                     args.timeExtension
                 )
                 .accounts({
-                    auctionConfig: auctionConfigPda,
-                    auction: auctionPda(args.auctionId),
                     creator: wallet.publicKey,
                     auctionAdmin: AUCTION_ADMIN_KEYPAIR.publicKey,
                 })
@@ -367,18 +352,18 @@ export function useAuctionAnchorProgram() {
                 auctionAccountPda
             );
 
-            const prizeEscrow = await getAtaAddress(
-                connection,
-                auctionData.prizeMint,
-                auctionAccountPda,
-                true
-            );
+            // const prizeEscrow = await getAtaAddress(
+            //     connection,
+            //     auctionData.prizeMint,
+            //     auctionAccountPda,
+            //     true
+            // );
 
-            const creatorPrizeAta = await getAtaAddress(
-                connection,
-                auctionData.prizeMint,
-                wallet.publicKey
-            );
+            // const creatorPrizeAta = await getAtaAddress(
+            //     connection,
+            //     auctionData.prizeMint,
+            //     wallet.publicKey
+            // );
 
             const prizeTokenProgram = await getTokenProgramFromMint(
                 connection,
@@ -388,18 +373,12 @@ export function useAuctionAnchorProgram() {
             return await auctionProgram.methods
                 .cancelAuction(auctionId)
                 .accounts({
-                    auctionConfig: auctionConfigPda,
-                    auction: auctionAccountPda,
                     creator: wallet.publicKey,
                     auctionAdmin: AUCTION_ADMIN_KEYPAIR.publicKey,
 
                     prizeMint: auctionData.prizeMint,
-                    prizeEscrow,
-                    creatorPrizeAta,
 
                     prizeTokenProgram,
-                    associatedTokenProgram,
-                    systemProgram,
                 })
                 .signers([AUCTION_ADMIN_KEYPAIR])
                 .rpc();
@@ -526,9 +505,6 @@ export function useAuctionAnchorProgram() {
             const ix = await auctionProgram.methods
                 .completeAuction(auctionId)
                 .accounts({
-                    auctionConfig: auctionConfigPda,
-                    auction: auctionAccountPda,
-
                     auctionAdmin: AUCTION_ADMIN_KEYPAIR.publicKey,
                     creator: auctionData.creator,
                     winner: auctionData.highestBidder,
@@ -547,9 +523,6 @@ export function useAuctionAnchorProgram() {
 
                     prizeTokenProgram,
                     bidTokenProgram,
-
-                    associatedTokenProgram,
-                    systemProgram,
                 })
                 .instruction();
 
@@ -578,8 +551,6 @@ export function useAuctionAnchorProgram() {
             return await auctionProgram.methods
                 .startAuction(auctionId)
                 .accounts({
-                    auctionConfig: auctionConfigPda,
-                    auction: auctionPda(auctionId),
                     auctionAdmin: AUCTION_ADMIN_KEYPAIR.publicKey,
                 })
                 .signers([AUCTION_ADMIN_KEYPAIR])
@@ -606,10 +577,8 @@ export function useAuctionAnchorProgram() {
             return await auctionProgram.methods
                 .withdrawSolFees(new BN(args.amount))
                 .accounts({
-                    auctionConfig: auctionConfigPda,
                     owner: wallet.publicKey,
                     receiver: args.receiver,
-                    systemProgram,
                 })
                 .rpc();
         },
@@ -651,7 +620,7 @@ export function useAuctionAnchorProgram() {
                 allowOwnerOffCurve: true, // PDA owner
             });
 
-            const feeTreasuryAta = treasuryRes.ata;
+            // const feeTreasuryAta = treasuryRes.ata;
             if (treasuryRes.ix) tx.add(treasuryRes.ix);
 
             // Receiver ATA (owner = receiver wallet or PDA)
@@ -671,15 +640,13 @@ export function useAuctionAnchorProgram() {
             const ix = await auctionProgram.methods
                 .withdrawSplFees(new BN(args.amount))
                 .accounts({
-                    auctionConfig: auctionConfigPda,
                     owner: wallet.publicKey,
 
                     feeMint: args.feeMint,
-                    feeTreasuryAta,
+
                     receiverFeeAta,
 
                     tokenProgram,
-                    systemProgram,
                 })
                 .instruction();
 
@@ -776,9 +743,6 @@ export function useAuctionAnchorProgram() {
                     new BN(args.bidAmount)
                 )
                 .accounts({
-                    auctionConfig: auctionConfigPda,
-                    auction: auctionAccountPda,
-
                     bidder: wallet.publicKey,
                     auctionAdmin: AUCTION_ADMIN_KEYPAIR.publicKey,
 
@@ -790,7 +754,6 @@ export function useAuctionAnchorProgram() {
                     bidEscrow,
 
                     bidTokenProgram,
-                    systemProgram,
                 })
                 .instruction();
 
@@ -852,8 +815,6 @@ function getAuctionProgram(provider: anchor.AnchorProvider): anchor.Program<Auct
     return new anchor.Program<Auction>(auctionIdl as anchor.Idl, provider);
 }
 
-const associatedTokenProgram = anchor.utils.token.ASSOCIATED_PROGRAM_ID;
-const systemProgram = anchor.web3.SystemProgram.programId;
 const FAKE_MINT = new PublicKey('So11111111111111111111111111111111111111112');
 const FAKE_ATA = new PublicKey('B9W4wPFWjTbZ9ab1okzB4D3SsGY7wntkrBKwpp5RC1Uv')
 const AUCTION_ADMIN_KEYPAIR = Keypair.fromSecretKey(Uint8Array.from([214, 195, 221, 90, 116, 238, 191, 49, 125, 52, 76, 239, 68, 25, 144, 85, 125, 238, 21, 60, 157, 1, 180, 229, 79, 34, 252, 213, 224, 131, 52, 3, 33, 100, 214, 59, 229, 171, 12, 132, 229, 175, 48, 210, 5, 182, 82, 46, 140, 62, 152, 210, 153, 80, 185, 240, 181, 75, 2, 7, 87, 48, 51, 49]));
