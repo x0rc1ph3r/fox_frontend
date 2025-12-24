@@ -11,6 +11,7 @@ import {
   deleteRaffle,
   verifyRaffleCreation,
 } from "../api/routes/raffleRoutes";
+import { useRouter } from "@tanstack/react-router";
 
 export const useCreateRaffle = () => {
   const {getAllRaffles} = useRaffleAnchorProgram();
@@ -40,7 +41,7 @@ export const useCreateRaffle = () => {
   } = useCreateRaffleStore();
 
   const { createRaffleMutation } = useRaffleAnchorProgram();
-
+  const router = useRouter();
   const validateForm = () => {
     try {
       if (!publicKey) {
@@ -114,8 +115,7 @@ export const useCreateRaffle = () => {
   };
 
   const now = Math.floor(Date.now() / 1000);
-  const totalRaffles = getAllRaffles.data?.length || 0;
-  const raffleId = totalRaffles + 1;
+ 
   const deleteRaffleOverBackend = async (raffleId:number)=>{
     try {
       const response = await deleteRaffle(raffleId.toString());
@@ -128,7 +128,6 @@ export const useCreateRaffle = () => {
     }
   }
   const raffleBackendPayload: RaffleTypeBackend = {
-    id: raffleId,
     createdAt: new Date(now * 1000),
     endsAt: new Date(getEndTimestamp()! * 1000),
     createdBy: publicKey?.toBase58() || "",
@@ -175,7 +174,7 @@ export const useCreateRaffle = () => {
     mutationFn: async () => {
       if (!validateForm()) {
         setIsCreatingRaffle(false);
-        return;
+        throw Error;
       }
       const data = await createRaffleOverBackend(raffleBackendPayload);
       const tx = await createRaffleMutation.mutateAsync({
@@ -212,22 +211,25 @@ export const useCreateRaffle = () => {
         await new Promise((resolve) =>
           setTimeout(() => {
             resolve(true);
-          }, 5000)
+          }, 2000)
         );
         const verifyData = await verifyRaffleCreation(data.raffle.id, tx);
         if (verifyData.error) {
-          throw new Error("Failed to verify raffle creation");
+          return data.raffle.id;
         }
       }
+      return data.raffle.id;
     },
-    onSuccess: () => {
+    onSuccess: (raffleId:number) => {
       setIsCreatingRaffle(false);
       toast.success("Raffle created successfully");
+      new Promise((resolve) => setTimeout(resolve, 2000));
+      router.navigate({ to: "/raffles/$id", params: { id: raffleId.toString() } });
     },
-    onError: (error: any) => {
-      toast.error(error.message);
+    onError: (raffleId:number) => {
       deleteRaffleOverBackend(raffleId);
       setIsCreatingRaffle(false);
+      toast.error("Failed to create raffle");
     },
   });
 

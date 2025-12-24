@@ -229,7 +229,6 @@ export const CryptoCard: React.FC<CryptoCardProps> = ({
   raffle,
   soldTickets,
   userAvatar = "/icons/user-avatar.png",
-  userName = "Anonymous",
   isFavorite = false,
   className,
   category = "General",
@@ -283,11 +282,11 @@ export const CryptoCard: React.FC<CryptoCardProps> = ({
         <div className="flex items-center gap-4">
           <img
             src={userAvatar}
-            alt={userName}
+            alt={raffle.createdBy}
             className="w-10 h-10 rounded-full object-cover"
           />
           <h4 className="text-base font-semibold font-inter text-black-1000">
-            {userName}
+            {raffle.createdBy.slice(0, 6)}...{raffle.createdBy.slice(-4)}
           </h4>
         </div>
         <div className="relative inline-flex items-center justify-center">

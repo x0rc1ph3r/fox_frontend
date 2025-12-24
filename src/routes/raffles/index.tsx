@@ -4,7 +4,6 @@ import FeaturedSwiper from "../../components/home/FeaturedSwiper";
 import SortDropdown from "../../components/home/SortDropdown";
 import SearchBox from "../../components/home/SearchBox";
 import { CryptoCard } from "../../components/common/CryptoCard";
-import { NoAuctions } from "../../components/home/NoAuctions";
 import InfiniteScroll from "react-infinite-scroll-component";
 import FilterModel from "../../components/home/FilterModel";
 import { useRafflesStore } from "../../../store/rafflesStore";
@@ -15,10 +14,9 @@ import { TryToolsSection } from "@/components/home/TryToolsSection";
 import { ToolsSection } from "@/components/home/ToolsSection";
 import { useGlobalStore } from "../../../store/globalStore";
 import { useRaffleAnchorProgram } from "hooks/useRaffleAnchorProgram";
-import { useQuery } from "@tanstack/react-query";
-import { PublicKey } from "@solana/web3.js";
 import type { RaffleTypeBackend } from "types/backend/raffleTypes";
 import { useBuyRaffleTicketStore } from "store/buyraffleticketstore";
+import { NoRaffles } from "@/components/home/NoRaffles";
 
 const sortingOptions = [
   { label: "Recently Added", value: "Recently Added" },
@@ -217,13 +215,12 @@ function RafflesPage() {
             >
               <div className="grid lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 gap-4">
                 {raffles?.map((r) => (
-                  // <></>
                   <CryptoCard key={r.id} raffle={r as unknown as RaffleTypeBackend} soldTickets={r.ticketSold!} />
                 ))}
               </div>
             </InfiniteScroll>
           ) : (
-            <NoAuctions />
+            <NoRaffles />
           )}
         </div>
       </section>

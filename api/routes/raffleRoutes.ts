@@ -86,3 +86,19 @@ export const deleteRaffle = async(raffleId:string)=>{
         throw error;
     }
 }
+export const cancelRaffleOverBackend = async(raffleId:string,txSignature:string)=>{
+    try {
+        const response = await api.post(`/raffle/cancel/${raffleId}`,{
+            txSignature
+        },{
+            headers:{
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}

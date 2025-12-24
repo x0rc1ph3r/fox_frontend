@@ -14,6 +14,7 @@ import { Loader } from "lucide-react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useBuyRaffleTicket } from "../../../hooks/useBuyRaffleTicket";
 import { useBuyRaffleTicketStore } from "../../../store/buyraffleticketstore";
+import { useCancelRaffle } from "../../../hooks/useCancelRaffle";
 
 export const Route = createFileRoute("/raffles/$id")({
   component: RouteComponent,
@@ -52,6 +53,8 @@ function RouteComponent() {
   const {publicKey} = useWallet();
   const { buyTicket } = useBuyRaffleTicket();
   const { ticketQuantity} = useBuyRaffleTicketStore();
+  const { cancelRaffle } = useCancelRaffle();
+    const [showWinnersModal, setShowWinnersModal] = useState(false);
   const { connect } = useWallet();
   const [tabs, setTabs] = useState([
     { name: "Participants", active: true },
@@ -246,7 +249,7 @@ function RouteComponent() {
                             fill="#212121"
                           />
                         </svg>
-                        Favorite
+                        Favourite
                       </button>
                     </li>
 
@@ -346,7 +349,7 @@ function RouteComponent() {
                     </div>
                   ) : (
                     <div className="w-full flex flex-col md:gap-10 gap-6 sm:py-[22px] pt-5 pb-4 px-4 sm:px-[26px] border border-gray-1100 rounded-[20px] bg-gray-1300">
-                      <div className="sm:grid flex sm:gap-0 gap-6 flex-wrap justify-between grid-cols-2 sm:grid-cols-3 w-full">
+                      {/* <div className="sm:grid flex sm:gap-0 gap-6 flex-wrap justify-between grid-cols-2 sm:grid-cols-3 w-full">
                         <div className="inline-flex w-full md:w-fit flex-col gap-2.5">
                           <div className="md:flex grid grid-cols-3 border border-black-1000/30 rounded-lg p-2 px-2.5">
                             <h4 className="text-xl pr-2.5 text-center font-semibold text-black-1000 font-inter">
@@ -403,7 +406,7 @@ function RouteComponent() {
                             </p>
                           </div>
                         </div>
-                      </div>
+                      </div> */}
 
                       <div className="w-full flex items-center justify-between p-2 rounded-[10px] bg-primary-color">
                         <div className="flex items-center gap-5">
@@ -414,12 +417,32 @@ function RouteComponent() {
                               className="md:h-auto h-7"
                             />
                           </div>
-                          <h3 className="md:text-2xl sm:text-xl text-base text-white font-semibold font-inter">
-                            GKo6...kEgV
-                          </h3>
-                          <h4 className="text-base text-white font-semibold font-inter">
-                            Won with 2 Ticket(s)
-                          </h4>
+                          {raffle.winner && raffle?.winner?.length > 1 ? (
+                            <button className="text-white font-semibold font-inter" onClick={()=>{
+                              setShowWinnersModal(true);
+                            }}>
+                              View all winners
+                            </button>
+                          ) : (
+                            <>
+                              <h3 className="md:text-2xl sm:text-xl text-base text-white font-semibold font-inter">
+                                {raffle?.winner?.[0]?.walletAddress.slice(0, 6)}...{raffle?.winner?.[0]?.walletAddress.slice(-4)}
+                              </h3>
+                              <h4 className="text-base text-white font-semibold font-inter">
+                                Won with {raffle.raffleEntries?.find((entry)=>entry.userAddress===raffle?.winner?.[0]?.walletAddress)?.quantity} Ticket(s)
+                              </h4>
+                              {raffle?.winner?.length! > 0 && raffle.winner?.some((winner)=>winner.walletAddress===publicKey?.toBase58()) ? 
+                              <PrimaryButton className="w-full h-[54px]" 
+                              // onclick={()=>{
+                              //   claimPrize.mutate({
+                              //     raffleId: raffle?.id || 0,
+                              //   });
+                              // }} 
+                              text="Claim Prize" />
+                              : <></>
+                              }
+                            </>
+                          )}
                         </div>
                         <h4 className="sm:text-base text-xs text-white font-semibold font-inter px-4">
                           Raffle winner
@@ -434,7 +457,7 @@ function RouteComponent() {
                     </h3>
                     
                   </div> : <></>}
-                    {publicKey ? 
+                    {publicKey && (publicKey.toBase58() !== raffle?.createdBy) ? 
                   <div className="w-full mt-6">
                     <div className="w-full items-center grid lg:grid-cols-2 sm:grid-cols-2 grid-cols-1 gap-5">
                       <QuantityBox max={raffle?.maxEntries || 1}/>
@@ -457,7 +480,23 @@ function RouteComponent() {
                     </div>
                   </div>
                   : <></>}
-
+                  {publicKey && publicKey.toBase58() === raffle?.createdBy ? <div className="w-full mt-6">
+                    <div className="w-full border rounded-xl px-10 items-center flex flex-col gap-5 justify-center py-2">
+                      <h3 className="text-lg font-medium font-inter text-black-1000">
+                        Raffle Administrator
+                      </h3>
+                      <div className="w-full md:mb-5">
+                        <PrimaryButton
+                          className="w-full h-[54px]"
+                          text={`Cancel Raffle`}
+                          onclick={()=>{
+                            cancelRaffle.mutate(raffle?.id || 0);
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  : <></>}
                   <div className="w-full">
                     <div className="w-full overflow-x-auto">
                       <ul className="flex items-center gap-3 2xl:gap-5 pb-6 pt-10 md:py-10 sm:w-auto md:w-[600px]">

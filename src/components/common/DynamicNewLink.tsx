@@ -4,8 +4,10 @@ function DynamicNewLink({ isAuth }: { isAuth: boolean }) {
   const location = useLocation();
   let linkTo = '';
   let enabled = false;
-
-  if (location.pathname === '/') {
+  if(localStorage.getItem("authToken")){
+    isAuth = true;
+  }
+  if (location.pathname === '/' || location.pathname.startsWith('/raffles')) {
     linkTo = '/raffles/create_raffles';
     enabled = true;
   } else if (location.pathname.startsWith('/auctions')) {
@@ -17,6 +19,10 @@ function DynamicNewLink({ isAuth }: { isAuth: boolean }) {
   }
 
   const isClickable = isAuth && enabled;
+  console.log("isClickable",isClickable);
+  console.log("linkTo",linkTo);
+  console.log("enabled",enabled);
+  console.log("isAuth",isAuth);
 
   return (
     <Link

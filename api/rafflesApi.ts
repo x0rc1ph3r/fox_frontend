@@ -16,7 +16,7 @@ export const fetchRaffles = async ({
   let filteredData = await getRaffles(pageParam, pageSize);
   filteredData = filteredData.raffles;
   if (filter === "Featured") filteredData = filteredData.filter((r: any) => r.isFavorite);
-  if (filter === "All Raffles") filteredData = filteredData;
+  if (filter === "All Raffles") filteredData = filteredData.filter((r:any) => r.state.toLowerCase() === "active");
   if (filter === "Past Raffles") filteredData = filteredData.filter((r: any) => r.state === "failedEnded" || r.state === "successEnded");
   
   return new Promise((resolve) => {
