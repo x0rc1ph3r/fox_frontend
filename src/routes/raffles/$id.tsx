@@ -15,6 +15,8 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { useBuyRaffleTicket } from "../../../hooks/useBuyRaffleTicket";
 import { useBuyRaffleTicketStore } from "../../../store/buyraffleticketstore";
 import { useCancelRaffle } from "../../../hooks/useCancelRaffle";
+import { useClaimRafflePrize } from "../../../hooks/useClaimRafflePrize";
+import { getRaffleWinnersWhoClaimedPrize } from "../../../api/routes/raffleRoutes";
 
 export const Route = createFileRoute("/raffles/$id")({
   component: RouteComponent,
@@ -54,7 +56,9 @@ function RouteComponent() {
   const { buyTicket } = useBuyRaffleTicket();
   const { ticketQuantity} = useBuyRaffleTicketStore();
   const { cancelRaffle } = useCancelRaffle();
-    const [showWinnersModal, setShowWinnersModal] = useState(false);
+  const { claimPrize } = useClaimRafflePrize();
+  const [winnersWhoClaimedPrize, setWinnersWhoClaimedPrize] = useState<{sender:string}[]>([]);
+    const [showwinnerssModal, setShowwinnerssModal] = useState(false);
   const { connect } = useWallet();
   const [tabs, setTabs] = useState([
     { name: "Participants", active: true },
@@ -63,7 +67,7 @@ function RouteComponent() {
   ]);
   const userAvatar = "/icons/user-avatar.png";
   const router = useRouter();
-
+  
   const [TimeExtension, setTimeExtension] = useState(true);
 
   useEffect(() => {
@@ -77,6 +81,17 @@ function RouteComponent() {
     }
   }, [raffle?.endsAt, raffle?.state]);
 
+ useEffect(()=>{
+  if(raffle?.id){
+    getRaffleWinnersWhoClaimedPrize(raffle?.id.toString() || "").then((response)=>{
+      setWinnersWhoClaimedPrize(response.prizesClaimed);
+    }).catch((error)=>{
+      console.error(error);
+    });
+  }
+ },[raffle?.id]);
+
+ console.log(winnersWhoClaimedPrize);
   if (isLoading) {
     return (
       <main className="py-20 text-center text-3xl font-bold text-red-500 w-full flex items-center justify-center">
@@ -210,7 +225,7 @@ function RouteComponent() {
             <div className="flex-1">
               <div className="w-full">
                 <h4 className="text-sm text-primary-color font-inter font-medium">
-                  Raffle prize • {raffle?.numberOfWinners} winner
+                  Raffle prize • {raffle?.numberOfWinners} winners
                 </h4>
                 <h1 className="md:text-[28px] text-xl font-inter md:mt-6 my-5 md:mb-5 font-bold text-black-100">
                   {raffle?.prizeData.symbol}
@@ -417,36 +432,41 @@ function RouteComponent() {
                               className="md:h-auto h-7"
                             />
                           </div>
-                          {raffle.winner && raffle?.winner?.length > 1 ? (
+                          {raffle.winners && raffle?.winners?.length > 1 ? (
                             <button className="text-white font-semibold font-inter" onClick={()=>{
-                              setShowWinnersModal(true);
+                              setShowwinnerssModal(true);
                             }}>
-                              View all winners
+                              View all winnerss
                             </button>
                           ) : (
                             <>
+                            
                               <h3 className="md:text-2xl sm:text-xl text-base text-white font-semibold font-inter">
-                                {raffle?.winner?.[0]?.walletAddress.slice(0, 6)}...{raffle?.winner?.[0]?.walletAddress.slice(-4)}
+                                {raffle?.winners?.[0]?.walletAddress.slice(0, 6)}...{raffle?.winners?.[0]?.walletAddress.slice(-4)}
                               </h3>
                               <h4 className="text-base text-white font-semibold font-inter">
-                                Won with {raffle.raffleEntries?.find((entry)=>entry.userAddress===raffle?.winner?.[0]?.walletAddress)?.quantity} Ticket(s)
+                                Won with {raffle.raffleEntries?.find((entry)=>entry.userAddress===raffle?.winners?.[0]?.walletAddress)?.quantity} Ticket(s)
                               </h4>
-                              {raffle?.winner?.length! > 0 && raffle.winner?.some((winner)=>winner.walletAddress===publicKey?.toBase58()) ? 
-                              <PrimaryButton className="w-full h-[54px]" 
-                              // onclick={()=>{
-                              //   claimPrize.mutate({
-                              //     raffleId: raffle?.id || 0,
-                              //   });
-                              // }} 
-                              text="Claim Prize" />
-                              : <></>
-                              }
+                              
                             </>
                           )}
                         </div>
-                        <h4 className="sm:text-base text-xs text-white font-semibold font-inter px-4">
-                          Raffle winner
-                        </h4>
+                        {raffle?.winners?.length! > 0 && raffle.winners?.some((winners)=>winners.walletAddress===publicKey?.toBase58()) ? 
+                              <PrimaryButton className="w-[40%] h-[54px]" 
+                              onclick={()=>{
+                                claimPrize.mutate({
+                                  raffleId: Number(raffle?.id) || 0,
+                                });
+                              }} 
+                              text="Claim Prize" 
+                              disabled={winnersWhoClaimedPrize.some((winner)=>winner.sender===publicKey?.toBase58())}
+                              />
+                              
+                              : <h4 className="sm:text-base text-xs text-white font-semibold font-inter px-4">
+                              Raffle winners
+                            </h4>
+                              }
+                        
                       </div>
                     </div>
                   )}
@@ -457,7 +477,7 @@ function RouteComponent() {
                     </h3>
                     
                   </div> : <></>}
-                    {publicKey  ? 
+                    {publicKey && publicKey.toBase58() !== raffle?.createdBy ? 
                   <div className="w-full mt-6">
                     <div className="w-full items-center grid lg:grid-cols-2 sm:grid-cols-2 grid-cols-1 gap-5">
                       <QuantityBox max={raffle?.maxEntries || 1}/>

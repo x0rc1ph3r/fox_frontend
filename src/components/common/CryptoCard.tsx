@@ -232,7 +232,7 @@ export const CryptoCard: React.FC<CryptoCardProps> = ({
   isFavorite = false,
   className,
   category = "General",
-  rafflesType = "active",
+  rafflesType = "All Raffles",
 }) => {
   const { buyTicket } = useBuyRaffleTicket();
   const { ticketQuantityById, setTicketQuantityById, getTicketQuantityById, updateTicketQuantityById } = useBuyRaffleTicketStore();
@@ -414,7 +414,8 @@ export const CryptoCard: React.FC<CryptoCardProps> = ({
           </div>
         </div>
 
-        <div className="w-full flex items-center sm:flex-row flex-col justify-between gap-4">
+        {rafflesType === "All Raffles" && (
+          <div className="w-full flex items-center sm:flex-row flex-col justify-between gap-4">
           <div className="flex flex-1 items-center justify-between py-2 px-3 border border-gray-1100 rounded-full">
             <button
               onClick={decrease}
@@ -483,6 +484,14 @@ export const CryptoCard: React.FC<CryptoCardProps> = ({
             Buy • <span>{totalCost/10**(VerifiedTokens.find((token) => token.address === raffle.ticketTokenAddress)?.decimals || 0)}</span> {VerifiedTokens.find((token) => token.address === raffle.ticketTokenAddress)?.symbol || "SOL"}
           </button>
         </div>
+        )}
+        {rafflesType === "Past Raffles" && (
+          <div className="w-full flex items-center justify-between">
+            <h4 className="text-base text-primary-color font-inter text-center w-full font-semibold">
+              Raffle Ended
+            </h4>
+          </div>
+        )}
       </div>
     </div>
   );

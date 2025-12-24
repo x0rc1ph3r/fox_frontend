@@ -67,24 +67,6 @@ function RafflesPage() {
     <main className="flex-1 font-inter">
       <section className="w-full md:pt-0 pt-5">
         <div className="w-full max-w-[1440px] md:px-5 px-4 mx-auto">
-          <button onClick={ () => {
-            const raffles = getAllRaffles.data;
-            console.log("Raffles",raffles);
-            console.log("Raffles",raffles?.filter((r) => (new BN(r.account.endTime.toString()).toNumber() > (Date.now() / 1000)) && r.account.ticketsSold! > 0));
-          }}>Get Raffle From contract</button>
-          <button onClick={ () => {
-            const raffleConfig = getRaffleConfig.data;
-            console.log("Raffle config",raffleConfig);
-          }}>Get Raffle config</button>
-
-<button 
-className="block bg-primary-color text-white px-4 py-2 rounded-md"
-onClick={ () => {
-            console.log("Raffle by Id data:", testRaffleById.data);
-            console.log("Raffle by Id status:", testRaffleById.status);
-            console.log("Raffle by Id isLoading:", testRaffleById.isLoading);
-            console.log("Raffle by Id error:", testRaffleById.error);
-          }}>Get Raffle by Id</button>
           <Link
             to={"/"}
             className="md:text-base text-sm md:font-normal font-semibold transition duration-500 hover:opacity-90 bg-primary-color py-2.5 md:py-3 px-8 items-center justify-center text-black-1000 text-center md:hidden inline-flex w-full font-inter rounded-full"
@@ -233,7 +215,7 @@ onClick={ () => {
             >
               <div className="grid lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 gap-4">
                 {raffles?.map((r) => (
-                  <CryptoCard key={r.id} raffle={r as unknown as RaffleTypeBackend} soldTickets={r.ticketSold!} />
+                  <CryptoCard rafflesType={filter} key={r.id} raffle={r as unknown as RaffleTypeBackend} soldTickets={r.ticketSold!} />
                 ))}
               </div>
             </InfiniteScroll>

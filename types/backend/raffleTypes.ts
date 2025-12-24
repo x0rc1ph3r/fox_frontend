@@ -73,7 +73,7 @@ const raffleSchema = z.object({
         quantity: z.number().gt(0),
         transactions: z.array(transactionSchema),
     })).optional(),
-    winner: z.array(z.object({
+    winners: z.array(z.object({
         walletAddress: z.string().min(1),
     })).optional(), 
     favouritedBy: z.array(z.object({
