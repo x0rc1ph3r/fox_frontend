@@ -377,12 +377,12 @@ export function useGumballAnchorProgram() {
             }
 
             // You MUST fetch config before creating
-            // const config = await gumballProgram.account.gumballConfig.fetch(
-            //     gumballConfigPda
-            // );
+            const config = await gumballProgram.account.gumballConfig.fetch(
+                gumballConfigPda
+            );
 
-            // const gumballId = config.gumballCount;
-            // const gumballPdaAddress = gumballPda(gumballId);
+            const gumballId = config.gumballCount;
+            const gumballPdaAddress = gumballPda(gumballId);
 
             return await gumballProgram.methods
                 .createGumball(
@@ -393,7 +393,8 @@ export function useGumballAnchorProgram() {
                     args.isTicketSol,
                     args.startGumball
                 )
-                .accounts({
+                .accountsPartial({
+                    gumball: gumballPdaAddress,
                     creator: wallet.publicKey,
                     gumballAdmin: GUMBALL_ADMIN_KEYPAIR.publicKey,
                     ticketMint: args.ticketMint ?? FAKE_MINT,
