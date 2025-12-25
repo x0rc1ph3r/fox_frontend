@@ -1,8 +1,8 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useGumballStore } from "../../../store/useGumballStore";
 
 export default function DaysSelector() {
-  const [days, setDaysLocal] = useState("1");
+  const [days, setDaysLocal] = useState("2");
   
   const { 
     startType,
@@ -15,8 +15,8 @@ export default function DaysSelector() {
   } = useGumballStore();
 
   const presets = [
-    { label: "1d", value: "1" },
-    { label: "3d", value: "3" },
+    { label: "2d", value: "2" },
+    { label: "5d", value: "5" },
     { label: "7d", value: "7" },
   ];
 
@@ -50,7 +50,11 @@ export default function DaysSelector() {
       updateEndTime(value);
     }
   };
-
+  useEffect(() => {
+    if(days && parseInt(days) > 0) {
+      updateEndTime(days);
+    }
+  }, [days]);
   return (
     <div className="pb-10 max-w-[588px] w-full">
       <p className="md:text-base text-sm font-medium font-inter text-gray-1200 pb-2.5">

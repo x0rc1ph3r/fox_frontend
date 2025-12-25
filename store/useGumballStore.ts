@@ -45,6 +45,7 @@ interface GumballState {
   isAdvancedSettingsOpen: boolean;
   isCreatingGumball: boolean;
   isLoadingPrizes: boolean;
+  createdGumballId: number;
 
   // ======================= Gumball Setup =======================
   // Basic Info
@@ -118,7 +119,7 @@ interface GumballState {
   // ======================= Actions - Gumball Setup =======================
   setName: (name: string) => void;
   setStartType: (type: StartType) => void;
-
+  setCreatedGumballId: (id: number) => void;
   // Date & Time
   setStartDate: (date: Date | null) => void;
   setStartTimeHour: (hour: string) => void;
@@ -175,6 +176,7 @@ interface GumballState {
   getPrizesByCategory: (category: PrizeCategory) => GumballPrize[];
   getNftPrizesCount: () => number;
   getTokenPrizesCount: () => number;
+  getCreatedGumballId: () => number;
 }
 
 /* ----------------------------- Initial State ----------------------------- */
@@ -212,7 +214,7 @@ const initialState = {
   isAdvancedSettingsOpen: false,
   isCreatingGumball: false,
   isLoadingPrizes: false,
-
+  createdGumballId: 0,
   // Setup
   ...initialSetupState,
 
@@ -262,7 +264,7 @@ export const useGumballStore = create<GumballState>((set, get) => ({
   // ======================= Actions - Gumball Setup =======================
   setName: (name) => set({ name }),
   setStartType: (type) => set({ startType: type }),
-
+  setCreatedGumballId: (id) => set({ createdGumballId: id }),
   // Date & Time
   setStartDate: (date) => set({ startDate: date }),
   setStartTimeHour: (hour) => set({ startTimeHour: hour }),
@@ -470,6 +472,9 @@ export const useGumballStore = create<GumballState>((set, get) => ({
 
   getTokenPrizesCount: () => {
     return get().prizes.filter((p) => p.category === "token").length;
+  },
+  getCreatedGumballId: () => {
+    return get().createdGumballId;
   },
 }));
 

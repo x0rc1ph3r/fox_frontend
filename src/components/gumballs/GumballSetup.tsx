@@ -9,10 +9,12 @@ import CreateTokenModel from './CreateTokenModel';
 import { useGumballStore } from '../../../store/useGumballStore';
 import { useCreateGumball } from '../../../hooks/useCreateGumball';
 import toast from 'react-hot-toast';
+import { useGumballAnchorProgram } from '../../../hooks/useGumballAnchorProgram';
+import { VerifiedTokens } from '@/utils/verifiedTokens';
+import { PublicKey } from '@solana/web3.js';
 
 export const GumballSetup = () => {
     const { createGumball } = useCreateGumball();
-    
     const { 
         name, 
         startType, 
@@ -58,7 +60,7 @@ export const GumballSetup = () => {
 
   return (
     <div className='w-full'>
-           <div className="flex items-center gap-5 border border-solid border-primary-color rounded-[10px] bg-primary-color/5 py-4 px-5">
+           {/* <div className="flex items-center gap-5 border border-solid border-primary-color rounded-[10px] bg-primary-color/5 py-4 px-5">
             <span>
               <img src="/icons/icon1.png" className='min-w-[56px]' alt="" />
             </span>
@@ -70,11 +72,11 @@ export const GumballSetup = () => {
                 Staking a fox will give you 50% off fees and featured auctions!
               </p>
             </div>
-          </div>
-          <p className="text-base font-medium md:py-10 py-7 font-inter text-primary-color">
+          </div> */}
+          {/* <p className="text-base font-medium md:py-10 py-7 font-inter text-primary-color">
             Please link your twitter and discord in your profile or your raffles
             won't be shown.
-          </p>
+          </p> */}
           <div className='w-full'>
             <form className='w-full'>
               <div className="pb-10">
@@ -206,14 +208,15 @@ export const GumballSetup = () => {
                             setIsCreatingGumball(true);
                             try {
                               await createGumball.mutateAsync({
+                                name,
                                 startTime,
                                 endTime,
                                 totalTickets: parseInt(prizeCount) || 0,
                                 ticketPrice: parseFloat(ticketPrice) || 0,
-                                isTicketSol,
+                                isTicketSol:ticketCurrency.address==="So11111111111111111111111111111111111111112",
                                 startGumball: startType === "manual",
+                                ticketMint: new PublicKey(ticketCurrency.address),
                               });
-                              openCreateTokenModal();
                             } catch (error) {
                               toast.error("Failed to create gumball");
                               console.error(error);
