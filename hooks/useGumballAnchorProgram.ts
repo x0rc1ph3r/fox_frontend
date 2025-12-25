@@ -131,26 +131,19 @@ export function useGumballAnchorProgram() {
 
     const initializeGumballConfigMutation = useMutation({
         mutationKey: ["gumball", "config", "initialize"],
-        mutationFn: async (args: {
-            gumballOwner: PublicKey;
-            gumballAdmin: PublicKey;
-            creationFeeLamports: number;
-            ticketFeeBps: number;
-            minimumGumballPeriod: number;
-            maximumGumballPeriod: number;
-        }) => {
+        mutationFn: async () => {
             if (!gumballProgram || !wallet.publicKey) {
                 throw new Error("Wallet not ready");
             }
 
             return await gumballProgram.methods
                 .initializeGumballConfig(
-                    args.gumballOwner,
-                    args.gumballAdmin,
-                    new BN(args.creationFeeLamports),
-                    args.ticketFeeBps,
-                    args.minimumGumballPeriod,
-                    args.maximumGumballPeriod
+                    wallet.publicKey,
+                    GUMBALL_ADMIN_KEYPAIR.publicKey,
+                    new BN(1000_000_00),
+                    100,
+                    24 * 60 * 60,
+                    24 * 60 * 60 * 7
                 )
                 .accounts({
                     payer: wallet.publicKey,
