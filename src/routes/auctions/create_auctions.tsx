@@ -1,47 +1,138 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { useState, useRef, useEffect, Fragment, useMemo } from "react";
+import { ticketTokens } from "@/utils/ticketTokens";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Fragment, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import DateSelector from "@/components/ui/DateSelector";
+import { AgreeCheckbox } from "@/components/common/AgreeCheckbox";
 import TimeSelector from "@/components/ui/TimeSelector";
 import FormInput from "@/components/ui/FormInput";
-import InputSwitch from "@/components/ui/Switch";
-import { useAucationsStore } from "../../../store/auctions-store";
-import AmountWithDropdown from "@/components/auctions/AmountWithDropdown";
-import { AgreeCheckbox } from "@/components/common/AgreeCheckbox";
-import CreateTokenModel from "@/components/gumballs/CreateTokenModel";
-
+import DateSelector from "@/components/ui/DateSelector";
+import { useCreateRaffleStore } from "store/createRaffleStore";
 export const Route = createFileRoute("/auctions/create_auctions")({
-  component: CreateAucations,
+  component: CreateAuctions,
 });
+import { useCreateAuction } from "../../../hooks/useCreateAuction";
+import { Loader } from "lucide-react";
+import { useGumballStore } from "store/useGumballStore";
 
-function CreateAucations() {
+function CreateAuctions() {
+  const { createAuction } = useCreateAuction();
   const {
-    enabled1,
-    enabled2,
-    isOpen,
-    setEnabled1,
-    setEnabled2,
-    openModal,
-    closeModal,
-  } = useAucationsStore();
+    openVerifiedCollectionsModal,
+    agreedToTerms,
+    setAgreedToTerms,
+    isVerifiedCollectionsModalOpen,
+    closeVerifiedCollectionsModal,
+    collectionSearchQuery,
+    setCollectionSearchQuery,
+    endDate,
+    setEndDate,
+    endTimeHour,
+    endTimeMinute,
+    endTimePeriod,
+    selectedDuration,
+    setEndTimeHour,
+    setEndTimeMinute,
+    setEndTimePeriod,
+    applyDurationPreset,
+    getEndTimestamp,
+  } = useCreateRaffleStore();
 
-  const [showModel, setShowModel] = useState(false);
+  const {
+    startDate,
+    startTimeHour,
+    startTimeMinute,
+    startTimePeriod,
+    setStartDate,
+    setStartTimeHour,
+    setStartTimeMinute,
+    setStartTimePeriod,
+    getStartTimestamp,
+  } = useGumballStore();
+
+  const [isCreatingAuction, setIsCreatingAuction] = useState(false);
+  const [startType, setStartType] = useState<"manual" | "schedule">("manual");
+  const [solBalance, setSolBalance] = useState(0);
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const toggleDropdown = () => setIsOpen((prev) => !prev);
+  const [basePrice, setBasePrice] = useState("");
+  const [symbol, setSymbol] = useState("SOL");
+  const [baseMint, setBaseMint] = useState("");
+
+  const handleSelect = (address: string, symbol: string) => {
+    setSymbol(symbol);
+    setBaseMint(address);
+    setIsOpen(false);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const tabs = [
+    { name: "Start Immediately", type: "manual" as const },
+    { name: "Schedule Start", type: "schedule" as const },
+  ];
+
+  const today = useMemo(() => new Date(), []);
+
+  const handleTimeChange = (
+    hour: string,
+    minute: string,
+    period: "AM" | "PM"
+  ) => {
+    setEndTimeHour(hour);
+    setEndTimeMinute(minute);
+    setEndTimePeriod(period);
+  };
+
+  const handleAuctionCreate = async () => {
+    try {
+      setIsCreatingAuction(true);
+
+      await createAuction.mutateAsync({
+        startImmediately: startType === "manual" ? true : false,
+        startTime: getStartTimestamp()!,
+        endTime: getEndTimestamp()!,
+        baseBid: parseInt(basePrice),
+        bidMint: baseMint,
+        isBidMintSol: symbol === "SOL" ? true : false,
+        minIncrement: 5,
+        prizeMint: "2KXGzavYa41bXGUdnMRRvmDpeZixu9MRQj7PMbjadkoX",
+        timeExtension: 0,
+      });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsCreatingAuction(false);
+    }
+  };
 
   return (
     <div>
-      <section className="lg:pt-10 pt-5 pb-[60px] md:pb-[122px]">
+      <section className="pt-10 pb-[122px]">
         <div className="max-w-[1440px] mx-auto w-full px-4 lg:px-10">
           <div>
             <Link
-              to={"/auctions"}
-              className="bg-gray-1400 mb-10 rounded-[80px] inline-flex h-10 md:h-[49px] justify-center items-center pl-5 pr-3.5 md:px-6 gap-2 md:gap-2  md:text-base text-sm font-semibold text-black-1000 font-inter"
+              to={"/"}
+              className="bg-gray-1400 mb-10 rounded-[80px] inline-flex h-10 md:h-[49px] justify-center items-center pl-5 pr-3.5 md:px-6 gap-2 md:gap-2.5  md:text-base text-sm font-semibold text-black-1000 font-inter"
             >
               <span>
                 <img src="/icons/back-arw.svg" alt="" />
               </span>
               Back
             </Link>
-            <div className="flex items-start md:flex-row flex-col gap-5 lg:gap-10">
+            <div className="flex items-start md:flex-row flex-col gap-[42px] md:gap-5 lg:gap-10">
               <div className="lg:w-2/6 md:w-2/5 w-full">
                 <div className="flex items-start gap-10 pb-5">
                   <div className="w-full">
@@ -51,7 +142,7 @@ function CreateAucations() {
                       </h4>
                       <Link
                         to={"."}
-                        className="text-white font-semibold hover:from-primary-color hover:via-primary-color hover:to-primary-color text-sm lg:text-base leading-normal font-inter h-10 lg:h-11 rounded-full inline-flex items-center justify-center px-5 lg:px-[26px] transition duration-500 hover:opacity-90 bg-linear-to-r from-neutral-800 via-neutral-500 to-neutral-800 gap-2"
+                        className="text-white hover:from-primary-color hover:via-primary-color hover:to-primary-color font-semibold text-sm lg:text-base leading-normal font-inter h-10 lg:h-11 rounded-full inline-flex items-center justify-center px-5 lg:px-[26px] transition duration-500 hover:opacity-90 bg-linear-to-r from-neutral-800 via-neutral-500 to-neutral-800 gap-2"
                       >
                         <span className="w-6 h-6 flex items-center justify-center">
                           <svg
@@ -64,9 +155,9 @@ function CreateAucations() {
                             <path
                               d="M0.75 6.75H12.75M6.75 0.75V12.75"
                               stroke="#fff"
-                              stroke-width="1.5"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
                             />
                           </svg>
                         </span>
@@ -76,216 +167,204 @@ function CreateAucations() {
                   </div>
                 </div>
                 <div>
-                  <Link
-                    to={"."}
-                    onClick={openModal}
-                    className="flex items-center justify-between border border-solid border-gray-1100 rounded-[20px] h-[60px] px-5"
+                  <button
+                    type="button"
+                    onClick={openVerifiedCollectionsModal}
+                    className="flex w-full cursor-pointer items-center justify-between border border-solid border-gray-1100 rounded-[20px] h-[60px] px-5"
                   >
                     <p className="text-black-1000 xl:text-lg text-base font-medium font-inter">
                       View all verified collections
                     </p>
                     <span>
-                      <img src="/icons/right-arw.svg" alt="" />
+                      <img src="icons/right-arw.svg" alt="" />
                     </span>
-                  </Link>
+                  </button>
                 </div>
               </div>
               <div className="lg:w-4/6 md:w-3/5 w-full">
                 <div>
-                  <div className="flex items-center gap-5 mb-6 border border-solid border-primary-color rounded-[10px] bg-primary-color/5 py-[13px] md:py-4 px-5">
-                    <span>
-                      <img src="icons/icon1.png" alt="" />
-                    </span>
-                    <div className="flex-1">
-                      <p className="md:text-lg text-sm text-primary-color font-medium font-inter pb-1 leading-[22px] md:leading-7">
-                        No holder benefits
-                      </p>
-                      <p className="md:text-lg text-sm leading-[22px] font-medium text-black-1000 font-inter md:leading-7">
-                        Staking a fox will give you 50% off fees and featured
-                        auctions!
-                      </p>
-                    </div>
-                  </div>
                   <div>
-                    <div className="flex items-center justify-between gap-2.5 border border-solid border-gray-1100 rounded-[10px] h-12 px-5">
-                      <div className="flex items-center gap-2.5">
-                        <p className="md:text-base text-sm font-semibold text-black-1000 font-inter">
-                          Start Immediately
-                        </p>
-                        <Link to={"."}>
-                          <span className="flex items-center gap-1">
-                            <img src="icons/question.svg" alt="" />
-                            <p className="md:text-sm text-xs font-semibold font-inter text-primary-color">
-                              Help
-                            </p>
-                          </span>
-                        </Link>
-                      </div>
-                      <InputSwitch checked={enabled1} onChange={setEnabled1} />
-                    </div>
-                    <div className="w-full my-10">
+                    <p className="text-primary-color text-base font-medium font-inter">
+                      Please link your twitter and discord in your profile or
+                      your raffles won't be shown.
+                    </p>
+                    <div className="w-full my-5 md:my-10">
+                      <p className="md:text-base text-sm text-black-1000 font-inter font-medium pb-5">
+                        When would you like the sale to start?
+                      </p>
+                      <ul className="grid grid-cols-2 md:gap-5 mb-5 gap-3">
+                        {tabs.map((tab, index) => (
+                          <li key={index}>
+                            <button
+                              type="button"
+                              onClick={() => setStartType(tab.type)}
+                              disabled={isCreatingAuction}
+                              className={`border cursor-pointer border-solid w-full border-gray-1100 flex items-center justify-center rounded-lg px-5 h-12 md:text-base text-sm font-medium text-black-1000 font-inter ${
+                                startType === tab.type
+                                  ? "border-primary-color bg-primary-color/5"
+                                  : "bg-white"
+                              } disabled:opacity-50 disabled:cursor-not-allowed`}
+                            >
+                              {tab.name}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                      {startType === "schedule" && (
+                        <div className="pb-10 grid grid-cols-2 md:gap-5 gap-3">
+                          <div className="">
+                            <DateSelector
+                              label="Start Date"
+                              value={startDate}
+                              onChange={setStartDate}
+                              minDate={new Date()}
+                              disabled={isCreatingAuction}
+                            />
+                          </div>
+                          <div className="">
+                            <TimeSelector
+                              label="Start Time"
+                              hour={startTimeHour}
+                              minute={startTimeMinute}
+                              period={startTimePeriod}
+                              onTimeChange={(hour, minute, period) => {
+                                setStartTimeHour(hour);
+                                setStartTimeMinute(minute);
+                                setStartTimePeriod(period);
+                              }}
+                              disabled={isCreatingAuction}
+                            />
+                          </div>
+                        </div>
+                      )}
                       <div className="grid md:grid-cols-2 gap-5">
                         <div className="">
-                          <DateSelector label="Raffle end date" />
+                          <DateSelector
+                            label="Auction end date"
+                            value={endDate}
+                            onChange={setEndDate}
+                            minDate={today}
+                          />
                           <ol className="flex items-center gap-4 pt-2.5">
-                            <li className="w-full">
-                              <Link
-                                to="."
-                                className=" rounded-[7px]  bg-gray-1300 px-2.5 h-10 flex items-center justify-center text-sm font-semibold font-inter text-black-1000 w-full"
-                              >
-                                24hr
-                              </Link>
-                            </li>
-                            <li className="w-full">
-                              <Link
-                                to="."
-                                className=" rounded-[7px]  bg-gray-1300 px-2.5 h-10 flex items-center justify-center text-sm font-semibold font-inter text-black-1000 w-full"
-                              >
-                                36hr
-                              </Link>
-                            </li>
-                            <li className="w-full">
-                              <Link
-                                to="."
-                                className=" rounded-[7px]  bg-gray-1300 px-2.5 h-10 flex items-center justify-center text-sm font-semibold font-inter text-black-1000 w-full"
-                              >
-                                48hr
-                              </Link>
-                            </li>
+                            {(["24hr", "36hr", "48hr"] as const).map(
+                              (duration) => (
+                                <li key={duration} className="w-full">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      applyDurationPreset(duration)
+                                    }
+                                    className={`rounded-[7px] cursor-pointer px-2.5 h-10 flex items-center justify-center text-sm font-semibold font-inter text-black-1000 w-full transition-colors ${
+                                      selectedDuration === duration
+                                        ? "bg-primary-color text-white"
+                                        : "bg-gray-1300 hover:bg-gray-1100"
+                                    }`}
+                                  >
+                                    {duration}
+                                  </button>
+                                </li>
+                              )
+                            )}
                           </ol>
                         </div>
                         <div className="">
-                          <TimeSelector label="End Time" />
+                          <TimeSelector
+                            label="End Time"
+                            hour={endTimeHour}
+                            minute={endTimeMinute}
+                            period={endTimePeriod}
+                            onTimeChange={handleTimeChange}
+                          />
                         </div>
                       </div>
                     </div>
-                    <div className="grid xl:grid-cols-3 lg:grid-cols-2 gap-5 pb-10">
-                      <div>
-                        <div>
-                          <label
-                            htmlFor=""
-                            className="text-sm font-medium font-inter block text-black-1000 pb-2.5"
-                          >
-                            Bid increment
-                          </label>
-                          <div className="relative">
-                            <FormInput
-                              placeholder="24"
-                              className="text-black-1000"
-                            />
-                            <p className="text-black-1000 bg-white font-semibold text-base font-inter absolute top-1/2 right-5 -translate-y-1/2">
-                              %
-                            </p>
-                          </div>
-                        </div>
-                        <ol className="flex items-center gap-4 pt-2.5">
-                          <li className="w-full">
-                            <Link
-                              to="."
-                              className=" rounded-[7px]  bg-gray-1300 px-2.5 h-10 flex items-center justify-center text-sm font-semibold font-inter text-black-1000 w-full"
-                            >
-                              5%
-                            </Link>
-                          </li>
-                          <li className="w-full">
-                            <Link
-                              to="."
-                              className=" rounded-[7px]  bg-gray-1300 px-2.5 h-10 flex items-center justify-center text-sm font-semibold font-inter text-black-1000 w-full"
-                            >
-                              10%
-                            </Link>
-                          </li>
-                          <li className="w-full">
-                            <Link
-                              to="."
-                              className=" rounded-[7px]  bg-gray-1300 px-2.5 h-10 flex items-center justify-center text-sm font-semibold font-inter text-black-1000 w-full"
-                            >
-                              20%
-                            </Link>
-                          </li>
-                        </ol>
-                      </div>
-                      <div>
-                        <div>
-                          <label
-                            htmlFor=""
-                            className="text-sm font-medium font-inter block text-black-1000 pb-2.5"
-                          >
-                            Time extension period
-                          </label>
-                          <div className="relative">
-                            <FormInput
-                              placeholder="Enter Time"
-                              className="text-black-1000"
-                            />
-                            <p className="text-black-1000 bg-white font-semibold text-base font-inter absolute top-1/2 right-5 -translate-y-1/2">
-                              Min
-                            </p>
-                          </div>
-                        </div>
-                        <ol className="flex items-center gap-4 pt-2.5">
-                          <li className="w-full">
-                            <Link
-                              to="."
-                              className=" rounded-[7px]  bg-gray-1300 px-2.5 h-10 flex items-center justify-center text-sm font-semibold font-inter text-black-1000 w-full"
-                            >
-                              5
-                            </Link>
-                          </li>
-                          <li className="w-full">
-                            <Link
-                              to="."
-                              className=" rounded-[7px]  bg-gray-1300 px-2.5 h-10 flex items-center justify-center text-sm font-semibold font-inter text-black-1000 w-full"
-                            >
-                              10
-                            </Link>
-                          </li>
-                          <li className="w-full">
-                            <Link
-                              to="."
-                              className=" rounded-[7px]  bg-gray-1300 px-2.5 h-10 flex items-center justify-center text-sm font-semibold font-inter text-black-1000 w-full"
-                            >
-                              15
-                            </Link>
-                          </li>
-                        </ol>
-                      </div>
+                    <div className="flex items-start gap-5 lg:flex-row flex-col">
                       <div className="w-full">
                         <div className="flex items-center justify-between pb-2.5">
                           <p className="text-gray-1200 font-inter text-sm font-medium">
-                            Reserve price
+                            Reserve Price
                           </p>
                         </div>
-                        <AmountWithDropdown />
-                      </div>
-                    </div>
-                    <div className="flex items-center mb-2.5 justify-between gap-2.5 border border-solid border-gray-1100 rounded-[10px] h-12 px-5">
-                      <div className="flex items-center gap-2.5">
-                        <p className="md:text-base text-sm font-semibold text-black-1000 font-inter">
-                          Pay Royalties?
+                        <div className="relative">
+                          <input
+                            id="amount"
+                            type="number"
+                            value={basePrice}
+                            onChange={(e) => {
+                              setBasePrice(e.target.value);
+                            }}
+                            className="text-black-1000 focus:outline-0 bg-white focus:border-primary-color placeholder:text-gray-1200 text-base w-full font-inter px-5 h-12 border border-solid border-gray-1100 rounded-lg font-medium"
+                            autoComplete="off"
+                            placeholder="Enter Amount"
+                          />
+                          <div
+                            ref={dropdownRef}
+                            className="absolute z-20 top-1/2 right-5 -translate-y-1/2 bg-white border-l border-solid border-gray-1100"
+                          >
+                            <button
+                              type="button"
+                              className="flex items-center gap-1.5 px-3 cursor-pointer font-inter text-base font-medium text-black-1000 py-1"
+                              onClick={toggleDropdown}
+                            >
+                              <p>{symbol}</p>
+                              <span>
+                                <img
+                                  src="/icons/down-arw.svg"
+                                  alt="toggle"
+                                  className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                                />
+                              </span>
+                            </button>
+
+                            {isOpen && (
+                              <ol className="absolute top-full right-0 w-full bg-white border border-gray-1100 rounded-md mt-3 z-10">
+                                {ticketTokens.map((token) => (
+                                  <li key={token.symbol}>
+                                    <button
+                                      type="button"
+                                      className="w-full text-left px-3 py-2 hover:bg-gray-100"
+                                      onClick={() =>
+                                        handleSelect(
+                                          token.address,
+                                          token.symbol
+                                        )
+                                      }
+                                    >
+                                      {token.symbol}
+                                    </button>
+                                  </li>
+                                ))}
+                              </ol>
+                            )}
+                          </div>
+                        </div>
+
+                        <p className="text-sm font-medium text-black-1000 pt-2.5 font-inter">
+                          Your balance: {solBalance} SOL
                         </p>
-                        <Link to={"."}>
-                          <span className="flex items-center gap-1">
-                            <img src="icons/question.svg" alt="" />
-                            <p className="md:text-sm text-xs font-semibold font-inter text-primary-color">
-                              Royalty info
-                            </p>
-                          </span>
-                        </Link>
                       </div>
-                      <InputSwitch checked={enabled2} onChange={setEnabled2} />
                     </div>
-                    <p className="md:text-base text-sm text-black-1000 font-medium font-inter">
-                      Royalties: 0%
-                    </p>
-                    <div className="pt-[51px]">
+
+                    <div>
                       <div className="mb-10 grid xl:grid-cols-2 gap-5 md:gap-4">
-                        <AgreeCheckbox />
+                        <AgreeCheckbox
+                          checked={agreedToTerms}
+                          onChange={setAgreedToTerms}
+                        />
                         <button
-                          onClick={() => setShowModel(true)}
-                          className="text-white cursor-pointer hover:from-primary-color hover:via-primary-color hover:to-primary-color font-semibold text-sm md:text-base leading-normal font-inter h-11 md:h-14 rounded-full inline-flex items-center justify-center w-full transition duration-500 hover:opacity-90 bg-linear-to-r from-neutral-800 via-neutral-500 to-neutral-800"
+                          onClick={handleAuctionCreate}
+                          disabled={!agreedToTerms || isCreatingAuction}
+                          className={`text-white cursor-pointer font-semibold hover:from-primary-color hover:to-primary-color hover:via-primary-color text-sm md:text-base leading-normal font-inter h-11 md:h-14 rounded-full inline-flex items-center justify-center w-full transition duration-500 hover:opacity-90 bg-linear-to-r from-neutral-800 via-neutral-500 to-neutral-800 ${
+                            !agreedToTerms || isCreatingAuction
+                              ? "opacity-50 cursor-not-allowed"
+                              : ""
+                          }`}
                         >
-                          Create Auction
+                          {isCreatingAuction ? (
+                            <Loader className="w-6 h-6 animate-spin" />
+                          ) : (
+                            "Create Auction"
+                          )}
                         </button>
                       </div>
                       <div className="bg-gray-1300 rounded-[20px] md:p-6 px-4 py-5">
@@ -439,8 +518,14 @@ function CreateAucations() {
           </div>
         </div>
       </section>
-      <Transition appear show={isOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-50" onClose={closeModal}>
+
+      {/* Verified Collections Modal */}
+      <Transition appear show={isVerifiedCollectionsModalOpen} as={Fragment}>
+        <Dialog
+          as="div"
+          className="relative z-50"
+          onClose={closeVerifiedCollectionsModal}
+        >
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-300"
@@ -480,20 +565,24 @@ function CreateAucations() {
                         to get your NFT verified
                       </p>
                     </div>
-                    <div className="flex items-center ">
+                    <div className="flex items-center gap-10">
                       <div className="relative md:w-auto w-full">
                         <FormInput
-                          className="h-10 pl-[46px]! rounded-[80px]"
+                          className="h-10 pl-[46px] rounded-[80px]"
                           placeholder="Search"
+                          value={collectionSearchQuery}
+                          onChange={(e) =>
+                            setCollectionSearchQuery(e.target.value)
+                          }
                         />
                         <span className="absolute top-1/2 left-3 -translate-y-1/2">
-                          <img src="/icons/search-icon.svg" alt="" />
+                          <img src="icons/search-icon.svg" alt="" />
                         </span>
                       </div>
                       <button
                         type="button"
                         className="inline-flex cursor-pointer justify-center md:static absolute top-[25px] right-4 border border-transparent focus:outline-none focus-visible:ring-0"
-                        onClick={closeModal}
+                        onClick={closeVerifiedCollectionsModal}
                       >
                         <img src="icons/cross-icon.svg" alt="" />
                       </button>
@@ -611,11 +700,6 @@ function CreateAucations() {
           </div>
         </Dialog>
       </Transition>
-
-      <CreateTokenModel
-        isOpen={showModel}
-        onClose={() => setShowModel(false)}
-      />
     </div>
   );
 }

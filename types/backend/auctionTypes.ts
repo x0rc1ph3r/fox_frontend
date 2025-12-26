@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const auctionSchema = z.object({
+  id: z.number().optional(),
   createdBy: z.string().min(1),
 
   // Prize details
@@ -35,3 +36,4 @@ export const confirmAuctionCreationSchema = z.object({
   txSignature: z.string().min(1),
 });
 
+export type AuctionTypeBackend = z.infer<typeof auctionSchema>;

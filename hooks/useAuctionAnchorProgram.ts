@@ -87,30 +87,21 @@ export function useAuctionAnchorProgram() {
 
     const initializeAuctionConfigMutation = useMutation({
         mutationKey: ["auction", "config", "initialize"],
-        mutationFn: async (args: {
-            auctionOwner: PublicKey;
-            auctionAdmin: PublicKey;
-            creationFeeLamports: number;
-            commissionBps: number;
-            minimumAuctionPeriod: number;
-            maximumAuctionPeriod: number;
-            minimumTimeExtension: number;
-            maximumTimeExtension: number;
-        }) => {
+        mutationFn: async () => {
             if (!auctionProgram || !wallet.publicKey) {
                 throw new Error("Wallet not ready");
             }
 
             return await auctionProgram.methods
                 .initializeAuctionConfig(
-                    args.auctionOwner,
-                    args.auctionAdmin,
-                    new BN(args.creationFeeLamports),
-                    args.commissionBps,
-                    args.minimumAuctionPeriod,
-                    args.maximumAuctionPeriod,
-                    args.minimumTimeExtension,
-                    args.maximumTimeExtension
+                    wallet.publicKey,
+                    AUCTION_ADMIN_KEYPAIR.publicKey,
+                    new BN(1000_000_00),
+                    100,
+                    24 * 60 * 60,
+                    24 * 60 * 60 * 7,
+                    0,
+                    24 * 60 * 60
                 )
                 .accounts({
                     payer: wallet.publicKey,
