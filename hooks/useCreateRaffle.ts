@@ -1,5 +1,5 @@
 import { useCreateRaffleStore } from "../store/createRaffleStore";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { useRaffleAnchorProgram } from "./useRaffleAnchorProgram";
 import { PublicKey } from "@solana/web3.js";
@@ -14,8 +14,9 @@ import {
 import { useRouter } from "@tanstack/react-router";
 
 export const useCreateRaffle = () => {
-  const {getAllRaffles} = useRaffleAnchorProgram();
+  // const { getAllRaffles } = useRaffleAnchorProgram();
   const { publicKey } = useWallet();
+  const queryClient = useQueryClient();
   const {
     endDate,
     endTimeHour,
@@ -108,15 +109,19 @@ export const useCreateRaffle = () => {
       }
 
       return true;
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Something went wrong");
+      }
       return false;
     }
   };
 
   const now = Math.floor(Date.now() / 1000);
- 
-  const deleteRaffleOverBackend = async (raffleId:number)=>{
+
+  const deleteRaffleOverBackend = async (raffleId: number) => {
     try {
       const response = await deleteRaffle(raffleId.toString());
       if (response.error) {
@@ -127,8 +132,8 @@ export const useCreateRaffle = () => {
       throw error;
     }
   }
-  const fetchRaffleConfig =  () => {
-    const raffleConfig =  getRaffleConfig.data;
+  const fetchRaffleConfig = () => {
+    const raffleConfig = getRaffleConfig.data;
     return raffleConfig?.raffleCount || 0;
   }
   const raffleBackendPayload: RaffleTypeBackend = {
@@ -139,9 +144,9 @@ export const useCreateRaffle = () => {
     ticketPrice:
       parseFloat(ticketPrice) *
       10 **
-        (VerifiedTokens.find(
-          (token) => token.address === ticketCurrency.address
-        )?.decimals || 0),
+      (VerifiedTokens.find(
+        (token) => token.address === ticketCurrency.address
+      )?.decimals || 0),
     ticketSupply: parseInt(supply),
     ticketTokenAddress: ticketCurrency.address,
     val: parseFloat(val),
@@ -166,12 +171,12 @@ export const useCreateRaffle = () => {
         VerifiedTokens.find((token) => token.address === tokenPrizeMint)
           ?.decimals || 0,
       verified: true,
-      image:VerifiedTokens.find((token) => token.address === tokenPrizeMint)?.image || "",
+      image: VerifiedTokens.find((token) => token.address === tokenPrizeMint)?.image || "",
       amount:
         parseFloat(tokenPrizeAmount) *
         10 **
-          (VerifiedTokens.find((token) => token.address === tokenPrizeMint)
-            ?.decimals || 0),
+        (VerifiedTokens.find((token) => token.address === tokenPrizeMint)
+          ?.decimals || 0),
     },
   };
   const createRaffle = useMutation({
@@ -190,9 +195,9 @@ export const useCreateRaffle = () => {
         ticketPrice:
           parseFloat(ticketPrice) *
           10 **
-            (VerifiedTokens.find(
-              (token) => token.address === ticketCurrency.address
-            )?.decimals || 0),
+          (VerifiedTokens.find(
+            (token) => token.address === ticketCurrency.address
+          )?.decimals || 0),
         isTicketSol: ticketCurrency.symbol === "SOL",
 
         maxPerWalletPct: parseInt(ticketLimitPerWallet),
@@ -200,8 +205,8 @@ export const useCreateRaffle = () => {
         prizeAmount:
           parseFloat(tokenPrizeAmount) *
           10 **
-            (VerifiedTokens.find((token) => token.address === tokenPrizeMint)
-              ?.decimals || 0),
+          (VerifiedTokens.find((token) => token.address === tokenPrizeMint)
+            ?.decimals || 0),
         numWinners: parseInt(numberOfWinners),
         winShares: winShares,
         isUniqueWinners: parseInt(numberOfWinners) == 1,
@@ -225,14 +230,20 @@ export const useCreateRaffle = () => {
       }
       return data.raffle.id;
     },
-    onSuccess: (raffleId:number) => {
+    onMutate: async () => {
+      return { raffleId: fetchRaffleConfig() };
+    },
+    onSuccess: (raffleId: number) => {
+      queryClient.invalidateQueries({ queryKey: ["raffles", raffleId.toString()] });
       setIsCreatingRaffle(false);
       toast.success("Raffle created successfully");
       new Promise((resolve) => setTimeout(resolve, 2000));
       router.navigate({ to: "/raffles/$id", params: { id: raffleId.toString() } });
     },
-    onError: (raffleId:number) => {
-      deleteRaffleOverBackend(raffleId);
+    onError: async (_error, _args, context) => {
+      if (context?.raffleId) {
+        await deleteRaffleOverBackend(context.raffleId);
+      }
       setIsCreatingRaffle(false);
       toast.error("Failed to create raffle");
     },

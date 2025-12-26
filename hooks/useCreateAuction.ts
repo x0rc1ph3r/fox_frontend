@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { useAuctionAnchorProgram } from "./useAuctionAnchorProgram";
 import { PublicKey } from "@solana/web3.js";
@@ -31,6 +31,7 @@ export const useCreateAuction = () => {
     const { createAuctionMutation, getAuctionConfig } = useAuctionAnchorProgram();
     const router = useRouter();
     const { publicKey } = useWallet();
+    const queryClient = useQueryClient();
 
     const validateForm = (args: AuctionOnChainArgs) => {
         try {
@@ -147,6 +148,7 @@ export const useCreateAuction = () => {
             return { auctionId: fetchAuctionConfig() };
         },
         onSuccess: (auctionId: number) => {
+            queryClient.invalidateQueries({ queryKey: ["aucations", auctionId.toString()] });
             toast.success("Auction created successfully");
             new Promise((resolve) => setTimeout(resolve, 2000));
             router.navigate({ to: "/auctions/$id", params: { id: auctionId.toString() } });
