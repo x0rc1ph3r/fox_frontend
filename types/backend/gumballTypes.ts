@@ -57,6 +57,39 @@ export const addPrizesSchema = z.object({
 
 export type AddMultiplePrizesTypeBackend = z.infer<typeof addPrizesSchema>;
 
+const spinDataSchema = z.object({
+  id: z.number().int(),
+  gumballId: z.number().int(),
+  prizeId: z.number().int(),
+  spinnerAddress: z.string().min(1),
+  winnerAddress: z.string().min(1),
+  prizeAmount: z.string().min(1),
+  spunAt: z.string().datetime(),
+  claimed: z.boolean(),
+  claimedAt: z.string().datetime().nullable(),
+  spinner: z.object({
+    walletAddress: z.string().min(1),
+    twitterId: z.string().nullable(),
+  }),
+  transaction: z.object({
+    transactionId: z.string().min(1),
+    type: z.enum(["GUMBALL_SPIN"]),
+    sender: z.string().min(1),
+    receiver: z.string().min(1),
+    amount: z.string().min(1),
+    mintAddress: z.string().min(1),
+    isNft: z.boolean(),
+    metadata: z.object({
+      prizeId: z.number().int(),
+      prizeMint: z.string().min(1),
+      prizeAmount: z.string().min(1),
+      prizeName: z.string().min(1),
+      prizeImage: z.string().min(1),
+      prizeIndex: z.number().int(),
+    }),
+  }),
+});
+
 export const gumballBackendDataSchema = z.object({
   id: z.number().int(),
   name: z.string(),
@@ -99,6 +132,8 @@ export const gumballBackendDataSchema = z.object({
   _count: z.object({
     spins: z.number().int(),
   }),
+  spins: z.array(spinDataSchema),
 });
 
 export type GumballBackendDataType = z.infer<typeof gumballBackendDataSchema>;
+export type SpinDataBackend = z.infer<typeof spinDataSchema>;

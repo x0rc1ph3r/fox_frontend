@@ -1,5 +1,5 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { TransactionsTable } from '../../components/auctions/TransactionsTable';
 import { GumballPrizesTable } from '../../components/gumballs/GumballPrizesTable';
 import { MoneybackTable } from '../../components/gumballs/MoneybackTable';
@@ -8,26 +8,128 @@ import { useGumballById } from 'hooks/useGumballsQuery';
 import type { GumballBackendDataType } from '../../../types/backend/gumballTypes';
 import { VerifiedTokens } from '../../utils/verifiedTokens';
 import { useSpinGumball } from 'hooks/useSpinGumball';
+import { Dialog, DialogPanel } from '@headlessui/react';
+import { prepareSpin } from '../../../api/routes/gumballRoutes';
+
+
+interface Prize{
+      gumballId: number,
+      prizeIndex: number,
+      prizeMint: string,
+      ticketPrice: string,
+      ticketMint: string,
+      isTicketSol: boolean,
+      prizeImage: string,
+      prizeAmount: string,
+      isNft: boolean
+}
+interface PrizeModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  prize: Prize;
+  onClaimPrize: () => void;
+  isClaimPending: boolean;
+}
+
+const PrizeModal = ({ isOpen, onClose, prize, onClaimPrize, isClaimPending }: PrizeModalProps) => {
+  const formatPrice = (price: string, mint: string) => {
+    const numPrice = parseFloat(price)/ 10**(VerifiedTokens.find((token: typeof VerifiedTokens[0]) => token.address === mint)?.decimals || 0);
+    return `${numPrice}`;
+  }
+  return (
+    <Dialog open={isOpen} as="div" className="relative z-50" onClose={onClose}>
+      <div className="fixed inset-0 bg-black/70" aria-hidden="true" />
+
+      <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
+        <div className="flex min-h-full items-center justify-center p-4">
+          <DialogPanel
+            transition
+            className="relative z-10 w-full max-w-md duration-300 ease-out data-closed:transform-[scale(95%)] data-closed:opacity-0"
+          >
+            <div className="bg-white rounded-[24px] p-6 shadow-2xl">
+              <button
+                onClick={onClose}
+                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-all duration-300 cursor-pointer"
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1 1L13 13M1 13L13 1" stroke="#374151" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+
+              <div className="flex flex-col items-center pt-4">
+                <div className="relative w-[300px]   h-[300px] flex items-center justify-center flex-col gap-4">
+                  <img src={prize.prizeImage??""} alt={prize.prizeImage} className="w-[200px] h-[200]px object-cover" />
+                  {prize.isNft ? (
+                    <p className="text-black-1000 font-bold text-lg font-inter">1x NFT</p>
+                  ) : (
+                    <p className="text-black-1000 font-bold text-lg font-inter">{formatPrice(prize.prizeAmount, prize.prizeMint)} {VerifiedTokens.find((token: typeof VerifiedTokens[0]) => token.address === prize.prizeMint)?.symbol}</p>
+                  )}
+                </div>
+                <button
+                  onClick={onClaimPrize}
+                  disabled={isClaimPending}
+                  className="mt-6 w-full cursor-pointer px-12 py-3.5 rounded-full font-bold text-lg font-inter transition-all duration-300 hover:scale-[1.02] hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    background: 'var(--color-primary-color)',
+                    color: 'var(--color-white-1000)',
+                    boxShadow: '0 6px 24px rgba(255, 20, 147, 0.35)',
+                  }}
+                >
+                  {isClaimPending ? 'Claiming...' : 'Claim prize'}
+                </button>
+              </div>
+            </div>
+          </DialogPanel>
+        </div>
+      </div>
+    </Dialog>
+  );
+};
 
 export const Route = createFileRoute('/gumballs/$id')({
   component: GumballsDetails,
 })
-
+//TODO: handle total tickets vs prize quantity
 function GumballsDetails() {
   const { id } = Route.useParams();
   const { data, isLoading, isError } = useGumballById(id || "");
   const gumball = data as GumballBackendDataType | undefined;
   const router = useRouter();
+  const [prize,setPrize] = useState<Prize | null>(null);
   const { spinGumballFunction } = useSpinGumball();
+
   const [tabs, setTabs] = useState([
       { name: "Gumball Prizes", active: true },
-      { name: "Your Prizes", active: false },
+      // { name: "Your Prizes", active: false },
       ]);
 
   const isActive = gumball?.status === "ACTIVE";
 
   const MAX = 10;
   const [quantityValue, setQuantityValue] = useState<number>(1);
+  
+  const [isPrizeModalOpen, setIsPrizeModalOpen] = useState(false);
+  const [isClaimPending, setIsClaimPending] = useState(false);
+  const [isSpinning, setIsSpinning] = useState(false);
+
+  const handleSpinClick = () => {
+    setIsSpinning(true);
+    new Promise((resolve) => setTimeout(resolve, 3000));
+    setIsPrizeModalOpen(true);
+  };
+
+  const handleClaimPrize = async () => {
+    setIsClaimPending(true);
+    try {
+      await spinGumballFunction.mutateAsync({ gumballId: parseInt(id || ""), prizeIndex: prize?.prizeIndex || 0, prizeMint: prize?.prizeMint || "" });
+      setIsPrizeModalOpen(false);
+    } catch (error) {
+      console.error('Failed to claim prize:', error);
+    } finally {
+      setIsClaimPending(false);
+      setIsSpinning(false);
+    }
+  };
 
   const formatPrice = (price: string | undefined, isTicketSol: boolean | undefined) => {
     if (!price) return "0";
@@ -58,8 +160,18 @@ function GumballsDetails() {
     };
     
 
-
-
+    useEffect(()=>{
+      const fetchPrize = async () => {
+      if(isSpinning){
+          const data = await prepareSpin(id || "");
+          if(data.error){
+            console.error('Failed to prepare spin:', data.error);
+          }
+          setPrize(data);
+        }
+      }
+      fetchPrize();
+    },[isSpinning, id])
   if (isLoading) {
     return (
       <main className="w-full min-h-screen flex items-center justify-center">
@@ -94,12 +206,12 @@ function GumballsDetails() {
     </div>
 
     <section className='w-full pb-20'>
-        <div className="w-full max-w-[1440px] px-5 mx-auto">
+        <div className="w-full max-w-[1280px] px-5 mx-auto">
             <div className="w-full flex gap-[60px] md:gap-10 md:flex-row flex-col">
                 <div className="flex-1">
                     <div className="md:p-[18px] p-2 rounded-[20px] border border-gray-1100">
                         {isActive ? 
-                      <img src={gumball.prizes[0]?.image || "/images/gumballs/sol-img-frame.png"} className="w-full lg:h-[604px] h-[506px] rounded-[20px] object-cover" alt={gumball.name} />
+                      <img src={gumball.prizes[0]?.image || "/images/gumballs/sol-img-frame.png"} className="w-full h-[506px] rounded-[20px] object-cover" alt={gumball.name} />
                     :
                     <div className="relative flex items-center justify-center rounded-lg overflow-hidden">
                         <img src={gumball.prizes[0]?.image || "/images/ended-img-1.png"} className="w-full object-cover lg:h-[604px] h-[406px]" alt={gumball.name} />
@@ -152,7 +264,7 @@ function GumballsDetails() {
                             <div className="w-full">
                                 {isActive ? 
                                 <div className="w-full">
-                                <div className="w-full flex items-center justify-between pt-7 pb-5">
+                                {/* <div className="w-full flex items-center justify-between pt-7 pb-5">
                                         <p className="text-sm font-medium font-inter text-gray-1200">
                                         Quantity
                                         </p>
@@ -232,10 +344,10 @@ function GumballsDetails() {
                                         </li>
                                     ))}
                                     </ul>
-                                </div>
+                                </div> */}
 
-                                <div className="w-full flex">
-                                <PrimaryButton onclick={() => spinGumballFunction.mutateAsync({ gumballId: parseInt(id || "") })} text='Press To Spin' className='w-full h-12' disabled={spinGumballFunction.isPending} />
+                                <div className="w-full flex mt-10">
+                                <PrimaryButton onclick={handleSpinClick} text='Press To Spin' className='w-full h-12' disabled={spinGumballFunction.isPending || isSpinning} />
                                 </div>
 
                                 {/* <p className='md:text-base text-sm text-black-1000 font-medium font-inter pt-[18px] pb-10'>Your balance: 0 SOL</p> */}
@@ -292,22 +404,32 @@ function GumballsDetails() {
                             {tabs[0].active &&
                             <div className="md:grid md:grid-cols-2 items-start gap-5">
                              <GumballPrizesTable prizes={gumball.prizes} />
-                             <div className="flex-1 md:-mt-[60px] mt-10">
-                                <h2 className='text-xl pb-8 text-black-1000 font-bold font-inter'>{gumball.name}</h2>
-                             <MoneybackTable/>
+                             <div className="flex-1 md:-mt-px mt-10">
+                             <MoneybackTable spins={gumball.spins} />
                              </div>
                              </div>
                             }
 
-                            {tabs[1].active &&
-                             <TransactionsTable/>
-                            }
+                            {/* {tabs[1].active &&
+                             <TransactionsTable spins={gumball.spins} />
+                            } */}
                             
 
 
                 </div>
         </div>
     </section>
-    
+{prize && (
+    <PrizeModal
+      isOpen={isPrizeModalOpen}
+      onClose={() => {
+        setIsPrizeModalOpen(false);
+        setIsSpinning(false);
+      }}
+      prize={prize as Prize}
+      onClaimPrize={handleClaimPrize}
+      isClaimPending={isClaimPending}
+    />
+    )}
 </main>
   )}

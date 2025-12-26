@@ -1,4 +1,13 @@
-export const MoneybackTable = () => {
+import { VerifiedTokens } from "@/utils/verifiedTokens";
+import type { SpinDataBackend } from "types/backend/gumballTypes";
+
+export const MoneybackTable = ({ spins }: { spins: SpinDataBackend[] }) => {
+  const filterSpins = spins.filter((spin)=>{return {transaction:spin.transaction,spunAt:spin.spunAt}});
+  console.log(filterSpins);
+  const formatPrice = (price: string) => {
+    const numPrice = parseFloat(price)/ 10**(VerifiedTokens.find((token: typeof VerifiedTokens[0]) => token.address === filterSpins[0].transaction.mintAddress)?.decimals || 0);
+    return `${numPrice}`;
+  }
   return (
     <div className="border border-gray-1100 rounded-[20px] w-full overflow-x-auto xl:overflow-hidden">
       <table className="table xl:w-full w-[500px] md:w-[600px]">
@@ -25,121 +34,53 @@ export const MoneybackTable = () => {
           </tr>
         </thead>
         <tbody>
+          {filterSpins.map((spin)=>(
           <tr className="flex-1">
             <td scope="row">
               <div className="md:px-10 px-4 flex items-center gap-5 md:gap-2.5 py-6 border-b border-gray-1100">
                 <img
-                  src="/images/placeholder-user.png"
+                  src={spin.transaction.metadata?.prizeImage??"/images/placeholder-user.png"}
                   className="md:w-[60px] w-10 h-10 md:h-[60px] rounded-full object-cover"
                   alt="no img"
                 />
                 <p className="text-base text-black-1000 font-medium font-inter">
-                  800
+                  {formatPrice(spin.transaction.metadata?.prizeAmount??0 )}
                 </p>
               </div>
             </td>
             <td>
               <div className="3xl:px-5 px-0 flex items-center gap-2.5 py-[34px] md:py-[42px] border-b border-gray-1100">
                 <p className="md:text-base text-sm text-black-1000 font-medium font-inter">
-                  5xAY...LFqk
+                  {spin.transaction.transactionId.slice(0, 6)}...
+                  {spin.transaction.transactionId.slice(-4)}
                 </p>
-              </div>
-            </td>
-            <td>
-              <div className="3xl:px-5 px-0 flex items-center gap-2.5 py-[34px] md:py-[42px] border-b border-gray-1100">
-                <p className="md:text-base text-sm text-black-1000 font-medium font-inter">
-                  24 Oct '25 <span className="text-gray-1100">|</span> 06:20
-                </p>
-              </div>
-            </td>
-          </tr>
-
-          <tr className="flex-1">
-            <td scope="row">
-              <div className="md:px-10 px-4 flex items-center gap-5 md:gap-2.5 py-6 border-b border-gray-1100">
                 <img
-                  src="/images/placeholder-user.png"
-                  className="md:w-[60px] w-10 h-10 md:h-[60px] rounded-full object-cover"
-                  alt="no img"
+                  src="/icons/external-link-icon.svg"
+                  onClick={() => window.open(`https://solscan.io/tx/${spin.transaction.transactionId}`, "_blank")}
+                  className="w-5 h-5 cursor-pointer"
+                  alt="link"
                 />
-                <p className="text-base text-black-1000 font-medium font-inter">
-                  800
-                </p>
               </div>
             </td>
             <td>
               <div className="3xl:px-5 px-0 flex items-center gap-2.5 py-[34px] md:py-[42px] border-b border-gray-1100">
                 <p className="md:text-base text-sm text-black-1000 font-medium font-inter">
-                  5xAY...LFqk
-                </p>
-              </div>
-            </td>
-            <td>
-              <div className="3xl:px-5 px-0 flex items-center gap-2.5 py-[34px] md:py-[42px] border-b border-gray-1100">
-                <p className="md:text-base text-sm text-black-1000 font-medium font-inter">
-                  24 Oct '25 <span className="text-gray-1100">|</span> 06:20
+                  {new Date(spin.spunAt)
+                    .toLocaleString("en-GB", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "2-digit",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: false,
+                    })
+                    .replace(",", "")
+                    .replace(/ (\d{2})$/, "'$1")}
                 </p>
               </div>
             </td>
           </tr>
-
-          <tr className="flex-1">
-            <td scope="row">
-              <div className="md:px-10 px-4 flex items-center gap-5 md:gap-2.5 py-6 border-b border-gray-1100">
-                <img
-                  src="/images/placeholder-user.png"
-                  className="md:w-[60px] w-10 h-10 md:h-[60px] rounded-full object-cover"
-                  alt="no img"
-                />
-                <p className="text-base text-black-1000 font-medium font-inter">
-                  800
-                </p>
-              </div>
-            </td>
-            <td>
-              <div className="3xl:px-5 px-0 flex items-center gap-2.5 py-[34px] md:py-[42px] border-b border-gray-1100">
-                <p className="md:text-base text-sm text-black-1000 font-medium font-inter">
-                  5xAY...LFqk
-                </p>
-              </div>
-            </td>
-            <td>
-              <div className="3xl:px-5 px-0 flex items-center gap-2.5 py-[34px] md:py-[42px] border-b border-gray-1100">
-                <p className="md:text-base text-sm text-black-1000 font-medium font-inter">
-                  24 Oct '25 <span className="text-gray-1100">|</span> 06:20
-                </p>
-              </div>
-            </td>
-          </tr>
-
-          <tr className="flex-1">
-            <td scope="row">
-              <div className="md:px-10 px-4 flex items-center gap-2.5 py-6">
-                <img
-                  src="/images/placeholder-user.png"
-                  className="md:w-[60px] w-10 h-10 md:h-[60px] rounded-full object-cover"
-                  alt="no img"
-                />
-                <p className="text-base text-black-1000 font-medium font-inter">
-                  800
-                </p>
-              </div>
-            </td>
-            <td>
-              <div className="3xl:px-5 px-0 flex items-center gap-2.5 py-[42px]">
-                <p className="md:text-base text-sm text-black-1000 font-medium font-inter">
-                  5xAY...LFqk
-                </p>
-              </div>
-            </td>
-            <td>
-              <div className="3xl:px-5 px-0 flex items-center gap-2.5 py-[42px]">
-                <p className="md:text-base text-sm text-black-1000 font-medium font-inter">
-                  24 Oct '25 <span className="text-gray-1100">|</span> 06:20
-                </p>
-              </div>
-            </td>
-          </tr>
+          ))}
         </tbody>
       </table>
     </div>

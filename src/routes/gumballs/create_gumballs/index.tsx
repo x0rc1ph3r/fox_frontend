@@ -87,13 +87,6 @@ function CreateGumballs() {
 
             {activeTab === "setup" && <GumballSetup />}
 
-            {activeTab === "loadPrizes" && <LoadPrizesTab />}
-
-            {activeTab === "buySettings" && <BuySettings />}
-
-            {activeTab === "studio" && <GumballStudio gumballId='1' />}
-
-
        
         </div>
       </div>

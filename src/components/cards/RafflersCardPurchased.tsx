@@ -1,60 +1,56 @@
+import { VerifiedTokens } from "@/utils/verifiedTokens";
 import { Link } from "@tanstack/react-router";
+import type { RaffleTypeBackend } from "types/backend/raffleTypes";
 
-export interface RafflersCardPurchasedProps {
-  id: number;
-  title: string;
-  userName: string;
-  MainImage: string;
-  TicketBought: number;
-  rafflesType: string;
-  ChancePercent: number;
-  verified?: boolean;
-  totalTickets: number;
-  soldTickets: number;
-  pricePerTicket: number;
+export interface RafflersCardPurchasedProps extends RaffleTypeBackend {
+  ticketsBought:number;
   className?: string;
-  category: string;
-  sol: number;
 }
 
-export const RafflersCardPurchased: React.FC<RafflersCardPurchasedProps> = ({
-  id,
-  userName,
-  title,
-  MainImage,
-  TicketBought,
-  ChancePercent,
-  verified = false,
-  totalTickets,
-  soldTickets,
-  pricePerTicket,
-  className,
-  category,
-  sol,
-}) => {
-  const remainingTickets = totalTickets - soldTickets;
+export const RafflersCardPurchased: React.FC<RafflersCardPurchasedProps> = (props) => {
+  const {
+    id,
+    raffle,
+    prizeData,
+    createdBy,
+    ticketSupply,
+    ticketSold = 0,
+    ticketPrice,
+    ticketTokenAddress,
+    ticketsBought,
+    raffleEntries,
+    className,
+  } = props;
+
+  console.log(props)
+
+  
+  const chancePercent = ticketSupply > 0 ? ((ticketsBought / ticketSupply) * 100).toFixed(1) : 0;
+  
+  const totalSpent = ticketsBought * ticketPrice;
+  
+  const remainingTickets = ticketSupply - ticketSold;
 
   return (
     <div
       className={`bg-transparent hover:bg-gray-1300 w-full transition duration-300 border border-gray-1100 rounded-2xl ${className}`}
     >
-      {<p className="hidden">{category}</p>}
       <div className="w-full flex gap-5 p-5 sm:flex-row flex-col">
         <img
-          src={MainImage}
-          alt="featured-card"
+          src={prizeData.image}
+          alt={prizeData.name}
           className="object-cover w-[109px] h-[109px] rounded-lg"
         />
 
         <div className="flex-1">
           <div className="flex w-full items-center justify-between">
             <h3 className="xl:text-2xl text-xl text-black-1000 font-bold font-inter">
-              {title}
+              {prizeData.name}
             </h3>
 
             <Link
-              to="/auctions/$id"
-              params={{ id: id.toString() }}
+              to="/raffles/$id"
+              params={{ id: raffle || id?.toString() || "" }}
               className="w-10 h-10 transition duration-300 hover:opacity-90 flex items-center justify-center text-white font-semibold font-inter bg-primary-color rounded-md"
             >
               <svg
@@ -77,10 +73,10 @@ export const RafflersCardPurchased: React.FC<RafflersCardPurchasedProps> = ({
 
           <div className="w-full gap-6 flex justify-between mt-6 md:flex-row flex-col">
             <div className="flex flex-col gap-1.5">
-              {verified && (
+              {prizeData.verified && (
                 <div className="inline-flex gap-2.5 items-center">
                   <p className="text-sm text-black-1000 font-semibold font-inter">
-                    Transdimensional fox federation
+                    {prizeData.collection || "Verified Collection"}
                   </p>
                   <img
                     src="/icons/verified-icon.svg"
@@ -91,12 +87,12 @@ export const RafflersCardPurchased: React.FC<RafflersCardPurchasedProps> = ({
               )}
 
               <p className="text-sm font-medium text-primary-color font-inter">
-                {userName}
+                {createdBy.slice(0, 6)}...{createdBy.slice(-4)}
               </p>
             </div>
 
             <p className="text-base mt-auto text-primary-color font-medium font-inter">
-              Raffle Ended 1 y 5 mo ago
+              {prizeData.symbol}
             </p>
           </div>
         </div>
@@ -104,13 +100,13 @@ export const RafflersCardPurchased: React.FC<RafflersCardPurchasedProps> = ({
 
       <div className="border-t border-gray-1100"></div>
       <div className="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-5 md:gap-20 p-5">
-        <div className="flex-1">
+        <div>
           <h4 className="text-sm mb-1.5 text-gray-1200 font-inter">
             Tickets remaining
           </h4>
-          {totalTickets !== soldTickets ? (
+          {ticketSupply !== ticketSold ? (
             <h4 className="md:text-base text-sm text-black-1000 font-inter font-medium">
-              {remainingTickets}/{totalTickets}
+              {remainingTickets}/{ticketSupply}
             </h4>
           ) : (
             <h4 className="text-base text-red-1000 font-semibold font-inter">
@@ -122,7 +118,7 @@ export const RafflersCardPurchased: React.FC<RafflersCardPurchasedProps> = ({
         <div className="flex-1">
           <h4 className="text-sm mb-1.5 text-gray-1200 font-inter">Price</h4>
           <h4 className="md:text-base text-sm text-black-1000 font-inter font-medium">
-            <span>{pricePerTicket}</span> SOL
+            <span>{ticketPrice/10**(VerifiedTokens.find((token) => token.address === ticketTokenAddress)?.decimals || 0)}</span> {VerifiedTokens.find((token) => token.address === ticketTokenAddress)?.symbol || "SOL"}
           </h4>
         </div>
 
@@ -131,21 +127,21 @@ export const RafflersCardPurchased: React.FC<RafflersCardPurchasedProps> = ({
             Tickets Bought
           </h4>
           <h4 className="md:text-base text-sm text-black-1000 font-inter font-medium">
-            <span>{TicketBought}</span>
+            <span>{ticketsBought}</span>
           </h4>
         </div>
 
         <div className="flex-1">
           <h4 className="text-sm mb-1.5 text-gray-1200 font-inter">Chance</h4>
           <h4 className="md:text-base text-sm text-black-1000 font-inter font-medium">
-            <span>{ChancePercent}</span>%Chance
+            <span>{chancePercent}</span>% Chance
           </h4>
         </div>
 
         <div className="flex-1">
           <h4 className="text-sm mb-1.5 text-gray-1200 font-inter">Spent</h4>
           <h4 className="md:text-base text-sm text-black-1000 font-inter font-medium">
-            <span>{sol}</span> SOL Spent
+            <span>{totalSpent/10**(VerifiedTokens.find((token) => token.address === ticketTokenAddress)?.decimals || 0)}</span> {VerifiedTokens.find((token) => token.address === ticketTokenAddress)?.symbol || "SOL"} Spent
           </h4>
         </div>
       </div>

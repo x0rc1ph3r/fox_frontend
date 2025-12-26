@@ -293,10 +293,10 @@
 import { Link } from "@tanstack/react-router";
 import React, { useState, useMemo } from "react";
 import type { RaffleTypeBackend } from "types/backend/raffleTypes";
+import { DynamicCounter } from "../common/DynamicCounter";
+import { VerifiedTokens } from "@/utils/verifiedTokens";
 
-export interface RafflersCardProps {
-  raffle: RaffleTypeBackend;
-  soldTickets: number;
+export interface RafflersCardProps extends RaffleTypeBackend {
   userAvatar?: string;
   userName?: string;
   isFavorite?: boolean;
@@ -305,24 +305,37 @@ export interface RafflersCardProps {
   rafflesType?: string;
 }
 
-export const RafflersCard: React.FC<RafflersCardProps> = ({
-  raffle,
-  soldTickets,
-  userAvatar = "/images/default-avatar.png",
-  userName = "Anonymous",
-  isFavorite = false,
-  className,
-  category = "General",
-  rafflesType = "active",
-}) => {
-  const remainingTickets = raffle.ticketSupply - soldTickets;
+export const RafflersCard: React.FC<RafflersCardProps> = (props) => {
+  const {
+    raffle,
+    prizeData,
+    createdBy,
+    ticketSupply,
+    ticketSold = 0,
+    ticketPrice,
+    ticketTokenAddress,
+    maxEntries,
+    endsAt,
+    val,
+    ttv,
+    roi,
+    id,
+    userAvatar = "/images/default-avatar.png",
+    userName,
+    isFavorite = false,
+    className,
+    category = "General",
+    rafflesType = "active",
+  } = props;
+
+  const remainingTickets = ticketSupply - ticketSold;
   const [favorite, setFavorite] = useState(isFavorite);
   
   const toggleFavorite = () => {
     setFavorite(!favorite);
   };
 
-  const MAX = raffle.maxEntries;
+  const MAX = maxEntries;
   const [quantityValue, setQuantityValue] = useState<number>(1);
 
   const decrease = () => {
@@ -336,7 +349,7 @@ export const RafflersCard: React.FC<RafflersCardProps> = ({
   // Calculate countdown from endsAt date
   const countdown = useMemo(() => {
     const now = new Date();
-    const end = new Date(raffle.endsAt);
+    const end = new Date(endsAt);
     const diff = end.getTime() - now.getTime();
     
     if (diff <= 0) {
@@ -348,9 +361,12 @@ export const RafflersCard: React.FC<RafflersCardProps> = ({
     const seconds = Math.floor((diff % (1000 * 60)) / 1000);
     
     return { hours, minutes, seconds };
-  }, [raffle.endsAt]);
+  }, [endsAt]);
 
-  const totalCost = quantityValue * raffle.ticketPrice;
+  const totalCost = quantityValue * ticketPrice;
+  
+  // Display name - use userName prop or truncate createdBy address
+  const displayName = userName || `${createdBy.slice(0, 6)}...${createdBy.slice(-4)}`;
 
   return (
     <div
@@ -366,12 +382,12 @@ export const RafflersCard: React.FC<RafflersCardProps> = ({
       <div className="w-full flex items-center justify-between p-4">
         <div className="flex items-center gap-4">
           <img
-            src={userAvatar}
-            alt={userName}
+            src="/images/placeholder-user.png"
+            alt={displayName}
             className="w-10 h-10 rounded-full object-cover"
           />
           <h4 className="text-base font-semibold font-inter text-black-1000">
-            {userName}
+            {displayName}
           </h4>
         </div>
         <div className="relative inline-flex items-center justify-center">
@@ -382,11 +398,11 @@ export const RafflersCard: React.FC<RafflersCardProps> = ({
         </div>
       </div>
 
-      <div className="w-full relative group">
+      <div className="w-full flex items-center justify-center relative group">
         <img
-          src={raffle.prizeData.image}
-          alt={raffle.prizeData.name}
-          className="w-full border-y border-gray-1100 object-cover h-[339px]"
+          src={prizeData.image}
+          alt={prizeData.name}
+          className="max-w-[250px] w-full border-y border-gray-1100 object-cover h-[250px]"
         />
 
         <div className="w-full h-full flex flex-col items-start justify-between p-4 absolute top-0 left-0">
@@ -419,8 +435,8 @@ export const RafflersCard: React.FC<RafflersCardProps> = ({
             </button>
 
             <Link
-              to="/auctions/$id"
-              params={{ id: raffle.raffle || "" }}
+              to="/raffles/$id"
+              params={{ id: raffle || id?.toString() || "" }}
               className="w-full transition duration-300 hover:opacity-90 flex items-center justify-center py-1.5 px-6 h-11 text-white font-semibold font-inter bg-primary-color rounded-full"
             >
               View raffle
@@ -428,51 +444,24 @@ export const RafflersCard: React.FC<RafflersCardProps> = ({
           </div>
 
           <div className="w-full h-full flex transition duration-300 group-hover:invisible group-hover:opacity-0 visible opacity-100 flex-col items-start justify-between">
-            <div className="w-full flex items-center justify-end">
-              <div className="inline-flex items-center justify-center px-2.5 py-2 divide-x divide-white/30 rounded-lg bg-black/60 border border-white/30">
-                <p className="text-xs font-semibold font-inter uppercase text-white pr-1.5">
-                  {countdown.hours}H
-                </p>
-                <p className="text-xs font-semibold font-inter uppercase text-white px-1.5">
-                  {countdown.minutes}M
-                </p>
-                <p className="text-xs font-semibold font-inter uppercase text-white pl-1.5">
-                  {countdown.seconds}S
-                </p>
-              </div>
-            </div>
-
-            <div className="w-full flex items-center justify-between">
-              <div className="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-black/60">
-                <p className="text-xs font-semibold font-inter uppercase text-white">
-                  VAL : <span>{raffle.val || 0}</span>
-                </p>
-              </div>
-
-              <div className="flex items-center gap-[5px]">
-                <div className="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-black/60">
-                  <p className="text-xs font-semibold font-inter uppercase text-white">
-                    TTV : <span>{raffle.ttv}</span>
-                  </p>
-                </div>
-                <div className="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-black/60">
-                  <p className="text-xs font-semibold font-inter uppercase text-white">
-                    +{raffle.roi}%
-                  </p>
-                </div>
-              </div>
-            </div>
+            <DynamicCounter endsAt={endsAt} />
           </div>
         </div>
       </div>
 
       <div className="w-full flex flex-col px-4 py-4 gap-7">
         <div className="w-full flex items-center gap-5 justify-between">
+          {prizeData?.floor ? (
+            <h3 className="text-2xl text-black-1000 font-bold font-inter">
+              <span>{prizeData.floor}</span> SOL
+            </h3>
+          ):
           <h3 className="text-2xl text-black-1000 font-bold font-inter">
-            <span>{raffle.prizeData.amount || 1}</span> {raffle.prizeData.symbol}
+            <span>{(prizeData.amount??0) / 10**(VerifiedTokens.find((token) => token.address === prizeData?.mintAddress)?.decimals || 0)}</span> {VerifiedTokens.find((token) => token.address === prizeData.mintAddress)?.symbol || "SOL"}
           </h3>
+          }
 
-          {raffle.prizeData.verified && (
+          {prizeData.verified && (
             <div className="inline-flex gap-2.5 items-center">
               <img
                 src="/icons/verified-icon.svg"
@@ -488,9 +477,9 @@ export const RafflersCard: React.FC<RafflersCardProps> = ({
 
         <div className="w-full flex flex-col items-center justify-between gap-1.5">
           <div className="w-full flex items-center justify-between gap-5">
-            {raffle.ticketSupply !== soldTickets ? (
+            {ticketSupply !== ticketSold ? (
               <h4 className="text-base text-black-1000 font-inter font-semibold">
-                {remainingTickets}/{raffle.ticketSupply}
+                {remainingTickets}/{ticketSupply}
               </h4>
             ) : (
               <h4 className="text-base text-red-1000 font-semibold font-inter">
@@ -498,7 +487,7 @@ export const RafflersCard: React.FC<RafflersCardProps> = ({
               </h4>
             )}
             <h4 className="text-base text-black-1000 text-right font-inter font-semibold">
-              <span>{raffle.ticketPrice}</span> SOL
+              <span>{ticketPrice/10**(VerifiedTokens.find((token) => token.address === ticketTokenAddress)?.decimals || 0)}</span> {VerifiedTokens.find((token) => token.address === ticketTokenAddress)?.symbol || "SOL"}
             </h4>
           </div>
           <div className="w-full flex items-center justify-between gap-5">
@@ -509,71 +498,6 @@ export const RafflersCard: React.FC<RafflersCardProps> = ({
               Price per ticket
             </h4>
           </div>
-        </div>
-
-        <div className="w-full flex items-center sm:flex-row flex-col justify-between gap-4">
-          <div className="flex flex-1 items-center justify-between py-2 px-3 border border-gray-1100 rounded-full">
-            <button
-              onClick={decrease}
-              className="min-w-8 h-8 cursor-pointer rounded-lg bg-primary-color text-white flex items-center justify-center"
-            >
-              <svg
-                width={15}
-                height={2}
-                viewBox="0 0 15 2"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M0.799805 0.799988H14.1331"
-                  stroke="white"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-
-            <input
-              value={quantityValue}
-              onChange={(e) =>
-                setQuantityValue(
-                  Math.min(MAX, Math.max(1, Number(e.target.value)))
-                )
-              }
-              className="outline-0 w-full text-center font-bold font-inter text-black-1000"
-              type="number"
-              name="quantity"
-              id="quantity"
-            />
-
-            <button
-              onClick={increase}
-              className="min-w-8 h-8 cursor-pointer rounded-lg bg-primary-color text-white flex items-center justify-center"
-            >
-              <svg
-                width={15}
-                height={15}
-                viewBox="0 0 15 15"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M7.46647 0.799988V14.1333M0.799805 7.46665H14.1331"
-                  stroke="white"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-          </div>
-          <Link
-            to={"."}
-            className="inline-flex px-2 py-3 sm:w-fit w-full flex-1 text-sm transition gap-1 duration-500 hover:opacity-90 bg-linear-to-r from-neutral-800 via-neutral-500 to-neutral-800 rounded-full h-11 items-center justify-center text-white font-semibold font-inter text-center"
-          >
-            Buy • <span>{totalCost.toFixed(2)} SOL</span>
-          </Link>
         </div>
       </div>
     </div>

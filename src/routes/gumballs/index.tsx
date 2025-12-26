@@ -2,7 +2,6 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import SearchBox from '../../components/home/SearchBox';
 import SortDropdown from '../../components/home/SortDropdown';
 import FilterModel from '../../components/home/FilterModel';
-import { NoAuctions } from '../../components/home/NoAuctions';
 import FeaturedSwiper from '../../components/gumballs/FeaturedSwiper';
 import { GumballsCard } from '../../components/gumballs/GumballsCard';
 import { ToolsSection } from '@/components/home/ToolsSection';
@@ -14,6 +13,7 @@ import CryptoCardSkeleton from '@/components/skeleton/RafflesCardSkeleton';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { useGumballAnchorProgram } from '../../../hooks/useGumballAnchorProgram';
 import { BN } from '@coral-xyz/anchor';
+import { NoGumballs } from '../../components/home/NoGumballs';
 
 
 
@@ -46,12 +46,11 @@ function Gumballs() {
         
           const gumballs = data?.pages.flatMap((p) => p.items) || []
         const {getGumballConfig,getAllGumballs} = useGumballAnchorProgram();
-        
+
         // const activeFilters = [
         //   { id: "all", label: "All Gumballs" },
         //   { id: "past", label: "Past Gumballs" },
         // ];
-    
 
   return (
 
@@ -60,7 +59,7 @@ function Gumballs() {
         onClick={
           () => {
               console.log(getGumballConfig.data);
-              console.log(getAllGumballs?.data?.map((gumball) => {return {"startTime":new BN(gumball.account.startTime).toNumber(), "endTime":new BN(gumball.account.endTime).toNumber()}}));
+              console.log(getAllGumballs?.data);
           }
         }
         >get all gumballs</button>
@@ -185,7 +184,7 @@ function Gumballs() {
                       </div>
                     </InfiniteScroll>
                   ) : (
-                    <NoAuctions />
+                    <NoGumballs />
                   )}
     
     

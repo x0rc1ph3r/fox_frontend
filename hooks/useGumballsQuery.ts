@@ -13,6 +13,11 @@ export const useGumballsQuery = (filter: string) => {
 export const useGumballById = (id:string) => {
   return useQuery({
     queryKey: ["gumball", id],
-    queryFn: () => fetchGumballById(id),
+    queryFn: () => {
+      console.log("id",id);
+      const data = fetchGumballById(id);
+      console.log("data",data);
+      return data;
+    },
   })
 }

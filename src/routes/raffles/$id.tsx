@@ -477,7 +477,7 @@ function RouteComponent() {
                     </h3>
                     
                   </div> : <></>}
-                    {publicKey && publicKey.toBase58() !== raffle?.createdBy ? 
+                    {publicKey ? 
                   <div className="w-full mt-6">
                     <div className="w-full items-center grid lg:grid-cols-2 sm:grid-cols-2 grid-cols-1 gap-5">
                       <QuantityBox max={raffle?.maxEntries || 1}/>

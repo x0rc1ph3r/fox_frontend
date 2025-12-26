@@ -5,6 +5,8 @@ import { VerifiedTokens } from "@/utils/verifiedTokens";
 import { useGumballStore } from "store/useGumballStore";
 import { useGetTokenPrice } from "hooks/useGetTokenPrice";
 import { useAddPrizes, type AddPrizeInputData } from "hooks/useAddPrizes";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-hot-toast";
 
 interface TokenPrize {
   id: string;
@@ -18,6 +20,7 @@ interface AddTokenModalProps {
   isOpen: boolean;
   onClose: () => void;
   gumballId: string;
+  remainingPrizes: number;
 }
 
 // Separate component for each token prize row to have its own price hook
@@ -110,13 +113,13 @@ function TokenPrizeRow({ prize, onUpdate, onRemove, onValueChange }: TokenPrizeR
   );
 }
 
-export default function AddTokenModal({ isOpen, onClose, gumballId }: AddTokenModalProps) {
+export default function AddTokenModal({ isOpen, onClose, gumballId,remainingPrizes }: AddTokenModalProps) {
   const { prizeCount, addPrize, prizes: existingPrizes, updatePrizeStats } = useGumballStore();
   const { addPrizes } = useAddPrizes();
   const [tokenPrizes, setTokenPrizes] = useState<TokenPrize[]>([]);
   const [selectedToken, setSelectedToken] = useState<typeof VerifiedTokens[0] | null>(null);
   const [prizeValues, setPrizeValues] = useState<Record<string, number>>({});
-
+  const queryClient = useQueryClient();
   // Handler for value changes from child components
   const handleValueChange = useCallback((id: string, solValue: number) => {
     setPrizeValues(prev => ({ ...prev, [id]: solValue }));
@@ -128,7 +131,7 @@ export default function AddTokenModal({ isOpen, onClose, gumballId }: AddTokenMo
   }, [tokenPrizes]);
 
   const maxPrizes = parseInt(prizeCount) || 0;
-  const remainingPrizes = Math.max(0, maxPrizes - totalPrizesAdded);
+  // const remainingPrizes = Math.max(0, maxPrizes - totalPrizesAdded);
 
   // Get available tokens (not already added)
   const availableTokens = useMemo(() => {
@@ -185,7 +188,6 @@ export default function AddTokenModal({ isOpen, onClose, gumballId }: AddTokenMo
       
       // Convert prize amount to base units (e.g., lamports for SOL)
       const prizeAmountInBaseUnits = Math.floor(prizeSize * Math.pow(10, decimals));
-
       return {
         prizeIndex: startingPrizeIndex + index,
         isNft: false,
@@ -207,6 +209,8 @@ export default function AddTokenModal({ isOpen, onClose, gumballId }: AddTokenMo
       },
       {
         onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["gumball", gumballId] });
+        toast.success("Prizes added successfully");
           // Calculate totals for stats update
           let totalQuantity = 0;
           let totalValueInSol = 0;

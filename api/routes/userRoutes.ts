@@ -1,3 +1,4 @@
+import type { RaffleTypeBackend } from "types/backend/raffleTypes";
 import { api } from "..";
 
 export const requestMessage = async(publicKey:string)=>{
@@ -70,6 +71,39 @@ export const getProfileGumballStats = async (publicKey:string)=>{
 export const getProfileAuctionStats = async (publicKey:string)=>{
     try {
         const response = await api.get(`/user/profile/${publicKey}/auctions/stats`);
+        return response.data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+
+//raffle profile routes
+
+export const getRaffleCreated = async (publicKey:string): Promise<{message:string, raffles:RaffleTypeBackend[]}> => {
+    try {
+        const response = await api.get(`/user/profile/${publicKey}/raffles/created`);
+        return response.data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export const getRafflePurchased = async (publicKey:string) => {
+    try {
+        const response = await api.get(`/user/profile/${publicKey}/raffles/purchased`);
+        return response.data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export const getRaffleFavourite = async (publicKey:string): Promise<{message:string, raffles:RaffleTypeBackend[]}> => {
+    try {
+        const response = await api.get(`/user/profile/${publicKey}/raffles/favourite`);
         return response.data;
     } catch (error) {
         console.error(error);

@@ -1,6 +1,8 @@
 import { Link, useLocation } from '@tanstack/react-router';
+import { useGumballStore } from '../../../store/useGumballStore';
 
 function DynamicNewLink({ isAuth }: { isAuth: boolean }) {
+  const { setCurrentGumballId, setCurrentGumball,setActiveTab } = useGumballStore();    
   const location = useLocation();
   let linkTo = '';
   let enabled = false;
@@ -32,6 +34,11 @@ function DynamicNewLink({ isAuth }: { isAuth: boolean }) {
           ? 'hover:bg-primary-color border-black-1000 hover:border-primary-color'
           : 'border border-black-1000 cursor-not-allowed opacity-50 pointer-events-none'
       }`}
+      onClick={() => {
+        setCurrentGumballId(null);
+        setCurrentGumball(null);
+        setActiveTab("setup");
+      }}
     >
       <img src="/icons/plus-icon.svg" className="size-4" />
       <span className="text-neutral-800 text-base font-semibold font-inter">

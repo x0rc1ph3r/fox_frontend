@@ -5,7 +5,7 @@ export const TransactionsTable = ({
   transactions,
   isLoading = false,
 }: {
-  transactions?: TransactionTypeBackend[];
+  transactions: TransactionTypeBackend[];
   isLoading?: boolean;
 }) => {
   return (
@@ -63,7 +63,7 @@ export const TransactionsTable = ({
                   </tr>
                 ))
             : transactions?.map((t) => (
-                <tr key={t.id}>
+                <tr key={t.transactionId}>
                   <td>
                     <div className="md:px-10 px-4 flex items-center gap-2.5 md:py-6 py-4 border-b border-gray-1100">
                       <p className="text-base text-black-1000 font-medium font-inter">

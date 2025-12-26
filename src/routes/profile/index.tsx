@@ -37,7 +37,6 @@ function CreateProfile() {
     setEnabled,
   } = useCreatorProfileStore();
 
-  const { profile } = useProfileStore();
   const { publicKey } = useWallet();
   const categoryMap: Record<string, "rafflers" | "gumballs" | "auctions"> = {
     Rafflers: "rafflers",
@@ -84,13 +83,15 @@ function CreateProfile() {
   };
 
   const filters = getFilterLabels();
+  const { getRaffleStats, getGumballStats, getAuctionStats, getRaffleCreatedCards, getRafflePurchasedCards } = useProfileStats(publicKey?.toBase58() ?? '');
+  const raffleStats = getRaffleStats.data?.stats;
+  const gumballStats = getGumballStats.data?.stats;
+  const auctionStats = getAuctionStats.data?.stats;
+  const raffleCreatedCards = getRaffleCreatedCards.data ?? [];
+  const rafflePurchasedCards = getRafflePurchasedCards.data ?? [];
+  // const raffleFavouriteCards = getRaffleFavouriteCards.data ?? [];
+  console.log(rafflePurchasedCards)
 
-  const { getRaffleStats, getGumballStats, getAuctionStats } = useProfileStats(publicKey?.toBase58() ?? '');
-  const raffleStats = getRaffleStats.data.stats;
-  const gumballStats = getGumballStats.data.stats;
-  const auctionStats = getAuctionStats.data.stats;
-
-  console.log(raffleStats, gumballStats, auctionStats);
 
   return (
       <main className="main font-inter">
@@ -192,7 +193,7 @@ function CreateProfile() {
                                 </li>
                                 <li className="flex items-center justify-between">
                                     <p className="md:text-base text-sm font-medium font-inter text-start text-gray-1200">Purchase Volume</p>
-                                    <p className="md:text-base text-sm font-medium font-inter text-black-1000 text-right">{raffleStats?.purchaseVolume }</p>
+                                    <p className="md:text-base text-sm font-medium font-inter text-black-1000 text-right">{(raffleStats?.purchaseVolume)/ 10**9}</p>
                                 </li>
                               </>
                             )}
@@ -200,7 +201,7 @@ function CreateProfile() {
                               <>
                                 <li className="flex items-center justify-between">
                                     <p className="md:text-base text-sm font-medium font-inter text-start text-gray-1200">Gumballs Created</p>
-                                    <p className="md:text-base text-sm font-medium font-inter text-black-1000 text-right">{gumballStats?.created}</p>
+                                    <p className="md:text-base text-sm font-medium font-inter text-black-1000 text-right">{gumballStats?.gumballsCreated ?? 0}</p>
                                 </li>
                                 <li className="flex items-center justify-between">
                                     <p className="md:text-base text-sm font-medium font-inter text-start text-gray-1200">Total Spins</p>
@@ -275,18 +276,18 @@ function CreateProfile() {
                       />
                 </div>
 
-             {/* <div className="w-full">
+             <div className="w-full">
                 {mainFilter === "Rafflers" && (
                   <>
-                    {isLoading ? (
+                    {getRaffleCreatedCards.isLoading ? (
                       <div className="grid lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-4">
                         {Array.from({ length: 6 }).map((_, i) => <CryptoCardSkeleton key={i} />)}
                       </div>
-                    ) : (activeRafflerTab === "purchased" ? purchasedItems : createdItems).length < 1 ? (
+                    ) : (activeRafflerTab === "purchased" ? rafflePurchasedCards : raffleCreatedCards).length < 1 ? (
                       <NoAuctions />
                     ) : (
                       <div className={`grid ${activeRafflerTab === `purchased` ? `grid-cols-1` : `lg:grid-cols-3 md:grid-cols-2 grid-cols-1`} lg:gap-y-10 lg:gap-x-[26px] gap-4`}>
-                        {(activeRafflerTab === "purchased" ? purchasedItems : createdItems).map(card => (
+                          {(activeRafflerTab === "purchased" ? rafflePurchasedCards : raffleCreatedCards).map((card:any) => (
                           <div key={card.id} className="flex items-center justify-center">
                             {activeRafflerTab === "purchased" ? <RafflersCardPurchased {...card} /> : <RafflersCard {...card} />}
                           </div>
@@ -296,7 +297,7 @@ function CreateProfile() {
                   </>
                 )}
 
-                {mainFilter === "Auctions" && (
+                {/* {mainFilter === "Auctions" && (
                   <>
                     {isLoading ? (
                       <div className="grid lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-4">
@@ -334,8 +335,8 @@ function CreateProfile() {
                       </div>
                     )}
                   </>
-                )}
-              </div> */}
+                )} */}
+              </div>
 
                 </div>
 

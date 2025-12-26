@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useMemo } from "react";
 import * as anchor from "@coral-xyz/anchor";
-import { Keypair, PublicKey, Transaction } from "@solana/web3.js";
+import { Keypair, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
@@ -10,7 +10,7 @@ import { useAnchorProvider } from "../src/providers/SolanaProvider";
 import gumballIdl from "../types/gumball.json";
 import type { Gumball } from "../types/gumball";
 import { getTokenProgramFromMint, getAtaAddress, ensureAtaIx } from './helpers';
-import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import bs58 from "bs58";
 
 export const GUMBALL_PROGRAM_ID = new anchor.web3.PublicKey(gumballIdl.address);
@@ -579,7 +579,7 @@ export function useGumballAnchorProgram() {
             console.log("Gumball spun successfully:", tx);
         },
         onError: (err) => {
-            console.log("Spin gumball failed:", err);
+            console.error("Gumball spin failed:", err);
         },
     });
 

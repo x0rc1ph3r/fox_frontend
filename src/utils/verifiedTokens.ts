@@ -7,6 +7,13 @@ export const VerifiedTokens = [
         decimals: 9,
     },
     {
+        name:"VOTE",
+        address:"VoteCahXMnr5FXRCvQRr7kDtYTDpo348yWmVgcrZpkn",
+        symbol:"VOTE",
+        image:"https://lavender-stuck-primate-474.mypinata.cloud/ipfs/bafybeifdznqcb4pbfmubunlrj5sz3pdylkho4uqxarz2vm77kb4ine2pbm",
+        decimals: 9,
+    },
+    {
         name:"JUP",
         address:"JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
         symbol:"JUP",
