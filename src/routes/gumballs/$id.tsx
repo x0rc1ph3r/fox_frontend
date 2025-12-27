@@ -10,6 +10,9 @@ import { VerifiedTokens } from '../../utils/verifiedTokens';
 import { useSpinGumball } from 'hooks/useSpinGumball';
 import { Dialog, DialogPanel } from '@headlessui/react';
 import { prepareSpin } from '../../../api/routes/gumballRoutes';
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useToggleFavourite } from "../../../hooks/useToggleFavourite";
+import { useQueryFavourites } from "../../../hooks/useQueryFavourites";
 
 
 interface Prize{
@@ -98,6 +101,13 @@ function GumballsDetails() {
   const router = useRouter();
   const [prize,setPrize] = useState<Prize | null>(null);
   const { spinGumballFunction } = useSpinGumball();
+  const { publicKey } = useWallet();
+  const { favouriteGumball } = useToggleFavourite(publicKey?.toString() || "");
+  const { getFavouriteGumball } = useQueryFavourites(publicKey?.toString() || "");
+
+  const isFavorite = getFavouriteGumball.data?.some(
+    (favourite) => favourite.id === Number(id)
+  );
 
   const [tabs, setTabs] = useState([
       { name: "Gumball Prizes", active: true },
@@ -248,7 +258,31 @@ function GumballsDetails() {
                                         <p className='text-xs font-inter font-normal text-gray-1200 md:pb-0 pb-1'>Creator</p>
                                         <h4 className='md:text-base text-sm text-black-1000 font-inter font-semibold'>{truncateAddress(gumball.creatorAddress)}</h4>
                                     </div>
-                                </div>  
+                                </div>
+                                <button 
+                                  onClick={() => {
+                                    favouriteGumball.mutate({
+                                      gumballId: Number(id) || 0,
+                                    });
+                                  }}
+                                  className={`border hover:bg-primary-color hover:border-primary-color transition duration-300 cursor-pointer px-5 py-[7px] md:py-2.5 gap-2.5 border-black-1000 rounded-full text-sm md:text-base font-semibold font-inter text-black-1000 inline-flex items-center justify-center ${
+                                    isFavorite ? "bg-primary-color text-white" : ""
+                                  }`}
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width={24}
+                                    height={24}
+                                    viewBox="0 0 24 24"
+                                    fill="#212121"
+                                  >
+                                    <path
+                                      d="M12 5.50066L11.4596 6.02076C11.601 6.16766 11.7961 6.25066 12 6.25066C12.2039 6.25066 12.399 6.16766 12.5404 6.02076L12 5.50066ZM9.42605 18.3219C7.91039 17.1271 6.25307 15.9603 4.93829 14.4798C3.64922 13.0282 2.75 11.3345 2.75 9.13713H1.25C1.25 11.8026 2.3605 13.8361 3.81672 15.4758C5.24723 17.0866 7.07077 18.3752 8.49742 19.4999L9.42605 18.3219ZM2.75 9.13713C2.75 6.98626 3.96537 5.18255 5.62436 4.42422C7.23607 3.68751 9.40166 3.88261 11.4596 6.02076L12.5404 4.98056C10.0985 2.44355 7.26409 2.02542 5.00076 3.05999C2.78471 4.07295 1.25 6.42506 1.25 9.13713H2.75ZM8.49742 19.4999C9.00965 19.9037 9.55954 20.3343 10.1168 20.6599C10.6739 20.9854 11.3096 21.25 12 21.25V19.75C11.6904 19.75 11.3261 19.6293 10.8736 19.3648C10.4213 19.1005 9.95208 18.7366 9.42605 18.3219L8.49742 19.4999ZM15.5026 19.4999C16.9292 18.3752 18.7528 17.0866 20.1833 15.4758C21.6395 13.8361 22.75 11.8026 22.75 9.13713H21.25C21.25 11.3345 20.3508 13.0282 19.0617 14.4798C17.7469 15.9603 16.0896 17.1271 14.574 18.3219L15.5026 19.4999ZM22.75 9.13713C22.75 6.42506 21.2153 4.07295 18.9992 3.05999C16.7359 2.02542 13.9015 2.44355 11.4596 4.98056L12.5404 6.02076C14.5983 3.88261 16.7639 3.68751 18.3756 4.42422C20.0346 5.18255 21.25 6.98626 21.25 9.13713H22.75ZM14.574 18.3219C14.0479 18.7366 13.5787 19.1005 13.1264 19.3648C12.6739 19.6293 12.3096 19.75 12 19.75V21.25C12.6904 21.25 13.3261 20.9854 13.8832 20.6599C14.4405 20.3343 14.9903 19.9037 15.5026 19.4999L14.574 18.3219Z"
+                                      fill="#212121"
+                                    />
+                                  </svg>
+                                  Favourite
+                                </button>
                             </div>
 
                             <div className="w-full flex items-center justify-between py-4 px-5 border border-gray-1100 rounded-[20px] bg-gray-1300">

@@ -106,15 +106,15 @@ export const useProfileStats = (publicKey: string) => {
     enabled: !!publicKey,
     staleTime: 60000,
   });
-  const getAuctionPurchasedCards = useQuery({
-    queryKey: ["profile-auction-purchased"],
-    queryFn: async () => {
-      const auctionPurchased = await getAuctionPurchased(publicKey);
-      return auctionPurchased.auctions;
-    },
-    enabled: !!publicKey,
-    staleTime: 60000,
-  });
+  // const getAuctionPurchasedCards = useQuery({
+  //   queryKey: ["profile-auction-purchased"],
+  //   queryFn: async () => {
+  //     const auctionPurchased = await getAuctionPurchased(publicKey);
+  //     return auctionPurchased.auctions;
+  //   },
+  //   enabled: !!publicKey,
+  //   staleTime: 60000,
+  // });
   const getAuctionFavouriteCards = useQuery({
     queryKey: ["profile-auction-favourite"],
     queryFn: async () => {
@@ -135,7 +135,7 @@ export const useProfileStats = (publicKey: string) => {
     getGumballPurchasedCards,
     getGumballFavouriteCards,
     getAuctionCreatedCards,
-    getAuctionPurchasedCards,
+    // getAuctionPurchasedCards,
     getAuctionFavouriteCards,
   };
 };

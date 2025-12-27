@@ -213,6 +213,9 @@ import type { RaffleTypeBackend } from "types/backend/raffleTypes";
 import { DynamicCounter } from "./DynamicCounter";
 import { useBuyRaffleTicket } from "../../../hooks/useBuyRaffleTicket";
 import { useBuyRaffleTicketStore } from "store/buyraffleticketstore";
+import { useToggleFavourite } from "../../../hooks/useToggleFavourite";
+import { useQueryFavourites } from "../../../hooks/useQueryFavourites";
+import { useWallet } from "@solana/wallet-adapter-react";
 
 export interface CryptoCardProps {
   raffle: RaffleTypeBackend;
@@ -234,16 +237,23 @@ export const CryptoCard: React.FC<CryptoCardProps> = ({
   category = "General",
   rafflesType = "All Raffles",
 }) => {
+  const {publicKey} = useWallet();
   const { buyTicket } = useBuyRaffleTicket();
-  const { ticketQuantityById, setTicketQuantityById, getTicketQuantityById, updateTicketQuantityById } = useBuyRaffleTicketStore();
-  const remainingTickets = raffle.ticketSupply - soldTickets;
-  console.log("remainingTickets",remainingTickets);
-  const [favorite, setFavorite] = useState(isFavorite);
+  const {  getTicketQuantityById, updateTicketQuantityById } = useBuyRaffleTicketStore();
+  const {favouriteRaffle} = useToggleFavourite(publicKey?.toString() || "");
+  const {getFavouriteRaffle} = useQueryFavourites(publicKey?.toString() || "");
+  console.log("getFavouriteRaffle",getFavouriteRaffle.data);
+
+  const favorite = useMemo(() => {
+    if(!getFavouriteRaffle.data || getFavouriteRaffle.data.length === 0) return false;
+    return getFavouriteRaffle.data?.some((favourite) => favourite.id === raffle.id);
+  }, [getFavouriteRaffle.data, raffle.id]);
   
-  const toggleFavorite = () => {
-    setFavorite(!favorite);
+  const toggleFavorite = async () => {
+    favouriteRaffle.mutate({
+      raffleId: raffle.id || 0,
+    });
   };
-  console.log("ticketQuantityById",ticketQuantityById);
   const MAX = raffle.maxEntries;
 
   const decrease = () => {

@@ -84,6 +84,7 @@ function RafflesPage() {
     const showActiveFilters = hasActiveFilters(filterOptions, "raffles");
 
     console.log(gumballs);
+    console.log(getAllRaffles?.data)
     const raffles = useMemo(() => {
       let allRaffles = data?.pages.map((p) => p.items).flat() as unknown as RaffleTypeBackend[];
       if (!allRaffles) return [];

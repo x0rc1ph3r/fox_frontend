@@ -291,10 +291,13 @@
 // };
 
 import { Link } from "@tanstack/react-router";
-import React, { useState, useMemo } from "react";
+import React, { useMemo } from "react";
 import type { RaffleTypeBackend } from "types/backend/raffleTypes";
 import { DynamicCounter } from "../common/DynamicCounter";
 import { VerifiedTokens } from "@/utils/verifiedTokens";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useToggleFavourite } from "../../../hooks/useToggleFavourite";
+import { useQueryFavourites } from "../../../hooks/useQueryFavourites";
 
 export interface RafflersCardProps extends RaffleTypeBackend {
   userAvatar?: string;
@@ -306,6 +309,10 @@ export interface RafflersCardProps extends RaffleTypeBackend {
 }
 
 export const RafflersCard: React.FC<RafflersCardProps> = (props) => {
+  const { publicKey } = useWallet();
+  const { favouriteRaffle } = useToggleFavourite(publicKey?.toString() || "");
+  const { getFavouriteRaffle } = useQueryFavourites(publicKey?.toString() || "");
+
   const {
     raffle,
     prizeData,
@@ -329,22 +336,19 @@ export const RafflersCard: React.FC<RafflersCardProps> = (props) => {
   } = props;
 
   const remainingTickets = ticketSupply - ticketSold;
-  const [favorite, setFavorite] = useState(isFavorite);
   
-  const toggleFavorite = () => {
-    setFavorite(!favorite);
+  const favorite = useMemo(() => {
+    if (!getFavouriteRaffle.data || getFavouriteRaffle.data.length === 0) return false;
+    return getFavouriteRaffle.data?.some((favourite) => favourite.id === id);
+  }, [getFavouriteRaffle.data, id]);
+  
+  const toggleFavorite = async () => {
+    favouriteRaffle.mutate({
+      raffleId: id || 0,
+    });
   };
 
   const MAX = maxEntries;
-  const [quantityValue, setQuantityValue] = useState<number>(1);
-
-  const decrease = () => {
-    setQuantityValue((prev) => Math.max(1, prev - 1));
-  };
-
-  const increase = () => {
-    setQuantityValue((prev) => Math.min(MAX, prev + 1));
-  };
 
   // Calculate countdown from endsAt date
   const countdown = useMemo(() => {
@@ -362,8 +366,6 @@ export const RafflersCard: React.FC<RafflersCardProps> = (props) => {
     
     return { hours, minutes, seconds };
   }, [endsAt]);
-
-  const totalCost = quantityValue * ticketPrice;
   
   // Display name - use userName prop or truncate createdBy address
   const displayName = userName || `${createdBy.slice(0, 6)}...${createdBy.slice(-4)}`;

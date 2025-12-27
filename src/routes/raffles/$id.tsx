@@ -17,6 +17,8 @@ import { useBuyRaffleTicketStore } from "../../../store/buyraffleticketstore";
 import { useCancelRaffle } from "../../../hooks/useCancelRaffle";
 import { useClaimRafflePrize } from "../../../hooks/useClaimRafflePrize";
 import { getRaffleWinnersWhoClaimedPrize } from "../../../api/routes/raffleRoutes";
+import { useQueryFavourites } from "hooks/useQueryFavourites";
+import { useToggleFavourite } from "hooks/useToggleFavourite";
 
 export const Route = createFileRoute("/raffles/$id")({
   component: RouteComponent,
@@ -51,14 +53,16 @@ const UserDetails = [
 
 function RouteComponent() {
   const { id } = Route.useParams();
-  const { data: raffle, isLoading} = useRaffleById(id || "");
-  const {publicKey} = useWallet();
+  const { data: raffle, isLoading } = useRaffleById(id || "");
+  const { publicKey } = useWallet();
   const { buyTicket } = useBuyRaffleTicket();
-  const { ticketQuantity} = useBuyRaffleTicketStore();
+  const { ticketQuantity } = useBuyRaffleTicketStore();
   const { cancelRaffle } = useCancelRaffle();
   const { claimPrize } = useClaimRafflePrize();
-  const [winnersWhoClaimedPrize, setWinnersWhoClaimedPrize] = useState<{sender:string}[]>([]);
-    const [showwinnerssModal, setShowwinnerssModal] = useState(false);
+  const [winnersWhoClaimedPrize, setWinnersWhoClaimedPrize] = useState<
+    { sender: string }[]
+  >([]);
+  const [showwinnerssModal, setShowwinnerssModal] = useState(false);
   const { connect } = useWallet();
   const [tabs, setTabs] = useState([
     { name: "Participants", active: true },
@@ -67,7 +71,10 @@ function RouteComponent() {
   ]);
   const userAvatar = "/icons/user-avatar.png";
   const router = useRouter();
-  
+  const { favouriteRaffle } = useToggleFavourite(publicKey?.toString() || "");
+  const { getFavouriteRaffle } = useQueryFavourites(
+    publicKey?.toString() || ""
+  );
   const [TimeExtension, setTimeExtension] = useState(true);
 
   useEffect(() => {
@@ -81,17 +88,19 @@ function RouteComponent() {
     }
   }, [raffle?.endsAt, raffle?.state]);
 
- useEffect(()=>{
-  if(raffle?.id){
-    getRaffleWinnersWhoClaimedPrize(raffle?.id.toString() || "").then((response)=>{
-      setWinnersWhoClaimedPrize(response.prizesClaimed);
-    }).catch((error)=>{
-      console.error(error);
-    });
-  }
- },[raffle?.id]);
+  useEffect(() => {
+    if (raffle?.id) {
+      getRaffleWinnersWhoClaimedPrize(raffle?.id.toString() || "")
+        .then((response) => {
+          setWinnersWhoClaimedPrize(response.prizesClaimed);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    }
+  }, [raffle?.id]);
 
- console.log(winnersWhoClaimedPrize);
+  console.log(winnersWhoClaimedPrize);
   if (isLoading) {
     return (
       <main className="py-20 text-center text-3xl font-bold text-red-500 w-full flex items-center justify-center">
@@ -128,98 +137,106 @@ function RouteComponent() {
                 src={raffle?.prizeData.image}
                 className="w-full md:h-[450px] h-[361px] object-cover rounded-[24px]"
               />
-              {raffle.prizeData.type === "NFT" ? 
-              <div className="w-full pb-7 pt-6 md:py-10 hidden md:flex items-center justify-between">
-                <div className="flex items-center gap-3 2xl:gap-5">
-                  <img
-                    src={userAvatar}
-                    className="w-12 h-12 rounded-full object-cover"
-                    alt=""
-                  />
-                  <h3 className="md:text-[28px] text-lg font-bold text-black-1000 font-inter">
-                    {"Anonymous"}
-                  </h3>
+              {raffle.prizeData.type === "NFT" ? (
+                <div className="w-full pb-7 pt-6 md:py-10 hidden md:flex items-center justify-between">
+                  <div className="flex items-center gap-3 2xl:gap-5">
+                    <img
+                      src={userAvatar}
+                      className="w-12 h-12 rounded-full object-cover"
+                      alt=""
+                    />
+                    <h3 className="md:text-[28px] text-lg font-bold text-black-1000 font-inter">
+                      {"Anonymous"}
+                    </h3>
+                  </div>
+
+                  <ul className="flex items-center gap-6">
+                    <li>
+                      <a href="#">
+                        <img
+                          src="/icons/twitter-icon.svg"
+                          className="w-7 h-7 object-contain"
+                          alt=""
+                        />
+                      </a>
+                    </li>
+
+                    <li>
+                      <a href="#">
+                        {" "}
+                        <img
+                          src="/icons/mcp-server-icon.svg"
+                          className="w-7 h-7 object-contain"
+                          alt=""
+                        />
+                      </a>
+                    </li>
+                  </ul>
                 </div>
-
-                <ul className="flex items-center gap-6">
-                  <li>
-                    <a href="#">
-                      <img
-                        src="/icons/twitter-icon.svg"
-                        className="w-7 h-7 object-contain"
-                        alt=""
-                      />
-                    </a>
-                  </li>
-
-                  <li>
-                    <a href="#">
-                      {" "}
-                      <img
-                        src="/icons/mcp-server-icon.svg"
-                        className="w-7 h-7 object-contain"
-                        alt=""
-                      />
-                    </a>
-                  </li>
-                </ul>
-              </div>
-              : <></>}
+              ) : (
+                <></>
+              )}
               <div className="w-full space-y-5 hidden md:block">
-                {raffle.prizeData.type === "NFT" ? UserDetails.map((section, index) => (
-                  <Disclosure
-                    as="div"
-                    key={section.title}
-                    defaultOpen={index === 0}
-                    className="w-full py-4 md:py-6 px-5 border border-gray-1100 rounded-[20px]"
-                  >
-                    {({ open }) => (
-                      <>
-                        <Disclosure.Button
-                          className={`flex items-center justify-between w-full text-base md:text-xl font-bold font-inter text-black-1000 ${
-                            open ? "text-primary-color" : ""
-                          }`}
-                        >
-                          <span>{section.title}</span>
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width={16}
-                            height={9}
-                            viewBox="0 0 16 9"
-                            fill="none"
-                            className={`${open ? `rotate-180` : ``} transition-transform`}
+                {raffle.prizeData.type === "NFT" ? (
+                  UserDetails.map((section, index) => (
+                    <Disclosure
+                      as="div"
+                      key={section.title}
+                      defaultOpen={index === 0}
+                      className="w-full py-4 md:py-6 px-5 border border-gray-1100 rounded-[20px]"
+                    >
+                      {({ open }) => (
+                        <>
+                          <Disclosure.Button
+                            className={`flex items-center justify-between w-full text-base md:text-xl font-bold font-inter text-black-1000 ${
+                              open ? "text-primary-color" : ""
+                            }`}
                           >
-                            <path
-                              d="M15 1L8 8L1 1"
-                              stroke="currentColor"
-                              strokeWidth={2}
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        </Disclosure.Button>
+                            <span>{section.title}</span>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width={16}
+                              height={9}
+                              viewBox="0 0 16 9"
+                              fill="none"
+                              className={`${
+                                open ? `rotate-180` : ``
+                              } transition-transform`}
+                            >
+                              <path
+                                d="M15 1L8 8L1 1"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </Disclosure.Button>
 
-                        <Disclosure.Panel className="w-full">
-                          <ul className="space-y-6 pt-6">
-                            {section.items.map((item) => (
-                              <li
-                                key={item.label}
-                                className="flex items-center justify-between"
-                              >
-                                <p className="md:text-base text-sm font-inter font-medium text-gray-1200">
-                                  {item.label}
-                                </p>
-                                <p className="md:text-base text-sm font-inter font-medium text-black-1000">
-                                  {item.value}
-                                </p>
-                              </li>
-                            ))}
-                          </ul>
-                        </Disclosure.Panel>
-                      </>
-                    )}
-                  </Disclosure>
-                )) : <></>}
+                          <Disclosure.Panel className="w-full">
+                            <ul className="space-y-6 pt-6">
+                              {section.items.map((item) => (
+                                <li
+                                  key={item.label}
+                                  className="flex items-center justify-between"
+                                >
+                                  <p className="md:text-base text-sm font-inter font-medium text-gray-1200">
+                                    {item.label}
+                                  </p>
+                                  <p className="md:text-base text-sm font-inter font-medium text-black-1000">
+                                    {item.value}
+                                  </p>
+                                </li>
+                              ))}
+                            </ul>
+                          </Disclosure.Panel>
+                        </>
+                      )}
+                    </Disclosure>
+                  ))
+                ) : (
+                  <></>
+                )}
               </div>
             </div>
             <div className="flex-1">
@@ -251,13 +268,26 @@ function RouteComponent() {
 
                   <ul className="flex items-center gap-4 md:gap-3 2xl:gap-5">
                     <li>
-                      <button className="border hover:bg-primary-color hover:border-primary-color transition duration-300 cursor-pointer px-5 py-[7px] md:py-2.5 gap-2.5 border-black-1000 rounded-full text-sm md:text-base font-semibold font-inter text-black-1000 inline-flex items-center justify-center">
+                      <button
+                        onClick={() => {
+                          favouriteRaffle.mutate({
+                            raffleId: raffle?.id || 0,
+                          });
+                        }}
+                        className={`border hover:bg-primary-color hover:border-primary-color transition duration-300 cursor-pointer px-5 py-[7px] md:py-2.5 gap-2.5 border-black-1000 rounded-full text-sm md:text-base font-semibold font-inter text-black-1000 inline-flex items-center justify-center ${
+                          getFavouriteRaffle.data?.some(
+                            (favourite) => favourite.id === raffle?.id
+                          )
+                            ? "bg-primary-color text-white"
+                            : ""
+                        }`}
+                      >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           width={24}
                           height={24}
                           viewBox="0 0 24 24"
-                          fill="none"
+                          fill="#212121"
                         >
                           <path
                             d="M12 5.50066L11.4596 6.02076C11.601 6.16766 11.7961 6.25066 12 6.25066C12.2039 6.25066 12.399 6.16766 12.5404 6.02076L12 5.50066ZM9.42605 18.3219C7.91039 17.1271 6.25307 15.9603 4.93829 14.4798C3.64922 13.0282 2.75 11.3345 2.75 9.13713H1.25C1.25 11.8026 2.3605 13.8361 3.81672 15.4758C5.24723 17.0866 7.07077 18.3752 8.49742 19.4999L9.42605 18.3219ZM2.75 9.13713C2.75 6.98626 3.96537 5.18255 5.62436 4.42422C7.23607 3.68751 9.40166 3.88261 11.4596 6.02076L12.5404 4.98056C10.0985 2.44355 7.26409 2.02542 5.00076 3.05999C2.78471 4.07295 1.25 6.42506 1.25 9.13713H2.75ZM8.49742 19.4999C9.00965 19.9037 9.55954 20.3343 10.1168 20.6599C10.6739 20.9854 11.3096 21.25 12 21.25V19.75C11.6904 19.75 11.3261 19.6293 10.8736 19.3648C10.4213 19.1005 9.95208 18.7366 9.42605 18.3219L8.49742 19.4999ZM15.5026 19.4999C16.9292 18.3752 18.7528 17.0866 20.1833 15.4758C21.6395 13.8361 22.75 11.8026 22.75 9.13713H21.25C21.25 11.3345 20.3508 13.0282 19.0617 14.4798C17.7469 15.9603 16.0896 17.1271 14.574 18.3219L15.5026 19.4999ZM22.75 9.13713C22.75 6.42506 21.2153 4.07295 18.9992 3.05999C16.7359 2.02542 13.9015 2.44355 11.4596 4.98056L12.5404 6.02076C14.5983 3.88261 16.7639 3.68751 18.3756 4.42422C20.0346 5.18255 21.25 6.98626 21.25 9.13713H22.75ZM14.574 18.3219C14.0479 18.7366 13.5787 19.1005 13.1264 19.3648C12.6739 19.6293 12.3096 19.75 12 19.75V21.25C12.6904 21.25 13.3261 20.9854 13.8832 20.6599C14.4405 20.3343 14.9903 19.9037 15.5026 19.4999L14.574 18.3219Z"
@@ -304,7 +334,8 @@ function RouteComponent() {
                           Raffler
                         </p>
                         <h4 className="text-base text-black-1000 font-inter font-semibold">
-                          {raffle?.createdBy.slice(0, 6)}...{raffle?.createdBy.slice(-4)}
+                          {raffle?.createdBy.slice(0, 6)}...
+                          {raffle?.createdBy.slice(-4)}
                         </h4>
                       </div>
                     </div>
@@ -433,90 +464,128 @@ function RouteComponent() {
                             />
                           </div>
                           {raffle.winners && raffle?.winners?.length > 1 ? (
-                            <button className="text-white font-semibold font-inter" onClick={()=>{
-                              setShowwinnerssModal(true);
-                            }}>
+                            <button
+                              className="text-white font-semibold font-inter"
+                              onClick={() => {
+                                setShowwinnerssModal(true);
+                              }}
+                            >
                               View all winnerss
                             </button>
                           ) : (
                             <>
-                            
                               <h3 className="md:text-2xl sm:text-xl text-base text-white font-semibold font-inter">
-                                {raffle?.winners?.[0]?.walletAddress.slice(0, 6)}...{raffle?.winners?.[0]?.walletAddress.slice(-4)}
+                                {raffle?.winners?.[0]?.walletAddress.slice(
+                                  0,
+                                  6
+                                )}
+                                ...
+                                {raffle?.winners?.[0]?.walletAddress.slice(-4)}
                               </h3>
                               <h4 className="text-base text-white font-semibold font-inter">
-                                Won with {raffle.raffleEntries?.find((entry)=>entry.userAddress===raffle?.winners?.[0]?.walletAddress)?.quantity} Ticket(s)
+                                Won with{" "}
+                                {
+                                  raffle.raffleEntries?.find(
+                                    (entry) =>
+                                      entry.userAddress ===
+                                      raffle?.winners?.[0]?.walletAddress
+                                  )?.quantity
+                                }{" "}
+                                Ticket(s)
                               </h4>
-                              
                             </>
                           )}
                         </div>
-                        {raffle?.winners?.length! > 0 && raffle.winners?.some((winners)=>winners.walletAddress===publicKey?.toBase58()) ? 
-                              <PrimaryButton className="w-[40%] h-[54px]" 
-                              onclick={()=>{
-                                claimPrize.mutate({
-                                  raffleId: Number(raffle?.id) || 0,
-                                });
-                              }} 
-                              text="Claim Prize" 
-                              disabled={winnersWhoClaimedPrize.some((winner)=>winner.sender===publicKey?.toBase58())}
-                              />
-                              
-                              : <h4 className="sm:text-base text-xs text-white font-semibold font-inter px-4">
-                              Raffle winners
-                            </h4>
-                              }
-                        
+                        {raffle?.winners?.length! > 0 &&
+                        raffle.winners?.some(
+                          (winners) =>
+                            winners.walletAddress === publicKey?.toBase58()
+                        ) ? (
+                          <PrimaryButton
+                            className="w-[40%] h-[54px]"
+                            onclick={() => {
+                              claimPrize.mutate({
+                                raffleId: Number(raffle?.id) || 0,
+                              });
+                            }}
+                            text="Claim Prize"
+                            disabled={winnersWhoClaimedPrize.some(
+                              (winner) =>
+                                winner.sender === publicKey?.toBase58()
+                            )}
+                          />
+                        ) : (
+                          <h4 className="sm:text-base text-xs text-white font-semibold font-inter px-4">
+                            Raffle winners
+                          </h4>
+                        )}
                       </div>
                     </div>
                   )}
 
-                  {!publicKey ? <div className="w-full mt-6 flex items-center flex-col justify-center py-[18px] md:py-[22px] px-[26px] gap-4 md:gap-[26px] border border-gray-1100 rounded-[20px] bg-gray-1300">
-                    <h3 className="md:text-base text-sm text-black-1000 font-inter font-medium text-center">
-                      Please connect your wallet first to enter a raffle.
-                    </h3>
-                    
-                  </div> : <></>}
-                    {publicKey ? 
-                  <div className="w-full mt-6">
-                    <div className="w-full items-center grid lg:grid-cols-2 sm:grid-cols-2 grid-cols-1 gap-5">
-                      <QuantityBox max={raffle?.maxEntries || 1}/>
-
-                      <div className="w-full md:mb-5">
-                        <PrimaryButton
-                          className="w-full h-[54px]"
-                          text={`Buy for ${raffle?.ticketPrice / 10 ** (VerifiedTokens.find((token) => token.address === raffle?.ticketTokenAddress)?.decimals || 0)} ${VerifiedTokens.find((token) => token.address === raffle?.ticketTokenAddress)?.symbol}`}
-                          onclick={()=>{
-                            buyTicket.mutate({
-                              raffleId: raffle?.id || 0,
-                              ticketsToBuy: ticketQuantity,
-                            });
-                          }}
-                       />
-
-                      </div>
-
-                      
-                    </div>
-                  </div>
-                  : <></>}
-                  {publicKey && publicKey.toBase58() === raffle?.createdBy ? <div className="w-full mt-6">
-                    <div className="w-full border rounded-xl px-10 items-center flex flex-col gap-5 justify-center py-2">
-                      <h3 className="text-lg font-medium font-inter text-black-1000">
-                        Raffle Administrator
+                  {!publicKey ? (
+                    <div className="w-full mt-6 flex items-center flex-col justify-center py-[18px] md:py-[22px] px-[26px] gap-4 md:gap-[26px] border border-gray-1100 rounded-[20px] bg-gray-1300">
+                      <h3 className="md:text-base text-sm text-black-1000 font-inter font-medium text-center">
+                        Please connect your wallet first to enter a raffle.
                       </h3>
-                      <div className="w-full md:mb-5">
-                        <PrimaryButton
-                          className="w-full h-[54px]"
-                          text={`Cancel Raffle`}
-                          onclick={()=>{
-                            cancelRaffle.mutate(raffle?.id || 0);
-                          }}
-                        />
+                    </div>
+                  ) : (
+                    <></>
+                  )}
+                  {publicKey ? (
+                    <div className="w-full mt-6">
+                      <div className="w-full items-center grid lg:grid-cols-2 sm:grid-cols-2 grid-cols-1 gap-5">
+                        <QuantityBox max={raffle?.maxEntries || 1} />
+
+                        <div className="w-full md:mb-5">
+                          <PrimaryButton
+                            className="w-full h-[54px]"
+                            text={`Buy for ${
+                              raffle?.ticketPrice /
+                              10 **
+                                (VerifiedTokens.find(
+                                  (token) =>
+                                    token.address === raffle?.ticketTokenAddress
+                                )?.decimals || 0)
+                            } ${
+                              VerifiedTokens.find(
+                                (token) =>
+                                  token.address === raffle?.ticketTokenAddress
+                              )?.symbol
+                            }`}
+                            onclick={() => {
+                              buyTicket.mutate({
+                                raffleId: raffle?.id || 0,
+                                ticketsToBuy: ticketQuantity,
+                              });
+                            }}
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  : <></>}
+                  ) : (
+                    <></>
+                  )}
+                  {publicKey && publicKey.toBase58() === raffle?.createdBy ? (
+                    <div className="w-full mt-6">
+                      <div className="w-full border rounded-xl px-10 items-center flex flex-col gap-5 justify-center py-2">
+                        <h3 className="text-lg font-medium font-inter text-black-1000">
+                          Raffle Administrator
+                        </h3>
+                        <div className="w-full md:mb-5">
+                          <PrimaryButton
+                            className="w-full h-[54px]"
+                            text={`Cancel Raffle`}
+                            onclick={() => {
+                              cancelRaffle.mutate(raffle?.id || 0);
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <></>
+                  )}
                   <div className="w-full">
                     <div className="w-full overflow-x-auto">
                       <ul className="flex items-center gap-3 2xl:gap-5 pb-6 pt-10 md:py-10 sm:w-auto md:w-[600px]">
@@ -530,7 +599,9 @@ function RouteComponent() {
                                 }));
                                 setTabs(updatedTabs);
                               }}
-                              className={`md:text-base whitespace-nowrap text-sm cursor-pointer font-inter font-medium transition duration-300 hover:bg-primary-color text-black-1000 rounded-full py-2.5 md:py-3.5 md:px-5 px-3 ${tab.active ? `bg-primary-color` : `bg-gray-1400`}`}
+                              className={`md:text-base whitespace-nowrap text-sm cursor-pointer font-inter font-medium transition duration-300 hover:bg-primary-color text-black-1000 rounded-full py-2.5 md:py-3.5 md:px-5 px-3 ${
+                                tab.active ? `bg-primary-color` : `bg-gray-1400`
+                              }`}
                             >
                               {tab.name}
                             </button>
@@ -538,109 +609,127 @@ function RouteComponent() {
                         ))}
                       </ul>
                     </div>
-                    {tabs[0].active && <ParticipantsTable participants={raffle?.raffleEntries} ticketSupply={raffle?.ticketSupply || 0} />}
+                    {tabs[0].active && (
+                      <ParticipantsTable
+                        participants={raffle?.raffleEntries}
+                        ticketSupply={raffle?.ticketSupply || 0}
+                      />
+                    )}
 
-                    {tabs[1].active && <TransactionsTable transactions={raffle?.raffleEntries?.flatMap((entry) => entry.transactions) ?? []} />}
+                    {tabs[1].active && (
+                      <TransactionsTable
+                        transactions={
+                          raffle?.raffleEntries?.flatMap(
+                            (entry) => entry.transactions
+                          ) ?? []
+                        }
+                      />
+                    )}
 
                     {tabs[2].active && <TermsConditions />}
                   </div>
                 </div>
               </div>
             </div>
-            {raffle.prizeData.type === "NFT" ?  <div className="md:hidden block border-t border-solid border-gray-1100">
-              <div className="w-full pb-7 pt-6 md:py-10 flex items-center justify-between">
-                <div className="flex items-center gap-5 md:gap-3 2xl:gap-5">
-                  <img
-                    src={userAvatar}
-                    className="w-12 h-12 rounded-full object-cover"
-                    alt=""
-                  />
-                  <h3 className="md:text-[28px] text-lg font-bold text-black-1000 font-inter">
-                    {"Anonymous"}
-                  </h3>
+            {raffle.prizeData.type === "NFT" ? (
+              <div className="md:hidden block border-t border-solid border-gray-1100">
+                <div className="w-full pb-7 pt-6 md:py-10 flex items-center justify-between">
+                  <div className="flex items-center gap-5 md:gap-3 2xl:gap-5">
+                    <img
+                      src={userAvatar}
+                      className="w-12 h-12 rounded-full object-cover"
+                      alt=""
+                    />
+                    <h3 className="md:text-[28px] text-lg font-bold text-black-1000 font-inter">
+                      {"Anonymous"}
+                    </h3>
+                  </div>
+
+                  <ul className="flex items-center gap-6">
+                    <li>
+                      <a href="#">
+                        <img
+                          src="/icons/twitter-icon.svg"
+                          className="md:w-7 md:h-7 w-6 h-6 object-contain"
+                          alt=""
+                        />
+                      </a>
+                    </li>
+
+                    <li>
+                      <a href="#">
+                        {" "}
+                        <img
+                          src="/icons/mcp-server-icon.svg"
+                          className="md:w-7 md:h-7 w-6 h-6 object-contain"
+                          alt=""
+                        />
+                      </a>
+                    </li>
+                  </ul>
                 </div>
-
-                <ul className="flex items-center gap-6">
-                  <li>
-                    <a href="#">
-                      <img
-                        src="/icons/twitter-icon.svg"
-                        className="md:w-7 md:h-7 w-6 h-6 object-contain"
-                        alt=""
-                      />
-                    </a>
-                  </li>
-
-                  <li>
-                    <a href="#">
-                      {" "}
-                      <img
-                        src="/icons/mcp-server-icon.svg"
-                        className="md:w-7 md:h-7 w-6 h-6 object-contain"
-                        alt=""
-                      />
-                    </a>
-                  </li>
-                </ul>
-              </div>
-              <div className="w-full space-y-5">
-                {UserDetails.map((section, index) => (
-                  <Disclosure
-                    as="div"
-                    key={section.title}
-                    defaultOpen={index === 0}
-                    className="w-full py-4 md:py-6 px-5 border border-gray-1100 rounded-[20px]"
-                  >
-                    {({ open }) => (
-                      <>
-                        <Disclosure.Button
-                          className={`flex items-center justify-between w-full text-base md:text-xl font-bold font-inter text-black-1000 ${
-                            open ? "text-primary-color" : ""
-                          }`}
-                        >
-                          <span>{section.title}</span>
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width={16}
-                            height={9}
-                            viewBox="0 0 16 9"
-                            fill="none"
-                            className={`${open ? `rotate-180` : ``} transition-transform`}
+                <div className="w-full space-y-5">
+                  {UserDetails.map((section, index) => (
+                    <Disclosure
+                      as="div"
+                      key={section.title}
+                      defaultOpen={index === 0}
+                      className="w-full py-4 md:py-6 px-5 border border-gray-1100 rounded-[20px]"
+                    >
+                      {({ open }) => (
+                        <>
+                          <Disclosure.Button
+                            className={`flex items-center justify-between w-full text-base md:text-xl font-bold font-inter text-black-1000 ${
+                              open ? "text-primary-color" : ""
+                            }`}
                           >
-                            <path
-                              d="M15 1L8 8L1 1"
-                              stroke="currentColor"
-                              strokeWidth={2}
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        </Disclosure.Button>
+                            <span>{section.title}</span>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width={16}
+                              height={9}
+                              viewBox="0 0 16 9"
+                              fill="none"
+                              className={`${
+                                open ? `rotate-180` : ``
+                              } transition-transform`}
+                            >
+                              <path
+                                d="M15 1L8 8L1 1"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </Disclosure.Button>
 
-                        <Disclosure.Panel className="w-full">
-                          <ul className="space-y-6 pt-6">
-                            {section.items.map((item) => (
-                              <li
-                                key={item.label}
-                                className="flex items-center justify-between"
-                              >
-                                <p className="md:text-base text-sm font-inter font-medium text-gray-1200">
-                                  {item.label}
-                                </p>
-                                <p className="md:text-base text-sm font-inter font-medium text-black-1000">
-                                  {item.value}
-                                </p>
-                              </li>
-                            ))}
-                          </ul>
-                        </Disclosure.Panel>
-                      </>
-                    )}
-                  </Disclosure>
-                ))}
+                          <Disclosure.Panel className="w-full">
+                            <ul className="space-y-6 pt-6">
+                              {section.items.map((item) => (
+                                <li
+                                  key={item.label}
+                                  className="flex items-center justify-between"
+                                >
+                                  <p className="md:text-base text-sm font-inter font-medium text-gray-1200">
+                                    {item.label}
+                                  </p>
+                                  <p className="md:text-base text-sm font-inter font-medium text-black-1000">
+                                    {item.value}
+                                  </p>
+                                </li>
+                              ))}
+                            </ul>
+                          </Disclosure.Panel>
+                        </>
+                      )}
+                    </Disclosure>
+                  ))}
+                </div>
               </div>
-            </div>
-             : <></>}
+            ) : (
+              <></>
+            )}
           </div>
         </div>
       </section>

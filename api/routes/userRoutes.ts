@@ -105,7 +105,7 @@ export const getRafflePurchased = async (publicKey:string) => {
 
 export const getRaffleFavourite = async (publicKey:string): Promise<{message:string, raffles:RaffleTypeBackend[]}> => {
     try {
-        const response = await api.get(`/user/profile/${publicKey}/raffles/favourite`);
+        const response = await api.get(`/user/profile/${publicKey}/raffles/favourites`);
         return response.data;
     } catch (error) {
         console.error(error);
@@ -138,7 +138,7 @@ export const getGumballPurchased = async (publicKey:string): Promise<{message:st
 
 export const getGumballFavourite = async (publicKey:string): Promise<{message:string, gumballs:GumballBackendDataType[]}> => {
     try {
-        const response = await api.get(`/user/profile/${publicKey}/gumballs/favourite`);
+        const response = await api.get(`/user/profile/${publicKey}/gumballs/favourites`);
         return response.data;
     } catch (error) {
         console.error(error);
@@ -170,7 +170,52 @@ export const getAuctionPurchased = async (publicKey:string): Promise<{message:st
 
 export const getAuctionFavourite = async (publicKey:string): Promise<{message:string, auctions:AuctionTypeBackend[]}> => {
     try {
-        const response = await api.get(`/user/profile/${publicKey}/auctions/favourite`);
+        const response = await api.get(`/user/profile/${publicKey}/auctions/favourites`);
+        return response.data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export const toggleRaffleFavourite = async (raffleId:string)=>{
+    try {
+        const response = await api.post(`/user/favourites/raffle/${raffleId}`, {}, {
+            headers:{
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export const toggleGumballFavourite = async (gumballId:string)=>{
+    try {
+        const response = await api.post(`/user/favourites/gumball/${gumballId}`, {}, {
+            headers:{
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export const toggleAuctionFavourite = async (auctionId:string)=>{
+    try {
+        const response = await api.post(`/user/favourites/auction/${auctionId}`, {}, {
+            headers:{
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+            }
+        });
         return response.data;
     } catch (error) {
         console.error(error);

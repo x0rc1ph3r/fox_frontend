@@ -1,5 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import React, { useState } from "react";
+import React, { useMemo } from "react";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useToggleFavourite } from "../../../hooks/useToggleFavourite";
+import { useQueryFavourites } from "../../../hooks/useQueryFavourites";
 
 export interface AucationsCardProps {
   id: number;
@@ -36,9 +39,19 @@ export const AucationsCard: React.FC<AucationsCardProps> = ({
   verified = false,
   className,
 }) => {
-     const [favorite, setFavorite] = useState(isFavorite);
-    const toggleFavorite = () => {
-    setFavorite(!favorite);
+  const { publicKey } = useWallet();
+  const { favouriteAuction } = useToggleFavourite(publicKey?.toString() || "");
+  const { getFavouriteAuction } = useQueryFavourites(publicKey?.toString() || "");
+
+  const favorite = useMemo(() => {
+    if (!getFavouriteAuction.data || getFavouriteAuction.data.length === 0) return false;
+    return getFavouriteAuction.data?.some((favourite) => favourite.id === id);
+  }, [getFavouriteAuction.data, id]);
+
+  const toggleFavorite = async () => {
+    favouriteAuction.mutate({
+      auctionId: id || 0,
+    });
   };
 
   return (

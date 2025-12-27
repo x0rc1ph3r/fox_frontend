@@ -1,8 +1,8 @@
 import { create } from "zustand";
 
 type MainFilter = "Rafflers" | "Auctions" | "Gumballs";
-type RafflerFilter = "created" | "purchased" | "favourite" | "followed";
-type ActiveTab = "created" | "purchased";
+type RafflerFilter = "created" | "purchased" | "favourite" ;
+type ActiveTab = "created" | "purchased" | "favourite";
 
 interface CreatorProfileState {
   mainFilter: MainFilter;

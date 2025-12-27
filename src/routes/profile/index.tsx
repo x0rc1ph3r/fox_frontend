@@ -92,7 +92,6 @@ function CreateProfile() {
     getGumballPurchasedCards,
     getGumballFavouriteCards,
     getAuctionCreatedCards,
-    getAuctionPurchasedCards,
     getAuctionFavouriteCards,
   } = useProfileStats(publicKey?.toBase58() ?? "");
   const raffleStats = getRaffleStats.data?.stats;
@@ -104,7 +103,6 @@ function CreateProfile() {
   const gumballPurchasedCards = getGumballPurchasedCards.data ?? [];
   const gumballFavouriteCards = getGumballFavouriteCards.data ?? [];
   const auctionCreatedCards = getAuctionCreatedCards.data ?? [];
-  const auctionPurchasedCards = getAuctionPurchasedCards.data ?? [];
   const auctionFavouriteCards = getAuctionFavouriteCards.data ?? [];
   console.log(gumballCreatedCards);
 
@@ -173,7 +171,6 @@ function CreateProfile() {
                             | "created"
                             | "purchased"
                             | "favourite"
-                            | "followed"
                         );
                         if (
                           filter.value === "created" ||
@@ -391,7 +388,7 @@ function CreateProfile() {
 
                 {mainFilter === "Auctions" && (
                   <>
-                    {getAuctionCreatedCards.isLoading || getAuctionPurchasedCards.isLoading ? (
+                    {getAuctionCreatedCards.isLoading  ? (
                       <div className="grid lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-4">
                         {Array.from({ length: 6 }).map((_, i) => <CryptoCardSkeleton key={i} />)}
                       </div>

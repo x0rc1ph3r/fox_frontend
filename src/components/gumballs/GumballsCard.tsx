@@ -1,8 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import React, { useState, useMemo } from "react";
+import React, { useMemo } from "react";
 import type { GumballBackendDataType } from "../../../types/backend/gumballTypes";
 import { DynamicCounter } from "../common/DynamicCounter";
 import { VerifiedTokens } from "@/utils/verifiedTokens";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useToggleFavourite } from "../../../hooks/useToggleFavourite";
+import { useQueryFavourites } from "../../../hooks/useQueryFavourites";
 
 export interface GumballsCardProps {
   gumball: GumballBackendDataType;
@@ -15,6 +18,10 @@ export const GumballsCard: React.FC<GumballsCardProps> = ({
   isFavorite = false,
   className,
 }) => {
+  const { publicKey } = useWallet();
+  const { favouriteGumball } = useToggleFavourite(publicKey?.toString() || "");
+  const { getFavouriteGumball } = useQueryFavourites(publicKey?.toString() || "");
+
   // Safely destructure with defaults for missing values
   const {
     id,
@@ -27,6 +34,17 @@ export const GumballsCard: React.FC<GumballsCardProps> = ({
     totalPrizeValue = "0",
     prizes = [],
   } = gumball || {};
+
+  const favorite = useMemo(() => {
+    if (!getFavouriteGumball.data || getFavouriteGumball.data.length === 0) return false;
+    return getFavouriteGumball.data?.some((favourite) => favourite.id === id);
+  }, [getFavouriteGumball.data, id]);
+
+  const toggleFavorite = async () => {
+    favouriteGumball.mutate({
+      gumballId: id || 0,
+    });
+  };
 
   // Compute remaining tickets
   const remainingTickets = (totalTickets || 0) - (ticketsSold || 0);
@@ -74,11 +92,6 @@ export const GumballsCard: React.FC<GumballsCardProps> = ({
   const pricePerTicket = useMemo(() => {
     return parseFloat(ticketPrice) || 0;
   }, [ticketPrice]);
-  
-     const [favorite, setFavorite] = useState(isFavorite);
-    const toggleFavorite = () => {
-    setFavorite(!favorite);
-  };
 
   return (
       <div className={`bg-white-1000 border border-gray-1100 rounded-2xl ${className || ''}`}>
