@@ -24,7 +24,7 @@ interface State {
   setHours: (hrs: number) => void;
 }
 
-export const useAucationsStore = create<State>((set) => ({
+export const useAuctionsStore = create<State>((set) => ({
   aucations: AucationsData, 
   setAucations: (data) => set({ aucations: data }),
   filter: "All Auctions",

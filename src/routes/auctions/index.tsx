@@ -5,8 +5,8 @@ import SortDropdown from "../../components/home/SortDropdown";
 import FilterModel from "../../components/home/FilterModel";
 import { NoAuctions } from "../../components/auctions/NoAuctions";
 import { AucationsCard } from "../../components/auctions/AucationsCard";
-import { useAucationsStore } from "store/auctions-store";
-import { useAucationsQuery } from "hooks/useAucationsQuery";
+import { useAuctionsStore } from "store/auctions-store";
+import { useAuctionsQuery } from "hooks/useAuctionsQuery";
 import { useGlobalStore } from "store/globalStore";
 import CryptoCardSkeleton from "@/components/skeleton/RafflesCardSkeleton";
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -27,9 +27,9 @@ export const Route = createFileRoute("/auctions/")({
 });
 
 function Auctions() {
-  const { filter, setFilter } = useAucationsStore();
+  const { filter, setFilter } = useAuctionsStore();
   const { data, fetchNextPage, hasNextPage, isLoading } =
-    useAucationsQuery(filter);
+    useAuctionsQuery(filter);
   const { sort, setSort, searchQuery, setSearchQuery } = useGlobalStore();
 
   const {

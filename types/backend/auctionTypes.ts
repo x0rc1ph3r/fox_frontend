@@ -1,7 +1,5 @@
 import { z } from "zod";
 
-export type AuctionTypeBackend = z.infer<typeof auctionSchema>;
-
 export const auctionSchema = z.object({
   id: z.number().optional(),
   createdBy: z.string().min(1),
