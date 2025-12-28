@@ -5,24 +5,30 @@ import { LoadPrizesTab } from '@/components/gumballs/LoadPrizesTab';
 import { createFileRoute, Link, useParams, useRouteContext } from '@tanstack/react-router'
 import { useGumballStore, type GumballTab } from 'store/useGumballStore';
 import { useCreateGumball } from '../../../../hooks/useCreateGumball';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useGumballById } from 'hooks/useGumballsQuery';
 
 export const Route = createFileRoute('/gumballs/create_gumballs/$id')({
   component: CreateGumballs,
 })
 
-const tabs: { name: string; key: GumballTab }[] = [
-  { name: "Load Prizes", key: "loadPrizes" },
-  // { name: "Buy back Settings", key: "buySettings" },
-  { name: "Gumball Studio", key: "studio" },
-];
-
 function CreateGumballs() {
-  const { createdGumballId } = useGumballStore();
-  const [activeTab, setActiveTab] = useState<GumballTab>("loadPrizes");
-  const { createGumball } = useCreateGumball();
   const { id } = Route.useParams();
- 
+  const {data:gumball} = useGumballById(id || "");
+  const isActive = gumball?.status === "ACTIVE";
+  const [activeTab, setActiveTab] = useState<GumballTab>(isActive ? "loadPrizes" : "studio");
+  
+  const tabs: { name: string; key: GumballTab }[] = useMemo(()=>{
+    if(isActive){
+      return [
+        { name: "Load Prizes", key: "loadPrizes" },
+        { name: "Gumball Studio", key: "studio" },
+      ]
+    }
+    return [
+      { name: "Gumball Studio", key: "studio" },
+    ]
+  },[gumball])
 
   const handleTabClick = (tabKey: GumballTab) => {
       setActiveTab(tabKey);

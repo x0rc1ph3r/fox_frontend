@@ -98,7 +98,7 @@ export const GumballsCard: React.FC<GumballsCardProps> = ({
         <div className="w-full flex items-center justify-between p-4">
           <div className="flex items-center gap-4">
             <img
-              src="/images/placeholder-user.png"
+              src="/icons/user-avatar.png"
               alt={displayAddress}
               className="w-10 h-10 rounded-full object-cover"
             />
@@ -118,7 +118,7 @@ export const GumballsCard: React.FC<GumballsCardProps> = ({
           <img
             src={mainImage}
             alt="featured-card"
-            className="w-full border-y border-gray-1100 object-cover h-[339px]"
+            className="w-full border-y border-gray-1100 object-cover h-[300px]"
           />
 
           <div className="w-full h-full flex flex-col items-start justify-between p-4 absolute top-0 left-0">
@@ -175,7 +175,7 @@ export const GumballsCard: React.FC<GumballsCardProps> = ({
                 </p>
               </div>
             </div> */}
-            <DynamicCounter endsAt={new Date(endTime)} />
+            <DynamicCounter endsAt={new Date(endTime)} status={gumball.status == "ACTIVE" ? "ACTIVE" : "ENDED"} />
             <div className="w-full flex items-center  gap-1.5">
                 <div className="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-black/60">
                   <p className="text-xs font-semibold font-inter uppercase text-white">

@@ -299,7 +299,7 @@ function RouteComponent() {
                     </li>
 
                     <li>
-                      <button className="border hover:bg-primary-color hover:border-primary-color transition duration-300 cursor-pointer px-5 py-[7px] md:py-2.5 gap-2.5 border-black-1000 rounded-full text-sm md:text-base font-semibold font-inter text-black-1000 inline-flex items-center justify-center">
+                      {/* <button className="border hover:bg-primary-color hover:border-primary-color transition duration-300 cursor-pointer px-5 py-[7px] md:py-2.5 gap-2.5 border-black-1000 rounded-full text-sm md:text-base font-semibold font-inter text-black-1000 inline-flex items-center justify-center">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           width={24}
@@ -315,7 +315,7 @@ function RouteComponent() {
                           />
                         </svg>
                         Share
-                      </button>
+                      </button> */}
                     </li>
                   </ul>
                 </div>
@@ -340,7 +340,7 @@ function RouteComponent() {
                       </div>
                     </div>
 
-                    <a
+                    {/* <a
                       href="#"
                       className="flex items-center gap-6 justify-center"
                     >
@@ -352,7 +352,7 @@ function RouteComponent() {
                         className="md:w-7 md:h-7 w-6 h-6 object-contain"
                         alt=""
                       />
-                    </a>
+                    </a> */}
                   </div>
                   {TimeExtension ? (
                     <div className="w-full flex items-center flex-col-reverse md:flex-row justify-between py-[22px] px-[26px] border border-gray-1100 rounded-[20px] bg-gray-1300">
@@ -532,7 +532,7 @@ function RouteComponent() {
                   ) : (
                     <></>
                   )}
-                  {publicKey ? (
+                  {publicKey && publicKey.toBase58() !== raffle?.createdBy ? (
                     <div className="w-full mt-6">
                       <div className="w-full items-center grid lg:grid-cols-2 sm:grid-cols-2 grid-cols-1 gap-5">
                         <QuantityBox max={raffle?.maxEntries || 1} />
@@ -574,7 +574,7 @@ function RouteComponent() {
                         </h3>
                         <div className="w-full md:mb-5">
                           <PrimaryButton
-                            className="w-full h-[54px]"
+                            className={`w-full h-[54px] ${cancelRaffle.isPending ? "opacity-50 cursor-not-allowed" : ""} ${raffle.ticketSold > 0 ? "opacity-50 cursor-not-allowed" : ""}`}
                             text={`Cancel Raffle`}
                             onclick={() => {
                               cancelRaffle.mutate(raffle?.id || 0);

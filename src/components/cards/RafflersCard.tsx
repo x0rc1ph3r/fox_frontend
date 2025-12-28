@@ -384,7 +384,7 @@ export const RafflersCard: React.FC<RafflersCardProps> = (props) => {
       <div className="w-full flex items-center justify-between p-4">
         <div className="flex items-center gap-4">
           <img
-            src="/images/placeholder-user.png"
+            src="/icons/user-avatar.png"
             alt={displayName}
             className="w-10 h-10 rounded-full object-cover"
           />

@@ -127,10 +127,11 @@ export default function AddTokenModal({ isOpen, onClose, gumballId,remainingPriz
   const maxPrizes = gumball?.maxPrizes || 0;
 
   const availableTokens = useMemo(() => {
-    return VerifiedTokens.filter(token => 
-      !tokenPrizes.some(tp => tp.token.address === token.address) &&
-      !existingPrizes.some(ep => ep.mint === token.address)
-    );
+    // return VerifiedTokens.filter(token => 
+    //   !tokenPrizes.some(tp => tp.token.address === token.address) &&
+    //   !existingPrizes.some(ep => ep.mint === token.address)
+    // );
+    return VerifiedTokens;
   }, [tokenPrizes, existingPrizes]);
 
   const handleAddToken = () => {

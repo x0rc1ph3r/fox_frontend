@@ -251,14 +251,14 @@ export const Navbar = () => {
                   <img src="/icons/settings-icon.svg" className="w-5" />
                 </button>
               </li>
-              <li>
+              {/* <li>
                 <button
                   onClick={openNotifications}
                   className="inline-flex w-11 h-11 bg-linear-to-r from-black-1000 via-neutral-500 to-black-1000 hover:from-primary-color hover:via-primary-color hover:to-primary-color rounded-full justify-center items-center"
                 >
                   <img src="/icons/bell-icon.svg" className="w-5" />
                 </button>
-              </li>
+              </li> */}
             </ul>
           </ul>
         </div>
@@ -285,12 +285,12 @@ export const Navbar = () => {
             <img src="/icons/settings-icon.svg" className="w-6" />
           </button>
 
-          <button
+          {/* <button
             onClick={openNotifications}
             className="inline-flex w-11 h-11 bg-linear-to-r from-black-1000 via-neutral-500 to-black-1000 hover:from-primary-color hover:via-primary-color hover:to-primary-color rounded-full justify-center items-center"
           >
             <img src="/icons/bell-icon.svg" className="w-6" />
-          </button>
+          </button> */}
         </div>
       </nav>
 

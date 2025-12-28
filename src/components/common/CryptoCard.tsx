@@ -353,7 +353,7 @@ export const CryptoCard: React.FC<CryptoCardProps> = ({
           </div>
           <div className="w-full h-full flex transition duration-300 group-hover:invisible group-hover:opacity-0 visible opacity-100 flex-col items-start justify-between">
             
-          <DynamicCounter endsAt={raffle.endsAt} />
+          <DynamicCounter endsAt={raffle.endsAt} status={raffle.state?.toLowerCase() == "active" ? "ACTIVE" : "ENDED"} />
 
             <div className="w-full flex items-center justify-between">
               <div className="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-black/60">

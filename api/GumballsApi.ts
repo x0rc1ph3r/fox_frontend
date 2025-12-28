@@ -17,10 +17,12 @@ export const fetchGumballs = async ({
   const response = await getGumballs(pageParam, pageSize);
   let filteredData: GumballBackendDataType[] = response.gumballs.filter((r:GumballBackendDataType) => r.prizes.length >0 ) || [];
   
-  if (filter === "Featured") {
+  if (filter === "All Gumballs") {
     filteredData = filteredData.filter((r) => r.status === "ACTIVE");
   } else if (filter === "Past Gumballs") {
-    filteredData = filteredData.filter((r) => r.status === "ENDED" || r.status === "CANCELLED");
+    filteredData = filteredData.filter((r) => r.status === "COMPLETED_SUCCESSFULLY" || r.status === "COMPLETED_FAILED" || r.status === "CANCELLED");
+  }else{
+    filteredData = []
   }
 
   const pageItems = filteredData.slice((pageParam - 1) * pageSize, pageParam * pageSize);

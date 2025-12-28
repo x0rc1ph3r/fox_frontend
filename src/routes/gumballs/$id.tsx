@@ -228,7 +228,7 @@ function GumballsDetails() {
                         <img src={gumball.prizes[0]?.image || "/images/ended-img-1.png"} className="w-full object-cover lg:h-[604px] h-[406px]" alt={gumball.name} />
                         <div className="absolute top-0 left-0 w-full h-full bg-black/50"></div>
                         <p className='md:text-[28px] text-lg text-white font-bold font-inter absolute z-10'>
-                          {gumball.status === "CANCELLED" ? "Cancelled" : gumball.status === "ENDED" ? "Sale Ended" : "Not Started"}
+                          {gumball.status === "CANCELLED" ? "Cancelled" : (gumball.status === "COMPLETED_SUCCESSFULLY" || gumball.status === "COMPLETED_FAILED") ? "Sale Ended" : "Not Started"}
                         </p>
                     </div>
                     
@@ -243,11 +243,11 @@ function GumballsDetails() {
                           <h1 className='md:text-[28px] text-xl font-inter font-bold text-black-1000'>{gumball.name}</h1>
                           <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
                             gumball.status === "ACTIVE" ? "bg-green-100 text-green-600" :
-                            gumball.status === "ENDED" ? "bg-gray-200 text-gray-600" :
+                            gumball.status === "COMPLETED_SUCCESSFULLY" || gumball.status === "COMPLETED_FAILED" ? "bg-gray-200 text-gray-600" :
                             gumball.status === "CANCELLED" ? "bg-red-100 text-red-600" :
                             "bg-yellow-100 text-yellow-600"
                           }`}>
-                            {gumball.status}
+                            {gumball.status === "ACTIVE" ? "Active" : (gumball.status === "COMPLETED_SUCCESSFULLY" || gumball.status === "COMPLETED_FAILED") ? "Ended" : gumball.status === "CANCELLED" ? "Cancelled" : "Not Started"}
                           </span>
                         </div>
                         <div className="w-full">
@@ -297,7 +297,7 @@ function GumballsDetails() {
                             </div>
 
                             <div className="w-full">
-                                {isActive ? 
+                                {isActive && gumball?.prizesAdded > 0 ? 
                                 <div className="w-full">
                                 {/* <div className="w-full flex items-center justify-between pt-7 pb-5">
                                         <p className="text-sm font-medium font-inter text-gray-1200">
@@ -390,7 +390,7 @@ function GumballsDetails() {
                                 :
                                 <div className="w-full bg-gray-1300 rounded-full flex items-center justify-center h-12 my-10">
                                     <p className='text-base text-black-1000 text-center font-semibold font-inter'>
-                                      {gumball.status === "CANCELLED" ? "Cancelled" : gumball.status === "ENDED" ? "Sale Ended" : "Not Started Yet"}
+                                      {gumball.status === "CANCELLED" ? "Cancelled" : (gumball.status === "COMPLETED_SUCCESSFULLY" || gumball.status === "COMPLETED_FAILED") ? "Ended" : "Not Started Yet"}
                                     </p>
                                     
                                 </div>

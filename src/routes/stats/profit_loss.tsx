@@ -80,7 +80,7 @@ function ProfitLoss() {
         <section className='w-full max-w-[1280px] mx-auto pt-[60px] pb-[100px]'>
                 <div className="w-full max-w-[1440px] px-5 mx-auto">
                     <div className="w-full flex md:flex-nowrap flex-wrap md:gap-0 gap-4 items-center justify-between mb-7">
-                        <h1 className='text-[28px] font-semibold text-black-1000 font-inter'>Leaderboard</h1>
+                        <h1 className='text-[28px] font-semibold text-black-1000 font-inter'>Raffle Profit/Loss</h1>
                         <label htmlFor="file" className='border group transition hover:bg-black-1000 hover:text-white cursor-pointer md:text-base text-sm text-black-1000 text-center font-semibold font-inter border-black-1000 rounded-full px-6 py-3'>
                         <input type="file" hidden name="file" id="file" />
                         <div className="flex items-center gap-2.5">

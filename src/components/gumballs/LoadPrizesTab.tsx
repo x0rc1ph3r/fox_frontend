@@ -9,23 +9,35 @@ import { useGetTotalPrizeValueInSol } from '../../../hooks/useGetTotalPrizeValue
 export const LoadPrizesTab = ({gumballId}: {gumballId: string}) => {
   const [isAddTokenModalOpen, setIsAddTokenModalOpen] = useState(false);
   const [isAddNftModalOpen, setIsAddNftModalOpen] = useState(false);
-  const { data: gumball  } = useGumballById(gumballId) as { data: GumballBackendDataType };
-  console.log("gumball",gumball);
-  const totalPrizesAdded = gumball?.prizes.reduce((acc, prize) => acc + prize.quantity, 0) || 0;
-  
+  const { data: gumball, isLoading } = useGumballById(gumballId) as { data: GumballBackendDataType, isLoading: boolean };
+  console.log("gumball", gumball);
+
   const { totalValueInSol, isLoading: isPriceLoading, formattedValue } = useGetTotalPrizeValueInSol(gumball?.prizes);
   
-  const maxROI = useMemo(()=>{
-    const maxProceeds = gumball?.maxPrizes * parseFloat(gumball?.ticketPrice)/(10**(VerifiedTokens.find((token: typeof VerifiedTokens[0]) => token.address === gumball?.ticketMint)?.decimals || 0));
-    const roi = (maxProceeds - totalValueInSol)/maxProceeds * 100;
-    console.log("maxProceeds",maxProceeds);
-    console.log("totalValueInSol",totalValueInSol);
-    console.log("roi",roi);
-    if(isNaN(roi) || roi === Infinity) return 0;
+  const maxROI = useMemo(() => {
+    if (!gumball) return '0';
+    const maxProceeds = gumball.maxPrizes * parseFloat(gumball.ticketPrice) / (10 ** (VerifiedTokens.find((token: typeof VerifiedTokens[0]) => token.address === gumball.ticketMint)?.decimals || 0));
+    const roi = (maxProceeds - totalValueInSol) / maxProceeds * 100;
+    console.log("maxProceeds", maxProceeds);
+    console.log("totalValueInSol", totalValueInSol);
+    console.log("roi", roi);
+    if (isNaN(roi) || roi === Infinity) return '0';
     return Math.max(roi, 0).toFixed(2); 
-  }, [gumball?.maxPrizes, gumball?.ticketPrice, gumball?.ticketMint, totalValueInSol]);
+  }, [gumball, totalValueInSol]);
   console.log(maxROI);
 
+  if (isLoading || !gumball) {
+    return <div className='w-full'>
+      <div className="flex items-center gap-5 border border-solid border-primary-color rounded-[10px] bg-primary-color/5 py-4 px-5">
+        <div className="w-full h-full flex items-center justify-center">
+          <div className="w-10 h-10 border border-solid border-primary-color rounded-full animate-spin"></div>
+        </div>
+      </div>
+    </div>;
+  }
+
+  const totalPrizesAdded = gumball.prizes.reduce((acc, prize) => acc + prize.quantity, 0) || 0;
+  
   return (
     <div className='w-full'>
          <div className="flex items-center gap-5 border border-solid border-primary-color rounded-[10px] bg-primary-color/5 py-4 px-5">

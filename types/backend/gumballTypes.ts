@@ -94,7 +94,7 @@ export const gumballBackendDataSchema = z.object({
   id: z.number().int(),
   name: z.string(),
   creatorAddress: z.string(),
-  status: z.enum(["INITIALIZED", "ACTIVE", "ENDED", "CANCELLED"]),
+  status: z.enum(["INITIALIZED", "ACTIVE", "COMPLETED_SUCCESSFULLY", "COMPLETED_FAILED", "CANCELLED"]),
   
   startTime: z.string().datetime(),
   endTime: z.string().datetime(),

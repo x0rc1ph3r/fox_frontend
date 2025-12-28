@@ -14,6 +14,9 @@ import { useCreatorProfileData } from "../../../hooks/useCreatorProfileData";
 import CryptoCardSkeleton from "@/components/skeleton/RafflesCardSkeleton";
 import { useProfileStats } from "../../../hooks/useProfileStats";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { CryptoCard } from "@/components/common/CryptoCard";
+import { useQueryFavourites } from "hooks/useQueryFavourites";
+import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 
 export const Route = createFileRoute("/profile/")({
   component: CreateProfile,
@@ -60,21 +63,18 @@ function CreateProfile() {
           { label: "Raffles Created", value: "created" },
           { label: "Raffles Purchased", value: "purchased" },
           { label: "Favourite Raffles", value: "favourite" },
-          { label: "Followed Raffles", value: "followed" },
         ];
       case "Auctions":
         return [
           { label: "Auctions Created", value: "created" },
           { label: "Auctions Participated", value: "purchased" },
           { label: "Favourite Auctions", value: "favourite" },
-          { label: "Followed Auctions", value: "followed" },
         ];
       case "Gumballs":
         return [
           { label: "Gumballs Created", value: "created" },
           { label: "Gumballs Purchased", value: "purchased" },
           { label: "Favourite Gumballs", value: "favourite" },
-          { label: "Followed Gumballs", value: "followed" },
         ];
       default:
         return [];
@@ -94,6 +94,8 @@ function CreateProfile() {
     getAuctionCreatedCards,
     getAuctionFavouriteCards,
   } = useProfileStats(publicKey?.toBase58() ?? "");
+
+  const {getFavouriteRaffle, getFavouriteGumball} = useQueryFavourites(publicKey?.toBase58() ?? "");
   const raffleStats = getRaffleStats.data?.stats;
   const gumballStats = getGumballStats.data?.stats;
   const auctionStats = getAuctionStats.data?.stats;
@@ -101,11 +103,11 @@ function CreateProfile() {
   const rafflePurchasedCards = getRafflePurchasedCards.data ?? [];
   const gumballCreatedCards = getGumballCreatedCards.data ?? [];
   const gumballPurchasedCards = getGumballPurchasedCards.data ?? [];
-  const gumballFavouriteCards = getGumballFavouriteCards.data ?? [];
   const auctionCreatedCards = getAuctionCreatedCards.data ?? [];
-  const auctionFavouriteCards = getAuctionFavouriteCards.data ?? [];
-  console.log(gumballCreatedCards);
 
+  const favouriteRaffles = getFavouriteRaffle.data;
+  const favouriteGumballs = getFavouriteGumball.data;
+  console.log("favouriteGumballs",favouriteGumballs);
   return (
     <main className="main font-inter">
       <section className="w-full pt-[60px] pb-[120px]">
@@ -114,13 +116,15 @@ function CreateProfile() {
             <div className="flex-1 space-y-5 md:max-w-[320px]">
               <div className="w-full bg-gray-1300 border border-gray-1100 rounded-[18px] py-5">
                 <div className="w-full px-4">
-                  <div className="w-full flex items-center justify-between gap-5 mb-4">
-                    <h4 className="text-lg text-primary-color font-inter font-semibold">
-                      {publicKey?.toBase58().slice(0, 6) +
-                        "....." +
-                        publicKey?.toBase58().slice(-6)}
-                    </h4>
-                    <div className="flex items-center gap-4">
+                  <div className={`w-full flex ${publicKey ? "justify-between" : "justify-center"} items-center  gap-5 mb-4`}>
+                    {publicKey? (
+                      <>
+                      <h4 className="text-lg text-primary-color font-inter font-semibold">
+                        {publicKey?.toBase58().slice(0, 6) +
+                          "....." +
+                          publicKey?.toBase58().slice(-6)}
+                      </h4>
+                      <div className="flex items-center gap-4">
                       <a href="#">
                         <img
                           src="/icons/solana-sol-logo.svg"
@@ -129,6 +133,11 @@ function CreateProfile() {
                         />
                       </a>
                     </div>
+                    </>
+                    ):(
+                      <WalletMultiButton className=" w-full h-11 px-6 py-2.5 rounded-full bg-linear-to-r from-black-1000 via-neutral-500 to-black-1000 hover:from-primary-color hover:via-primary-color hover:to-primary-color text-white  font-semibold" />
+                    )}
+                    
                   </div>
                 </div>
 
@@ -172,12 +181,9 @@ function CreateProfile() {
                             | "purchased"
                             | "favourite"
                         );
-                        if (
-                          filter.value === "created" ||
-                          filter.value === "purchased"
-                        ) {
-                          setActiveRafflerTab(filter.value);
-                        }
+                       
+                          setActiveRafflerTab(filter.value as "created" | "purchased" | "favourite");
+                        
                       }}
                       className={`
                             text-sm cursor-pointer transition px-5 py-3 text-start font-semibold font-inter w-full rounded-full
@@ -232,7 +238,7 @@ function CreateProfile() {
                           Purchase Volume
                         </p>
                         <p className="md:text-base text-sm font-medium font-inter text-black-1000 text-right">
-                          {raffleStats?.purchaseVolume / 10 ** 9}
+                          {(raffleStats?.purchaseVolume / 10 ** 9) || ""}
                         </p>
                       </li>
                     </>
@@ -363,24 +369,22 @@ function CreateProfile() {
                         className={`grid ${
                           activeRafflerTab === `purchased`
                             ? `grid-cols-1`
-                            : `lg:grid-cols-3 md:grid-cols-2 grid-cols-1`
+                            : activeRafflerTab === `favourite` ? `grid-cols-3` : `lg:grid-cols-3 md:grid-cols-2 grid-cols-1`
                         } lg:gap-y-10 lg:gap-x-[26px] gap-4`}
                       >
-                        {(activeRafflerTab === "purchased"
-                          ? rafflePurchasedCards
-                          : raffleCreatedCards
-                        ).map((card: any) => (
-                          <div
-                            key={card.id}
-                            className="flex items-center justify-center"
-                          >
-                            {activeRafflerTab === "purchased" ? (
-                              <RafflersCardPurchased {...card} />
-                            ) : (
-                              <RafflersCard {...card} />
-                            )}
-                          </div>
-                        ))}
+                        {activeRafflerTab === "purchased" ? (
+                          rafflePurchasedCards.map((card: any) => (
+                            <RafflersCardPurchased key={card.id} {...card} />
+                          ))
+                        ) : activeRafflerTab === "favourite" ? (
+                          favouriteRaffles?.map((card: any) => (
+                            <CryptoCard key={card.id} raffle={card} soldTickets={card.ticketSold} />
+                          ))
+                        ) : (
+                          raffleCreatedCards.map((card: any) => (
+                            <RafflersCard key={card.id} {...card} />
+                          ))
+                        )}
                       </div>
                     )}
                   </>
@@ -428,21 +432,20 @@ function CreateProfile() {
                             : "lg:grid-cols-3 md:grid-cols-2 grid-cols-1"
                         } lg:gap-y-10 lg:gap-x-[26px] gap-4`}
                       >
-                        {(activeRafflerTab === "purchased"
-                          ? gumballPurchasedCards
-                          : gumballCreatedCards
-                        ).map((card: any) => (
-                          <div
-                            key={card.id}
-                            className="flex items-center justify-center"
-                          >
-                            {activeRafflerTab === "purchased" ? (
-                              <GumballsCardPurchased gumball={card} />
-                            ) : (
-                              <GumballsCardCreated gumball={card} />
-                            )}
-                          </div>
-                        ))}
+                        {activeRafflerTab === "purchased" ? (
+                          gumballPurchasedCards.map((card: any) => (
+                            <GumballsCardPurchased key={card.id} gumball={card} />
+                          ))
+                        ) : activeRafflerTab === "favourite" ? (
+                          favouriteGumballs?.map((card: any) => (
+                            <GumballsCard key={card.id} gumball={card} />
+                          ))
+                        ) : (
+                          gumballCreatedCards.map((card: any) => (
+                            <GumballsCardCreated key={card.id} gumball={card} />
+                          ))
+                        )}
+                          
                       </div>
                     )}
                   </>

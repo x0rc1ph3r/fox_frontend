@@ -12,8 +12,6 @@ import { useGumballsQuery } from "../../../hooks/useGumballsQuery";
 import { useGlobalStore } from "../../../store/globalStore";
 import CryptoCardSkeleton from "@/components/skeleton/RafflesCardSkeleton";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { useGumballAnchorProgram } from "../../../hooks/useGumballAnchorProgram";
-import { BN } from "@coral-xyz/anchor";
 import { NoGumballs } from "../../components/home/NoGumballs";
 import { useFiltersStore } from "../../../store/filters-store";
 import { sortGumballs, filterGumballs, getActiveFiltersList, hasActiveFilters, type PageType } from "../../utils/sortAndFilter";
@@ -40,7 +38,6 @@ function Gumballs() {
   const { data, fetchNextPage, hasNextPage, isLoading } =
     useGumballsQuery(filter);
   const { sort, setSort, searchQuery, setSearchQuery } = useGlobalStore();
-  const { getGumballConfig, getAllGumballs } = useGumballAnchorProgram();
 
   const {
     raffleType,
@@ -103,14 +100,6 @@ function Gumballs() {
 
   return (
     <main className="main font-inter">
-      <button
-        onClick={() => {
-          console.log(getGumballConfig.data);
-          console.log(getAllGumballs?.data);
-        }}
-      >
-        get all gumballs
-      </button>
       {/* <section className="w-full md:pt-0 pt-5">
        
         <div className="w-full max-w-[1440px] px-5 mx-auto">
