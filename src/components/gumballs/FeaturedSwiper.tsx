@@ -6,6 +6,7 @@ import "swiper/css/pagination";
 import { useFeaturedRafflesStore } from "../../../store/featured-gumballs-store";
 import CryptoCardSkeleton from "../skeleton/RafflesCardSkeleton";
 import { GumballsCard } from "./GumballsCard";
+import type { GumballBackendDataType } from "../../../types/backend/gumballTypes";
 
 const FeaturedSwiper = () => {
   const { gumballs, loading, fetchGumballs } = useFeaturedRafflesStore();
@@ -48,7 +49,7 @@ const FeaturedSwiper = () => {
           {gumballs.map((card) => (
             <SwiperSlide key={card.id}>
               <div className="flex-1">
-                <GumballsCard {...card} className="my-0" />
+                <GumballsCard gumball={card as unknown as GumballBackendDataType} className="my-0" />
               </div>
             </SwiperSlide>
           ))}

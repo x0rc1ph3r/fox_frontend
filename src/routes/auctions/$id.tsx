@@ -415,7 +415,7 @@ function AuctionDetails() {
                             }
 
                             {tabs[1].active &&
-                             <TransactionsTable/>
+                             <TransactionsTable transactions={[]}/>
                             }
 
                             {tabs[2].active &&

@@ -357,7 +357,7 @@ function RouteComponent() {
                   {TimeExtension ? (
                     <div className="w-full flex items-center flex-col-reverse md:flex-row justify-between py-[22px] px-[26px] border border-gray-1100 rounded-[20px] bg-gray-1300">
                       <div className="inline-flex w-full md:w-fit flex-col gap-2.5">
-                        <DynamicCounter endsAt={raffle?.endsAt} />
+                        <DynamicCounter endsAt={raffle?.endsAt} status={raffle?.state?.toLowerCase() === "active" ? "ACTIVE" : "ENDED"} />
                         <p className="text-sm font-inter text-gray-1200 font-normal">
                           Time Left
                         </p>
@@ -574,7 +574,7 @@ function RouteComponent() {
                         </h3>
                         <div className="w-full md:mb-5">
                           <PrimaryButton
-                            className={`w-full h-[54px] ${cancelRaffle.isPending ? "opacity-50 cursor-not-allowed" : ""} ${raffle.ticketSold > 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+                            className={`w-full h-[54px] ${cancelRaffle.isPending ? "opacity-50 cursor-not-allowed" : ""} ${raffle.ticketSold && raffle.ticketSold > 0 ? "opacity-50 cursor-not-allowed" : ""}`}
                             text={`Cancel Raffle`}
                             onclick={() => {
                               cancelRaffle.mutate(raffle?.id || 0);

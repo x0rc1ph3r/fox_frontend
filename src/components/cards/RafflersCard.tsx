@@ -323,13 +323,9 @@ export const RafflersCard: React.FC<RafflersCardProps> = (props) => {
     ticketTokenAddress,
     maxEntries,
     endsAt,
-    val,
-    ttv,
-    roi,
     id,
-    userAvatar = "/images/default-avatar.png",
     userName,
-    isFavorite = false,
+    state,
     className,
     category = "General",
     rafflesType = "active",
@@ -446,7 +442,7 @@ export const RafflersCard: React.FC<RafflersCardProps> = (props) => {
           </div>
 
           <div className="w-full h-full flex transition duration-300 group-hover:invisible group-hover:opacity-0 visible opacity-100 flex-col items-start justify-between">
-            <DynamicCounter endsAt={endsAt} />
+            <DynamicCounter endsAt={endsAt} status={state?.toLowerCase() === "active" ? "ACTIVE" : "ENDED"} />
           </div>
         </div>
       </div>
