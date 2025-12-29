@@ -279,10 +279,10 @@ function CreateAuctions() {
               <div className="lg:w-4/6 md:w-3/5 w-full">
                 <div>
                   <div>
-                    <p className="text-primary-color text-base font-medium font-inter">
+                    {/* <p className="text-primary-color text-base font-medium font-inter">
                       Please link your twitter and discord in your profile or
                       your raffles won't be shown.
-                    </p>
+                    </p> */}
                     <div className="w-full my-5 md:my-10">
                       <p className="md:text-base text-sm text-black-1000 font-inter font-medium pb-5">
                         When would you like the sale to start?
@@ -1004,7 +1004,7 @@ function CreateAuctions() {
                           </div>
 
                           <div className="font-semibold text-black">
-                            {nft.floorPrice.toFixed(2)} SOL
+                            {nft.floorPrice.toFixed(2) ?? 0} SOL
                           </div>
 
                           {isSelected && (
