@@ -222,7 +222,7 @@ function CreateAuctions() {
                           onClick={() => setIsPrizeModalOpen(true)}
                           className="text-white cursor-pointer hover:from-primary-color hover:via-primary-color hover:to-primary-color font-semibold text-sm lg:text-base leading-normal font-inter h-10 lg:h-11 rounded-full inline-flex items-center justify-center px-5 lg:px-[26px] transition duration-500 hover:opacity-90 bg-linear-to-r from-neutral-800 via-neutral-500 to-neutral-800 gap-2"
                         >
-                          Add
+                          + Add
                         </button>
                       </div>
                     ) : (

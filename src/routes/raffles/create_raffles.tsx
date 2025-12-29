@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Dialog, Transition } from "@headlessui/react";
-import { Fragment, useEffect, useMemo } from "react";
+import { Dialog, DialogPanel, Transition } from "@headlessui/react";
+import { Fragment, useState, useMemo } from "react";
 import { AgreeCheckbox } from "@/components/common/AgreeCheckbox";
 import AdvancedSettingsAccordion from "@/components/home/AdvancedSettings";
 import AmountInput from "@/components/home/AmountInput";
@@ -21,6 +21,9 @@ export const Route = createFileRoute("/raffles/create_raffles")({
 import { useCreateRaffle } from "../../../hooks/useCreateRaffle";
 
 import { Loader } from "lucide-react";
+import { useFetchUserNfts } from "hooks/useFetchUserNfts";
+import { useGetCollectionFP } from "hooks/useGetCollectionFP";
+import clsx from "clsx";
 
 function CreateRaffles() {
   const {
@@ -28,6 +31,7 @@ function CreateRaffles() {
     isCreateTokenModalOpen,
     userVerifiedTokens,
     tokenPrizeMint,
+    setTokenPrizeMint,
     openVerifiedCollectionsModal,
     closeVerifiedCollectionsModal,
     openCreateTokenModal,
@@ -66,6 +70,15 @@ function CreateRaffles() {
   } = useCreateRaffleStore();
 
   const {createRaffle} = useCreateRaffle();
+  const { collectionFPs, collectionFPMap } = useGetCollectionFP();
+  const [isPrizeModalOpen, setIsPrizeModalOpen] = useState(false);
+    const [nftData, setNftData] = useState<{
+      mint: string;
+      name: string;
+      image: string;
+      collectionName: string;
+      floorPrice: number;
+    } | null>(null);
 
 
   const today = useMemo(() => new Date(), []);
@@ -76,6 +89,64 @@ function CreateRaffles() {
     setEndTimePeriod(period);
   };
 
+
+  const [selectedNftId, setSelectedNftId] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState("");
+  
+    const { userNfts, isLoading: isLoadingNfts } = useFetchUserNfts();
+  
+    // Mapping raw NFT data to a clean format
+    const nfts = useMemo(() => {
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+      return (userNfts || []).map((nft: any) => ({
+        id: nft.id,
+        name: nft.content.metadata.name,
+        image: nft.content.links.image,
+        floorPrice: collectionFPMap[nft.grouping[0].group_value],
+        mint: nft.id,
+      }));
+    }, [userNfts, collectionFPMap]);
+  
+    // Filtered list based on search input
+    const filteredNfts = useMemo(() => {
+      if (!searchQuery.trim()) return nfts;
+      const query = searchQuery.toLowerCase();
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+      return nfts.filter((nft: any) => nft.name.toLowerCase().includes(query));
+    }, [searchQuery, nfts]);
+  
+    // Toggle selection: if clicking the same one, deselect it
+    const handleSelectNft = (id: string) => {
+      setSelectedNftId((prevId) => (prevId === id ? null : id));
+    };
+  
+    const handleAddPrizes = async () => {
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+      const selectedNftData = nfts.find((nft: any) => nft.id === selectedNftId);
+  
+      if (!selectedNftData) return;
+  
+      // Constructed as a single object (or wrap in array if your API requires it)
+      const prizeData = {
+        mint: selectedNftData.mint,
+        name: selectedNftData.name,
+        image: selectedNftData.image,
+        collectionName: collectionFPs[0]?.name || "",
+        floorPrice: selectedNftData.floorPrice ?? 0,
+      };
+  
+      console.log("prizeData", prizeData);
+  
+      setNftData(prizeData);
+      setTokenPrizeMint(selectedNftData.mint);
+      handleClose();
+    };
+  
+    const handleClose = () => {
+      setSelectedNftId(null);
+      setSearchQuery("");
+      setIsPrizeModalOpen(false);
+    };
 
  
   return (
@@ -96,34 +167,52 @@ function CreateRaffles() {
               <div className="lg:w-2/6 md:w-2/5 w-full">
                 <div className="flex items-start gap-10 pb-5">
                   <div className="w-full">
-                    <div className="relative border border-solid border-gray-1100 h-[361px] lg:h-[450px] bg-gray-1300 rounded-[20px] flex items-center justify-center flex-col">
-                      <h4 className="font-inter mb-5 lg:mb-6 font-bold lg:text-2xl text-lg text-black-1000/30">
-                        Add an NFT prize
-                      </h4>
-                      <Link
-                        to={"."}
-                        className="text-white hover:from-primary-color hover:via-primary-color hover:to-primary-color font-semibold text-sm lg:text-base leading-normal font-inter h-10 lg:h-11 rounded-full inline-flex items-center justify-center px-5 lg:px-[26px] transition duration-500 hover:opacity-90 bg-linear-to-r from-neutral-800 via-neutral-500 to-neutral-800 gap-2"
-                      >
-                        <span className="w-6 h-6 flex items-center justify-center">
+                    {!nftData ? (
+                      <div className="relative border border-solid border-gray-1100 h-[361px] lg:h-[450px] bg-gray-1300 rounded-[20px] flex items-center justify-center flex-col">
+                        <h4 className="font-inter mb-5 lg:mb-6 font-bold lg:text-2xl text-lg text-black-1000/30">
+                          Add an NFT prize
+                        </h4>
+                        <button
+                          onClick={() => setIsPrizeModalOpen(true)}
+                          className="text-white cursor-pointer hover:from-primary-color hover:via-primary-color hover:to-primary-color font-semibold text-sm lg:text-base leading-normal font-inter h-10 lg:h-11 rounded-full inline-flex items-center justify-center px-5 lg:px-[26px] transition duration-500 hover:opacity-90 bg-linear-to-r from-neutral-800 via-neutral-500 to-neutral-800 gap-2"
+                        >
+                          + Add
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="relative border border-solid border-gray-1100 h-[361px] lg:h-[450px] bg-gray-1300 rounded-[20px] flex items-center justify-center flex-col overflow-hidden">
+                        <button
+                          onClick={() => setIsPrizeModalOpen(true)}
+                          className="cursor-pointer absolute top-4 right-4 z-10 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-300 backdrop-blur-sm flex items-center gap-2 px-3 py-1.5 text-xs font-semibold"
+                        >
                           <svg
                             width="14"
                             height="14"
-                            viewBox="0 0 14 14"
+                            viewBox="0 0 24 24"
                             fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
                           >
-                            <path
-                              d="M0.75 6.75H12.75M6.75 0.75V12.75"
-                              stroke="#fff"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                           </svg>
-                        </span>
-                        Add
-                      </Link>
-                    </div>
+                          Edit
+                        </button>
+
+                        <img
+                          src={nftData.image}
+                          alt={nftData.name}
+                          className="w-full h-full object-cover rounded-[20px]"
+                        />
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-5 pt-10">
+                          <p className="text-white font-inter font-bold text-lg lg:text-xl truncate">
+                            {nftData.name}
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div>
@@ -648,6 +737,179 @@ function CreateRaffles() {
         isOpen={isCreateTokenModalOpen}
         onClose={closeCreateTokenModal}
       />
+
+      <Dialog
+              open={isPrizeModalOpen}
+              as="div"
+              className="relative z-50 focus:outline-none"
+              onClose={handleClose}
+            >
+              <div className="fixed inset-0 z-10 w-screen overflow-y-auto bg-black/70">
+                <div className="flex min-h-full items-center justify-center p-4">
+                  <DialogPanel
+                    transition
+                    className="w-full max-w-[800px] rounded-2xl bg-white border-2 border-primary-color/40 shadow-2xl duration-300 ease-out data-closed:transform-[scale(95%)] data-closed:opacity-0"
+                  >
+                    {/* Header Close Button */}
+                    <div className="flex items-center justify-end px-6 pt-6 pb-2">
+                      <button
+                        onClick={handleClose}
+                        className="flex items-center justify-center w-10 h-10 rounded-full bg-white border-2 border-gray-100 cursor-pointer hover:bg-gray-100 transition duration-300"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                          <path
+                            d="M2 2L14 14M2 14L14 2"
+                            stroke="#000"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+      
+                    {/* Search Input */}
+                    <div className="px-6 pb-4">
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="flex-1 relative">
+                          <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                            <svg
+                              width="20"
+                              height="20"
+                              viewBox="0 0 20 20"
+                              fill="none"
+                            >
+                              <path
+                                d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM19 19l-4.35-4.35"
+                                stroke="#000"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </div>
+                          <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search NFT name"
+                            className="w-full h-14 pl-12 pr-4 rounded-xl border-2 border-primary-color/50 bg-transparent text-black-1000 placeholder:text-black-1000/50 font-medium focus:outline-none focus:border-primary-color transition"
+                          />
+                        </div>
+                      </div>
+                    </div>
+      
+                    {/* Table Header */}
+                    <div className="px-11 pb-3">
+                      <div className="grid grid-cols-[50px_1fr_150px] gap-4 text-left">
+                        <span className="text-sm font-semibold text-gray-400">
+                          NFT
+                        </span>
+                        <span className="text-sm font-semibold text-gray-400">
+                          Title
+                        </span>
+                        <span className="text-sm font-semibold text-gray-400">
+                          Floor Price
+                        </span>
+                      </div>
+                    </div>
+      
+                    {/* List Body */}
+                    <div className="px-6 pb-6 min-h-[40vh] max-h-[50vh] overflow-y-auto">
+                      {isLoadingNfts ? (
+                        <div className="flex items-center justify-center h-40">
+                          <p className="text-gray-400 animate-pulse">
+                            Loading items...
+                          </p>
+                        </div>
+                      ) : filteredNfts.length === 0 ? (
+                        <div className="flex items-center justify-center h-40">
+                          <p className="text-xl font-semibold text-gray-400">
+                            No NFTs found
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                          {filteredNfts.map((nft: any) => {
+                            const isSelected = selectedNftId === nft.id;
+                            return (
+                              <div
+                                key={nft.id}
+                                onClick={() => handleSelectNft(nft.id)}
+                                className={clsx(
+                                  "relative grid grid-cols-[50px_1fr_150px] gap-4 items-center p-4 rounded-xl cursor-pointer transition duration-200",
+                                  isSelected
+                                    ? "bg-primary-color/10 border-2 border-primary-color"
+                                    : "bg-white border-2 border-gray-50 hover:bg-gray-50"
+                                )}
+                              >
+                                <div className="relative w-10 h-10 rounded overflow-hidden bg-gray-100 flex-shrink-0">
+                                  <img
+                                    src={nft.image}
+                                    alt={nft.name}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      (e.target as HTMLImageElement).src =
+                                        "/images/placeholder-nft.png";
+                                    }}
+                                  />
+                                </div>
+      
+                                <div className="font-medium text-black truncate">
+                                  {nft.name}
+                                </div>
+      
+                                <div className="font-semibold text-black">
+                                  {nft.floorPrice?.toFixed(2) ?? "0.00"} SOL
+                                </div>
+      
+                                {isSelected && (
+                                  <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                                    <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                                      <svg
+                                        width="14"
+                                        height="10"
+                                        viewBox="0 0 14 10"
+                                        fill="none"
+                                      >
+                                        <path
+                                          d="M1 5L5 9L13 1"
+                                          stroke="white"
+                                          strokeWidth="2"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                        />
+                                      </svg>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+      
+                    {/* Footer Action */}
+                    <div className="px-6 py-5 border-t flex items-center justify-between flex-col border-gray-100">
+                      <button
+                        onClick={handleAddPrizes}
+                        disabled={!selectedNftId}
+                        className={clsx(
+                          "w-[50%] h-14 rounded-full font-semibold text-lg transition duration-300",
+                          selectedNftId
+                            ? "bg-primary-color text-white hover:shadow-lg cursor-pointer"
+                            : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                        )}
+                      >
+                        Confirm NFT
+                      </button>
+                    </div>
+                  </DialogPanel>
+                </div>
+              </div>
+            </Dialog>
     </div>
   );
 }
