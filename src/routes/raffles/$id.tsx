@@ -2,7 +2,7 @@ import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Disclosure } from "@headlessui/react";
 import { PrimaryLink } from "@/components/ui/PrimaryLink";
-import { ParticipantsTable } from "@/components/auctions/ParticipantsTable";
+import { ParticipantsTable } from "@/components/home/ParticipantsTable";
 import { TransactionsTable } from "@/components/auctions/TransactionsTable";
 import { TermsConditions } from "@/components/auctions/TermsConditions";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
