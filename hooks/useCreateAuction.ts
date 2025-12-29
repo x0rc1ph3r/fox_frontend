@@ -101,7 +101,7 @@ export const useCreateAuction = () => {
         mutationKey: ["createAuction"],
         mutationFn: async (args: AuctionOnChainArgs) => {
             if (!validateForm(args)) {
-                throw Error;
+                throw new Error("Validation failed");
             }
             const data = await createAuctionOverBackend({
                 id: fetchAuctionConfig(),
@@ -155,7 +155,7 @@ export const useCreateAuction = () => {
             return { auctionId: fetchAuctionConfig() };
         },
         onSuccess: (auctionId: number) => {
-            queryClient.invalidateQueries({ queryKey: ["aucations", auctionId.toString()] });
+            queryClient.invalidateQueries({ queryKey: ["auctions", auctionId.toString()] });
             toast.success("Auction created successfully");
             new Promise((resolve) => setTimeout(resolve, 2000));
             router.navigate({ to: "/auctions/$id", params: { id: auctionId.toString() } });

@@ -11,12 +11,18 @@ export const useAuctionsQuery = (filter: string) => {
   })
 }
 
+type AuctionTypeBackendExtended = AuctionTypeBackend & {
+  status: string;
+  creator: { walletAddress: string; twitterId?: string };
+  bids: [];
+};
+
 export const useAuctionById = (id:string) => {
   return useQuery({
     queryKey: ["auction", id],
     queryFn: () => {
       const data = fetchAuctionById(id);
-      return data as Promise<AuctionTypeBackend>;
+      return data as Promise<AuctionTypeBackendExtended>;
     },
     enabled: !!id,
     staleTime: 60000,
