@@ -1004,7 +1004,7 @@ function CreateAuctions() {
                           </div>
 
                           <div className="font-semibold text-black">
-                            {nft.floorPrice.toFixed(2) ?? 0} SOL
+                            {nft.floorPrice?.toFixed(2) ?? "0.00"} SOL
                           </div>
 
                           {isSelected && (
