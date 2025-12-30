@@ -73,7 +73,7 @@ export const useCreateGumball = () => {
                 name: args.name,
                 manualStart: false,
                 startTime: new Date(args.startTime * 1000),
-                endTime: new Date(args.endTime * 1000),
+                endTime: new Date((args.endTime + 100) * 1000),
                 totalTickets: 0,
                 ticketPrice: args.ticketPrice.toString(),
                 isTicketSol: args.isTicketSol,
@@ -86,7 +86,7 @@ export const useCreateGumball = () => {
             console.log(createGumball);
             const tx =  await createGumballMutation.mutateAsync({
                 startTime: args.startTime,
-                endTime: args.endTime,
+                endTime: args.endTime + 100,
                 totalTickets: args.totalTickets,
                 ticketPrice: args.ticketPrice,
                 isTicketSol: args.isTicketSol,
