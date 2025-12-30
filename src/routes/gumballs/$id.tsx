@@ -13,6 +13,7 @@ import { prepareSpin } from '../../../api/routes/gumballRoutes';
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useToggleFavourite } from "../../../hooks/useToggleFavourite";
 import { useQueryFavourites } from "../../../hooks/useQueryFavourites";
+import { DynamicCounter } from '@/components/common/DynamicCounter';
 
 
 interface Prize{
@@ -250,7 +251,7 @@ function GumballsDetails() {
                             {gumball.status === "ACTIVE" ? "Active" : (gumball.status === "COMPLETED_SUCCESSFULLY" || gumball.status === "COMPLETED_FAILED") ? "Ended" : gumball.status === "CANCELLED" ? "Cancelled" : "Not Started"}
                           </span>
                         </div>
-                        <div className="w-full">
+                        <div className="w-full flex flex-col gap-5">
                             <div className="w-full flex items-center justify-between md:pt-5 py-6 md:pb-6">
                                 <div className="inline-flex gap-4">
                                     <img src="/images/placeholder-user.png" className="w-10 h-10 rounded-full object-cover" alt="creator" />
@@ -284,7 +285,10 @@ function GumballsDetails() {
                                   Favourite
                                 </button>
                             </div>
-
+                            <div className="w-full flex items-center justify-start">
+                              <p className='text-lg font-semibold font-inter text-black-1000 w-full'>Ends in</p>
+                              <DynamicCounter  endsAt={new Date(gumball.endTime)} status={gumball.status === "ACTIVE" ? "ACTIVE" : "ENDED"} className="" />
+                            </div>
                             <div className="w-full flex items-center justify-between py-4 px-5 border border-gray-1100 rounded-[20px] bg-gray-1300">
                                 <div className="inline-flex flex-col gap-2.5">
                                     <p className='font-inter text-sm text-gray-1200'>Ticket Price</p>
@@ -382,7 +386,7 @@ function GumballsDetails() {
                                 </div> */}
 
                                 <div className="w-full flex mt-10">
-                                <PrimaryButton onclick={handleSpinClick} text='Press To Spin' className='w-full h-12' disabled={spinGumballFunction.isPending || isSpinning} />
+                                <PrimaryButton onclick={handleSpinClick} text='Press To Spin' className='w-full h-12' disabled={spinGumballFunction.isPending || isSpinning || gumball.prizesAdded == gumball.spins.length} />
                                 </div>
 
                                 {/* <p className='md:text-base text-sm text-black-1000 font-medium font-inter pt-[18px] pb-10'>Your balance: 0 SOL</p> */}

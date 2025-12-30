@@ -23,19 +23,18 @@ function CreateGumballs() {
 
   // Determine if a tab should be disabled
   const isTabDisabled = (tabKey: GumballTab): boolean => {
-    const isGumballCreated = createdGumballId > 0;
     
     // If gumball is NOT created, disable "loadPrizes" tab
-    if (!isGumballCreated && tabKey === "loadPrizes") {
+    if ( tabKey === "loadPrizes") {
       return true;
     }
-    if (!isGumballCreated && tabKey === "studio") {
+    if (tabKey === "studio") {
       return true;
     }
     
     // If gumball IS created, disable "setup" tab
-    if (isGumballCreated && tabKey === "setup") {
-      return true;
+    if (tabKey === "setup") {
+      return false;
     }
     
     return false;

@@ -494,7 +494,7 @@ function AuctionDetails() {
                   {/* Winner Display (Remains same as previous step) */}
                   {computedStatus === "COMPLETED" &&
                     auction.highestBidderWallet && (
-                      <div className="w-full flex items-center justify-between p-5 rounded-2xl bg-green-600 text-white shadow-md">
+                      <div className="w-full flex items-center justify-between p-5 rounded-2xl bg-primary-color text-white shadow-md">
                         <div className="flex items-center gap-4">
                           <div className="p-2 bg-white/20 rounded-lg">
                             <img

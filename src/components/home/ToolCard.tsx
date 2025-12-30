@@ -12,11 +12,11 @@ export default function ToolCard({ imageSrc, title }: ToolCardProps) {
         className="w-full h-full object-cover transition-transform duration-500 rounded-[20px]"
       />
 
-      <div className="absolute -bottom-5 px-[30px] py-2 md:py-3 bg-gray-1400 rounded-full  duration-500 flex items-center md:w-auto w-full justify-center md:max-w-full max-w-[287px]">
+      {/* <div className="absolute -bottom-5 px-[30px] py-2 md:py-3 bg-gray-1400 rounded-full  duration-500 flex items-center md:w-auto w-full justify-center md:max-w-full max-w-[287px]">
         <p className="text-black-1000 text-base font-inter font-semibold">
           {title}
         </p>
-      </div>
+      </div> */}
     </div>
   );
 }

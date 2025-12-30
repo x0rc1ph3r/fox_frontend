@@ -161,7 +161,7 @@ export const Navbar = () => {
 
 
   const navLinks = [
-    { label: "Fox9", path: "/" },
+    { label: "Raffles", path: "/" },
     { label: "Auctions", path: "/auctions" },
     { label: "Gumballs", path: "/gumballs" },
   ];

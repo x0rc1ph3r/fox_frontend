@@ -310,10 +310,7 @@ function CreateRaffles() {
               <div className="lg:w-4/6 md:w-3/5 w-full">
                 <div>
                   <div>
-                    <p className="text-primary-color text-base font-medium font-inter">
-                      Please link your twitter and discord in your profile or
-                      your raffles won't be shown.
-                    </p>
+                    
                     <div className="w-full my-5 md:my-10">
                       <div className="grid md:grid-cols-2 gap-5">
                         <div className="">
@@ -430,7 +427,7 @@ function CreateRaffles() {
                               1.
                             </span>
                             <p className="flex-1 w-full text-black-1000 font-medium font-inter text-sm md:text-base leading-[160%] break-all">
-                              When you add prizes to a Gumball, the prizes will
+                              When you add prizes to a Raffle, the prizes will
                               be transferred from your wallet into an escrow
                               wallet.
                             </p>
@@ -442,9 +439,9 @@ function CreateRaffles() {
                             <p className="flex-1 w-full text-black-1000 font-medium font-inter text-sm md:text-base leading-[160%] break-all">
                               You will be charged an up-front rent fee, in SOL,
                               which will be taken in proportion to the number of
-                              prizes you choose to add to the Gumball, with a
+                              prizes you choose to add to the Raffle, with a
                               maximum rent fee of 0.72 SOL. The rent fee will be
-                              automatically refunded after the Gumball has been
+                              automatically refunded after the Raffle has been
                               closed.
                             </p>
                           </li>
@@ -455,7 +452,7 @@ function CreateRaffles() {
                             <p className="flex-1 w-full text-black-1000 font-medium font-inter text-sm md:text-base leading-[160%] break-all">
                               FFF and TFF holders will get a 50% fee waiver for
                               staking or sending foxes on missions prior to
-                              creating the Gumball and will be hosted on the
+                              creating the Raffle and will be hosted on the
                               "Featured" section of the home page.
                             </p>
                           </li>
@@ -465,7 +462,7 @@ function CreateRaffles() {
                             </span>
                             <p className="flex-1 w-full text-black-1000 font-medium font-inter text-sm md:text-base leading-[160%] break-all">
                               The prizes that do not get sold will be returned
-                              to you upon closing the Gumball.
+                              to you upon closing the Raffle.
                             </p>
                           </li>
                           <li className="flex items-start gap-1.5">
@@ -473,8 +470,8 @@ function CreateRaffles() {
                               5.
                             </span>
                             <p className="flex-1 w-full text-black-1000 font-medium font-inter text-sm md:text-base leading-[160%] break-all">
-                              You can specify the amount of time a Gumball runs
-                              at the creation of the Gumball. Gumballs require a
+                              You can specify the amount of time a Raffle runs
+                              at the creation of the Raffle. Raffles require a
                               minimum 24 hour run time.
                             </p>
                           </li>
@@ -483,10 +480,10 @@ function CreateRaffles() {
                               6.
                             </span>
                             <p className="flex-1 w-full text-black-1000 font-medium font-inter text-sm md:text-base leading-[160%] break-all">
-                              You can end the Gumball machine early if the
+                              You can end the Raffle machine early if the
                               expected value is at least -90% based on remaining
                               prizes or if it has been at least 10 hours since
-                              the last spin on that Gumball.
+                              the last spin on that Raffle.
                             </p>
                           </li>
                           <li className="flex items-start gap-1.5">
@@ -495,7 +492,7 @@ function CreateRaffles() {
                             </span>
                             <p className="flex-1 w-full text-black-1000 font-medium font-inter text-sm md:text-base leading-[160%] break-all">
                               FFF will take a total of 5% commission fee from
-                              the Gumball sales.
+                              the Raffle sales.
                             </p>
                           </li>
                           <li className="flex items-start gap-1.5">
@@ -504,9 +501,9 @@ function CreateRaffles() {
                             </span>
                             <p className="flex-1 w-full text-black-1000 font-medium font-inter text-sm md:text-base leading-[160%] break-all">
                               To enable Holder-only, you will be charged 1 SOL
-                              per Gumball creation, withdrawn at the time of
+                              per Raffle creation, withdrawn at the time of
                               creation. More information about holder-only
-                              Gumballs is available on the create Gumball site.
+                              Raffles is available on the create Raffle site.
                             </p>
                           </li>
                           <li className="flex items-start gap-1.5">
@@ -514,7 +511,7 @@ function CreateRaffles() {
                               9.
                             </span>
                             <p className="flex-1 w-full text-black-1000 font-medium font-inter text-sm md:text-base leading-[160%] break-all">
-                              Scheduled Gumballs will start at the scheduled
+                              Scheduled Raffles will start at the scheduled
                               date and time even if not all prizes have been
                               added.
                             </p>
@@ -524,8 +521,8 @@ function CreateRaffles() {
                               10.
                             </span>
                             <p className="flex-1 w-full text-black-1000 font-medium font-inter text-sm md:text-base leading-[160%] break-all">
-                              Gumballs CANNOT be edited once it has been
-                              launched. Gumballs cannot restart once it has been
+                              Raffles CANNOT be edited once it has been
+                              launched. Raffles cannot restart once it has been
                               stopped.
                             </p>
                           </li>
@@ -534,7 +531,7 @@ function CreateRaffles() {
                               11.
                             </span>
                             <p className="flex-1 w-full text-black-1000 font-medium font-inter text-sm md:text-base leading-[160%] break-all">
-                              Once one Gumball has sold, the machine cannot be
+                              Once one Raffle has sold, the machine cannot be
                               closed until the specified end date.
                             </p>
                           </li>
@@ -543,10 +540,10 @@ function CreateRaffles() {
                               12.
                             </span>
                             <p className="flex-1 w-full text-black-1000 font-medium font-inter text-sm md:text-base leading-[160%] break-all">
-                              Gumball, its agents, directors, or officers shall
+                              Raffle, its agents, directors, or officers shall
                               not assume any liability or responsibility for
-                              your use of Gumball, promoting or marketing the
-                              Gumballs.
+                              your use of Raffle, promoting or marketing the
+                              Raffles.
                             </p>
                           </li>
                           <li className="flex items-start gap-1.5">
@@ -554,7 +551,7 @@ function CreateRaffles() {
                               13.
                             </span>
                             <p className="flex-1 w-full text-black-1000 font-medium font-inter text-sm md:text-base leading-[160%] break-all">
-                              Gumball currently does not support cNFTs, the
+                              Raffle currently does not support cNFTs, the
                               program ID is:
                               <strong className="font-medium block">
                                 MGUMqztv7MHgoHBYWbvMyL3E3NJ4UHfTwgLJUQAbKGa
