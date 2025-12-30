@@ -46,7 +46,7 @@ export const LoadPrizesTab = ({gumballId}: {gumballId: string}) => {
                 Load your prizes into the Gumball machine
               </p>
               <p className="md:text-lg text-sm font-medium text-black-1000 font-inter leading-7">
-                You can load a mix ofNFTs or  Tokens from our verified list. If you enable buy back, you’ll be able to top this up when the machine is live
+                You can load a mix of NFTs or  Tokens from our verified list. If you enable buy back, you’ll be able to top this up when the machine is live
               </p>
             </div>
           </div>
