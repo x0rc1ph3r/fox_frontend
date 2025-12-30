@@ -20,6 +20,7 @@ export const useClaimRafflePrize = () => {
         },
         onSuccess: (raffleId:number) => {
             queryClient.invalidateQueries({ queryKey: ["raffle", raffleId.toString()] });
+            queryClient.invalidateQueries({ queryKey: ["raffleWinnersWhoClaimedPrize", raffleId.toString()] });
             toast.success("Prize claimed successfully");
         },
         onError: (error) => {

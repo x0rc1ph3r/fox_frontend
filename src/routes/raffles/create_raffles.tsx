@@ -80,6 +80,7 @@ function CreateRaffles() {
     getComputedTTV,
     getComputedRent,
     setIsCreatingRaffle,
+    setNumberOfWinners,
   } = useCreateRaffleStore();
 
   const {createRaffle} = useCreateRaffle();
@@ -109,7 +110,6 @@ function CreateRaffles() {
   
     const { userNfts, isLoading: isLoadingNfts } = useFetchUserNfts();
   
-    // Mapping raw NFT data to a clean format
     const nfts = useMemo(() => {
       {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
       return (userNfts || []).map((nft: any) => ({
@@ -123,7 +123,6 @@ function CreateRaffles() {
       }));
     }, [userNfts, collectionFPMap]);
   
-    // Filtered list based on search input
     const filteredNfts = useMemo(() => {
       if (!searchQuery.trim()) return nfts;
       const query = searchQuery.toLowerCase();
@@ -131,7 +130,6 @@ function CreateRaffles() {
       return nfts.filter((nft: any) => nft.name.toLowerCase().includes(query));
     }, [searchQuery, nfts]);
   
-    // Toggle selection: if clicking the same one, deselect it
     const handleSelectNft = (id: string) => {
       setSelectedNftId((prevId) => (prevId === id ? null : id));
     };
@@ -142,7 +140,6 @@ function CreateRaffles() {
   
       if (!selectedNftData) return;
       console.log("selectedNftData", selectedNftData);
-      // Constructed as a single object (or wrap in array if your API requires it)
       const prizeData = {
         mint: selectedNftData.mint,
         name: selectedNftData.name,
@@ -160,6 +157,7 @@ function CreateRaffles() {
       setPrizeImage(selectedNftData.image);
       setNftCollection(selectedNftData.collectionAddress);
       setFloor(selectedNftData.floorPrice ?? 0);
+      setNumberOfWinners("1");
       handleClose();
     };
   
@@ -252,7 +250,7 @@ function CreateRaffles() {
                   <p className="md:text-2xl text-xl font-bold font-inter text-black-1000/30 pt-[22px] pb-[31px] md:pt-10 md:pb-7 text-center">
                     or
                   </p>
-                  <div className="bg-gray-1300 px-4 md:px-5 py-6 rounded-[20px] mb-5">
+                  <div className={`bg-gray-1300 px-4 md:px-5 py-6 rounded-[20px] mb-5 ${prizeType === "nft" ? "opacity-50 pointer-events-none" : ""}`}>
                     <p className="md:text-xl text-base font-inter font-bold text-primary-color pb-6">
                       Add a token prize
                     </p>
@@ -263,6 +261,11 @@ function CreateRaffles() {
                       Raffle tokens
                     </label>
                     <TokenPrizeInput />
+                    {prizeType === "nft" && (
+                      <p className="text-xs text-gray-500 font-inter mt-2">
+                        Token prizes are disabled when an NFT prize is selected.
+                      </p>
+                    )}
                   </div>
                   <div className="w-full flex justify-end gap-2">
                   {userVerifiedTokens?.length != 0 ?(

@@ -1,6 +1,7 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query"
 import { fetchRaffleById, fetchRaffles } from "../api/rafflesApi"
 import type { RaffleTypeBackend } from "../types/backend/raffleTypes";
+import { getRaffleWinnersWhoClaimedPrize } from "../api/routes/raffleRoutes";
 
 export const useRaffles = (filter: string) => {
   return useInfiniteQuery({
@@ -27,4 +28,16 @@ export const useRaffleById = (raffleId:string) => {
     staleTime: 60000,
     enabled: !!raffleId,
   })
+}
+
+export const useRaffleWinnersWhoClaimedPrize = (raffleId:string) => {
+  return useQuery<{ sender: string }[]>({
+    queryKey: ["raffleWinnersWhoClaimedPrize", raffleId],
+    queryFn: async () => {
+      const data = await getRaffleWinnersWhoClaimedPrize(raffleId);
+      return data.prizesClaimed;
+    },
+    staleTime: 60000,
+    enabled: !!raffleId,
+  });
 }

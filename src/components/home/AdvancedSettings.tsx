@@ -5,7 +5,9 @@ import { useCreateRaffleStore } from "store/createRaffleStore";
 
 export default function AdvancedSettingsAccordion() {
   const [isOpen, setIsOpen] = useState(false);
-  const {numberOfWinners, ticketLimitPerWallet, setNumberOfWinners, setTicketLimitPerWallet, getComputedRent} = useCreateRaffleStore();
+  const {numberOfWinners, ticketLimitPerWallet, setNumberOfWinners, setTicketLimitPerWallet, getComputedRent, prizeType} = useCreateRaffleStore();
+  
+  const isNftPrize = prizeType === "nft";
 
   const toggleAccordion = () => setIsOpen((prev) => !prev);
 
@@ -74,18 +76,25 @@ export default function AdvancedSettingsAccordion() {
                   Users can purchase 40% of total tickets as standard
                 </p>
               </div>
-              <div>
+              <div className={isNftPrize ? "opacity-50" : ""}>
                 <label
                   className="text-sm font-medium font-inter text-gray-1200 pb-2.5 block"
                 >
                   Number of winners
                 </label>
-                <FormInput value={numberOfWinners} onChange={(e) => {
-                  setNumberOfWinners(e.target.value);
-                  getComputedRent();
-                }} type="number" placeholder="250" className="bg-white" />
+                <FormInput 
+                  value={numberOfWinners} 
+                  onChange={(e) => {
+                    setNumberOfWinners(e.target.value);
+                    getComputedRent();
+                  }} 
+                  type="number" 
+                  placeholder="250" 
+                  className="bg-white" 
+                  disabled={isNftPrize}
+                />
                 <p className="md:text-sm text-xs font-medium font-inter text-black-1000 pt-2.5">
-                  Max 10 Winners
+                  {isNftPrize ? "NFT prizes can only have 1 winner" : "Max 10 Winners"}
                 </p>
               </div>
             </div>

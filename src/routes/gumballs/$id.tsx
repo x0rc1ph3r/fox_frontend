@@ -301,7 +301,7 @@ function GumballsDetails() {
                             </div>
 
                             <div className="w-full">
-                                {isActive && gumball?.prizesAdded > 0 ? 
+                                {isActive && gumball?.prizesAdded > 0 && gumball.creatorAddress !== publicKey?.toString() ? 
                                 <div className="w-full">
                                 {/* <div className="w-full flex items-center justify-between pt-7 pb-5">
                                         <p className="text-sm font-medium font-inter text-gray-1200">
@@ -392,11 +392,18 @@ function GumballsDetails() {
                                 {/* <p className='md:text-base text-sm text-black-1000 font-medium font-inter pt-[18px] pb-10'>Your balance: 0 SOL</p> */}
                                 </div>
                                 :
+                                gumball.creatorAddress !== publicKey?.toString() ?
                                 <div className="w-full bg-gray-1300 rounded-full flex items-center justify-center h-12 my-10">
                                     <p className='text-base text-black-1000 text-center font-semibold font-inter'>
                                       {gumball.status === "CANCELLED" ? "Cancelled" : (gumball.status === "COMPLETED_SUCCESSFULLY" || gumball.status === "COMPLETED_FAILED") ? "Ended" : "Not Started Yet"}
                                     </p>
                                     
+                                </div>
+                                :
+                                <div className="w-full bg-gray-1300 rounded-full flex items-center justify-center h-12 my-10">
+                                    <p className='text-base text-black-1000 text-center font-semibold font-inter'>
+                                      You are the creator of this gumball
+                                    </p>
                                 </div>
                                 }
                                 <div className="w-full flex items-center gap-4 mt-10">

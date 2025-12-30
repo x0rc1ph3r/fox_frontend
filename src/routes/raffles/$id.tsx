@@ -1,16 +1,17 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Disclosure } from "@headlessui/react";
+import { Disclosure, Dialog, Transition } from "@headlessui/react";
+import { Fragment } from "react";
 import { PrimaryLink } from "@/components/ui/PrimaryLink";
 import { ParticipantsTable } from "@/components/home/ParticipantsTable";
 import { TransactionsTable } from "@/components/auctions/TransactionsTable";
 import { TermsConditions } from "@/components/auctions/TermsConditions";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import QuantityBox from "@/components/home/QuantityBox";
-import { useRaffleById } from "../../../hooks/useRaffles";
+import { useRaffleById, useRaffleWinnersWhoClaimedPrize } from "../../../hooks/useRaffles";
 import { DynamicCounter } from "@/components/common/DynamicCounter";
 import { VerifiedTokens } from "@/utils/verifiedTokens";
-import { Loader } from "lucide-react";
+import { Loader, X, Trophy } from "lucide-react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useBuyRaffleTicket } from "../../../hooks/useBuyRaffleTicket";
 import { useBuyRaffleTicketStore } from "../../../store/buyraffleticketstore";
@@ -60,10 +61,11 @@ function RouteComponent() {
   const { ticketQuantity } = useBuyRaffleTicketStore();
   const { cancelRaffle } = useCancelRaffle();
   const { claimPrize } = useClaimRafflePrize();
-  const [winnersWhoClaimedPrize, setWinnersWhoClaimedPrize] = useState<
-    { sender: string }[]
-  >([]);
-  const [showwinnerssModal, setShowwinnerssModal] = useState(false);
+  // const [winnersWhoClaimedPrize, setWinnersWhoClaimedPrize] = useState<
+  //   { sender: string }[]
+  // >([]);
+  const { data: winnersWhoClaimedPrize } = useRaffleWinnersWhoClaimedPrize(id || "");
+  const [showWinnersModal, setShowWinnersModal] = useState(false);
   const { connect } = useWallet();
   const [tabs, setTabs] = useState([
     { name: "Participants", active: true },
@@ -89,17 +91,18 @@ function RouteComponent() {
     }
   }, [raffle?.endsAt, raffle?.state]);
 
-  useEffect(() => {
-    if (raffle?.id) {
-      getRaffleWinnersWhoClaimedPrize(raffle?.id.toString() || "")
-        .then((response) => {
-          setWinnersWhoClaimedPrize(response.prizesClaimed);
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-    }
-  }, [raffle?.id]);
+  // useEffect(() => {
+  //   if (raffle?.id) {
+  //     getRaffleWinnersWhoClaimedPrize(raffle?.id.toString() || "")
+  //       .then((response) => {
+  //         setWinnersWhoClaimedPrize(response.prizesClaimed);
+  //       })
+  //       .catch((error) => {
+  //         console.error(error);
+  //       });
+  //   }
+  // }, [raffle?.id,raffle?.winners]);
+  
 
   console.log(winnersWhoClaimedPrize);
   if (isLoading) {
@@ -466,12 +469,12 @@ function RouteComponent() {
                           </div>
                           {raffle.winners && raffle?.winners?.length > 1 ? (
                             <button
-                              className="text-white font-semibold font-inter"
+                              className="text-white font-semibold font-inter underline underline-offset-2 hover:opacity-80 transition-opacity"
                               onClick={() => {
-                                setShowwinnerssModal(true);
+                                setShowWinnersModal(true);
                               }}
                             >
-                              View all winnerss
+                              View all {raffle.winners.length} winners
                             </button>
                           ) : (
                             <>
@@ -508,12 +511,12 @@ function RouteComponent() {
                               claimPrize.mutate({
                                 raffleId: Number(raffle?.id) || 0,
                               });
-                            }}
+                            }}  
                             text="Claim Prize"
-                            disabled={winnersWhoClaimedPrize.some(
+                            disabled={(winnersWhoClaimedPrize && winnersWhoClaimedPrize?.some(
                               (winner) =>
                                 winner.sender === publicKey?.toBase58()
-                            )}
+                            )) ?? false}
                           />
                         ) : (
                           <h4 className="sm:text-base text-xs text-white font-semibold font-inter px-4">
@@ -533,7 +536,7 @@ function RouteComponent() {
                   ) : (
                     <></>
                   )}
-                  {publicKey && publicKey.toBase58() !== raffle?.createdBy ? (
+                  {publicKey && publicKey.toBase58() !== raffle?.createdBy && raffle.state === "active" ? (
                     <div className="w-full mt-6">
                       <div className="w-full items-center grid lg:grid-cols-2 sm:grid-cols-2 grid-cols-1 gap-5">
                         <QuantityBox max={raffle?.maxEntries || 1} />
@@ -575,8 +578,9 @@ function RouteComponent() {
                         </h3>
                         <div className="w-full md:mb-5">
                           <PrimaryButton
-                            className={`w-full h-[54px] ${cancelRaffle.isPending ? "opacity-50 cursor-not-allowed" : ""} ${raffle.ticketSold && raffle.ticketSold > 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+                            className={`w-full h-[54px] ${cancelRaffle.isPending ? "opacity-50 cursor-not-allowed" : ""} `}
                             text={`Cancel Raffle`}
+                            disabled={cancelRaffle.isPending || (raffle.ticketSold && raffle.ticketSold > 0) ? true : false || raffle.state !== "active"}
                             onclick={() => {
                               cancelRaffle.mutate(raffle?.id || 0);
                             }}
@@ -734,6 +738,147 @@ function RouteComponent() {
           </div>
         </div>
       </section>
+
+      {/* Winners Modal */}
+      <Transition appear show={showWinnersModal} as={Fragment}>
+        <Dialog
+          as="div"
+          className="relative z-50"
+          onClose={() => setShowWinnersModal(false)}
+        >
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4 text-center">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-[24px] bg-gray-1300 border border-gray-1100 p-6 text-left align-middle shadow-xl transition-all">
+                  <div className="flex items-center justify-between mb-6">
+                    <Dialog.Title
+                      as="h3"
+                      className="text-xl font-bold font-inter text-black-1000 flex items-center gap-3"
+                    >
+                      <div className="w-10 h-10 rounded-full bg-primary-color flex items-center justify-center">
+                        <Trophy className="w-5 h-5 text-white" />
+                      </div>
+                      Raffle Winners
+                    </Dialog.Title>
+                    <button
+                      onClick={() => setShowWinnersModal(false)}
+                      className="w-8 h-8 rounded-full bg-gray-1400 hover:bg-gray-1100 transition-colors flex items-center justify-center cursor-pointer"
+                    >
+                      <X className="w-4 h-4 text-black-1000" />
+                    </button>
+                  </div>
+
+                  <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
+                    {raffle?.winners?.map((winner, index) => {
+                      const isCurrentUser =
+                        publicKey?.toBase58() === winner.walletAddress;
+                      const hasClaimed = (winnersWhoClaimedPrize && winnersWhoClaimedPrize?.some(
+                        (claimed) => claimed.sender === winner.walletAddress
+                      )) ?? false;
+                      const ticketsWon = raffle.raffleEntries?.find(
+                        (entry) => entry.userAddress === winner.walletAddress
+                      )?.quantity;
+
+                      return (
+                        <div
+                          key={winner.walletAddress}
+                          className={`p-4 rounded-[16px] border ${
+                            isCurrentUser
+                              ? "bg-primary-color/10 border-primary-color"
+                              : "bg-white border-gray-1100"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div
+                                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                                  isCurrentUser
+                                    ? "bg-primary-color text-white"
+                                    : "bg-gray-1400 text-black-1000"
+                                }`}
+                              >
+                                #{index + 1}
+                              </div>
+                              <div>
+                                <p
+                                  className={`font-semibold font-inter ${
+                                    isCurrentUser
+                                      ? "text-primary-color"
+                                      : "text-black-1000"
+                                  }`}
+                                >
+                                  {winner.walletAddress.slice(0, 6)}...
+                                  {winner.walletAddress.slice(-4)}
+                                  {isCurrentUser && (
+                                    <span className="ml-2 text-xs bg-primary-color text-white px-2 py-0.5 rounded-full">
+                                      You
+                                    </span>
+                                  )}
+                                </p>
+                                <p className="text-sm text-gray-1200 font-inter">
+                                  Won with {ticketsWon || 0} ticket
+                                  {ticketsWon !== 1 ? "s" : ""}
+                                </p>
+                              </div>
+                            </div>
+
+                            {isCurrentUser && (
+                              <PrimaryButton
+                                className="h-10 px-4 text-sm"
+                                onclick={() => {
+                                  claimPrize.mutate({
+                                    raffleId: Number(raffle?.id) || 0,
+                                  });
+                                  setShowWinnersModal(false);
+                                }}
+                                text={hasClaimed ? "Claimed" : "Claim Prize"}
+                                disabled={hasClaimed || claimPrize.isPending}
+                              />
+                            )}
+
+                            {!isCurrentUser && hasClaimed && (
+                              <span className="text-xs bg-green-100 text-green-700 px-3 py-1.5 rounded-full font-medium">
+                                Claimed
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="mt-6 pt-4 border-t border-gray-1100">
+                    <p className="text-sm text-gray-1200 font-inter text-center">
+                      Total Winners: {raffle?.winners?.length || 0} /{" "}
+                      {raffle?.numberOfWinners}
+                    </p>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
     </main>
   );
 }

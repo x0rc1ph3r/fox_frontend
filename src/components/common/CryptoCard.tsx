@@ -366,7 +366,11 @@ export const CryptoCard: React.FC<CryptoCardProps> = ({
             <div className="w-full flex items-center justify-between">
               <div className="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-black/60">
                 <p className="text-xs font-semibold font-inter uppercase text-white">
+                  {raffle.prizeData.type==="NFT"? <>
+                  FP:<span>{raffle.prizeData.floor || 0}</span>
+                  </> : <>
                   VAL : <span>{raffle.val || 0}</span>
+                  </>}
                 </p>
               </div>
 
@@ -378,7 +382,7 @@ export const CryptoCard: React.FC<CryptoCardProps> = ({
                 </div>
                 <div className="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-black/60">
                   <p className="text-xs font-semibold font-inter uppercase text-white">
-                    +{raffle.roi}%
+                    {raffle.roi > 0 ? `+${raffle.roi}%` : `${raffle.roi}%`}
                   </p>
                 </div>
               </div>

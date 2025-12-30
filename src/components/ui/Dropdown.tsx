@@ -46,7 +46,7 @@ export default function Dropdown({
               )}
             >
               {selected ? (
-                <span className="text-black-1000">{selected.value}</span>
+                <span className="text-black-1000">{selected.label}</span>
               ) : (
                 <span className="text-black-1000">{placeholder}</span>
               )}
@@ -84,7 +84,7 @@ export default function Dropdown({
             >
               {options.map((option) => (
                 <ListboxOption
-                  key={option.label}
+                  key={option.value}
                   value={option}
                   className={clsx(
                     "group flex cursor-default transition font-inter font-medium duration-300",
@@ -93,7 +93,7 @@ export default function Dropdown({
                     "items-center gap-2 px-6 py-3 select-none"
                   )}
                 >
-                  {option.value}
+                  {option.label}
                 </ListboxOption>
               ))}
             </ListboxOptions>

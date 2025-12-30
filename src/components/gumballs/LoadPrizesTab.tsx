@@ -111,11 +111,6 @@ export const LoadPrizesTab = ({gumballId}: {gumballId: string}) => {
                     </div>
                    </div>
 
-                   <div className="w-full p-5 border-t border-gray-1100">
-                    <p className='text-base text-black-1000/30 font-semibold font-inter'>0 Prizes Added</p>
-
-                   </div>
-
                 </div>
 
                 <div className="relative border border-solid border-gray-1100 bg-gray-1300 rounded-[20px]">
@@ -150,12 +145,6 @@ export const LoadPrizesTab = ({gumballId}: {gumballId: string}) => {
                     </button>
                     </div>
                    </div>
-
-                   <div className="w-full p-5 border-t border-gray-1100">
-                    <p className='text-base text-black-1000/30 font-semibold font-inter'>{totalPrizesAdded} Prizes Added</p>
-
-                   </div>
-
                 </div>
 
                 <AddTokenModal 

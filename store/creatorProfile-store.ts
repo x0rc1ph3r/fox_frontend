@@ -3,6 +3,7 @@ import { create } from "zustand";
 type MainFilter = "Rafflers" | "Auctions" | "Gumballs";
 type RafflerFilter = "created" | "purchased" | "favourite" ;
 type ActiveTab = "created" | "purchased" | "favourite";
+type SortOption = "newest" | "oldest" | "price_high" | "price_low" | "ending_soon";
 
 interface CreatorProfileState {
   mainFilter: MainFilter;
@@ -16,6 +17,9 @@ interface CreatorProfileState {
 
   enabled: boolean;
   setEnabled: (value: boolean) => void;
+
+  sortOption: SortOption;
+  setSortOption: (value: SortOption) => void;
 }
 
 export const useCreatorProfileStore = create<CreatorProfileState>((set) => ({
@@ -30,4 +34,7 @@ export const useCreatorProfileStore = create<CreatorProfileState>((set) => ({
 
   enabled: false,
   setEnabled: (value) => set({ enabled: value }),
+
+  sortOption: "newest",
+  setSortOption: (value) => set({ sortOption: value }),
 }));

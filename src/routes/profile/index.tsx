@@ -19,15 +19,18 @@ import { useQueryFavourites } from "hooks/useQueryFavourites";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { NoGumballs } from "@/components/home/NoGumballs";
 import { NoRaffles } from "@/components/home/NoRaffles";
+import { useMemo } from "react";
 
 export const Route = createFileRoute("/profile/")({
   component: CreateProfile,
 });
 
-const options1 = [
-  { label: "Raffles created", value: "Raffles created" },
-  { label: "Tickets Sold", value: "Tickets Sold" },
-  { label: "Volume", value: "Volume" },
+const sortOptions = [
+  { label: "Newest First", value: "newest" },
+  { label: "Oldest First", value: "oldest" },
+  { label: "Price: High to Low", value: "price_high" },
+  { label: "Price: Low to High", value: "price_low" },
+  { label: "Ending Soon", value: "ending_soon" },
 ];
 
 function CreateProfile() {
@@ -40,6 +43,8 @@ function CreateProfile() {
     setActiveRafflerTab,
     enabled,
     setEnabled,
+    sortOption,
+    setSortOption,
   } = useCreatorProfileStore();
 
   const { publicKey } = useWallet();
@@ -111,6 +116,42 @@ function CreateProfile() {
   const favouriteRaffles = getFavouriteRaffle.data;
   const favouriteGumballs = getFavouriteGumball.data;
   const favouriteAuctions = getFavouriteAuction.data;
+
+  // Sorting helper function
+  const sortItems = <T extends Record<string, any>>(items: T[]): T[] => {
+    if (!items || items.length === 0) return items;
+    
+    return [...items].sort((a, b) => {
+      switch (sortOption) {
+        case "newest":
+          return new Date(b.createdAt || b.created_at || 0).getTime() - new Date(a.createdAt || a.created_at || 0).getTime();
+        case "oldest":
+          return new Date(a.createdAt || a.created_at || 0).getTime() - new Date(b.createdAt || b.created_at || 0).getTime();
+        case "price_high":
+          return (b.ticketPrice || b.reservePrice || b.spinPrice || 0) - (a.ticketPrice || a.reservePrice || a.spinPrice || 0);
+        case "price_low":
+          return (a.ticketPrice || a.reservePrice || a.spinPrice || 0) - (b.ticketPrice || b.reservePrice || b.spinPrice || 0);
+        case "ending_soon":
+          return new Date(a.endDate || a.end_date || a.endTime || 0).getTime() - new Date(b.endDate || b.end_date || b.endTime || 0).getTime();
+        default:
+          return 0;
+      }
+    });
+  };
+
+  // Sorted data
+  const sortedRaffleCreatedCards = useMemo(() => sortItems(raffleCreatedCards), [raffleCreatedCards, sortOption]);
+  const sortedRafflePurchasedCards = useMemo(() => sortItems(rafflePurchasedCards), [rafflePurchasedCards, sortOption]);
+  const sortedGumballCreatedCards = useMemo(() => sortItems(gumballCreatedCards), [gumballCreatedCards, sortOption]);
+  const sortedGumballPurchasedCards = useMemo(() => sortItems(gumballPurchasedCards), [gumballPurchasedCards, sortOption]);
+  const sortedAuctionCreatedCards = useMemo(() => sortItems(auctionCreatedCards), [auctionCreatedCards, sortOption]);
+  const sortedAuctionPurchasedCards = useMemo(() => sortItems(auctionPurchasedCards), [auctionPurchasedCards, sortOption]);
+  const sortedFavouriteRaffles = useMemo(() => sortItems(favouriteRaffles ?? []), [favouriteRaffles, sortOption]);
+  const sortedFavouriteGumballs = useMemo(() => sortItems(favouriteGumballs ?? []), [favouriteGumballs, sortOption]);
+  const sortedFavouriteAuctions = useMemo(() => sortItems(favouriteAuctions ?? []), [favouriteAuctions, sortOption]);
+
+  // Get current sort option label for dropdown
+  const currentSortLabel = sortOptions.find(opt => opt.value === sortOption)?.label || "Sort Entries";
 
   return (
     <main className="main font-inter">
@@ -338,10 +379,10 @@ function CreateProfile() {
                 </ul>
 
                 <Dropdown
-                  options={options1}
-                  value={{ label: "Sort Entries", value: "Sort Entries" }}
+                  options={sortOptions}
+                  value={{ label: currentSortLabel, value: sortOption }}
                   onChange={(value) => {
-                    console.log("Selected option:", value);
+                    setSortOption(value.value as "newest" | "oldest" | "price_high" | "price_low" | "ending_soon");
                   }}
                 />
               </div>
@@ -363,8 +404,10 @@ function CreateProfile() {
                         ))}
                       </div>
                     ) : (activeRafflerTab === "purchased"
-                        ? rafflePurchasedCards
-                        : raffleCreatedCards
+                        ? sortedRafflePurchasedCards
+                        : activeRafflerTab === "favourite"
+                          ? sortedFavouriteRaffles
+                          : sortedRaffleCreatedCards
                       ).length < 1 ? (
                       <NoRaffles />
                     ) : (
@@ -378,18 +421,18 @@ function CreateProfile() {
                         } lg:gap-y-10 lg:gap-x-[26px] gap-4`}
                       >
                         {activeRafflerTab === "purchased"
-                          ? rafflePurchasedCards.map((card: any) => (
+                          ? sortedRafflePurchasedCards.map((card: any) => (
                               <RafflersCardPurchased key={card.id} {...card} />
                             ))
                           : activeRafflerTab === "favourite"
-                            ? favouriteRaffles?.map((card: any) => (
+                            ? sortedFavouriteRaffles?.map((card: any) => (
                                 <CryptoCard
                                   key={card.id}
                                   raffle={card}
                                   soldTickets={card.ticketSold}
                                 />
                               ))
-                            : raffleCreatedCards.map((card: any) => (
+                            : sortedRaffleCreatedCards.map((card: any) => (
                                 <RafflersCard key={card.id} {...card} />
                               ))}
                       </div>
@@ -405,7 +448,12 @@ function CreateProfile() {
                           <CryptoCardSkeleton key={i} />
                         ))}
                       </div>
-                    ) : auctionCreatedCards.length < 1 ? (
+                    ) : (activeRafflerTab === "purchased"
+                        ? sortedAuctionPurchasedCards
+                        : activeRafflerTab === "favourite"
+                          ? sortedFavouriteAuctions
+                          : sortedAuctionCreatedCards
+                      ).length < 1 ? (
                       <NoAuctions />
                     ) : (
                       <div
@@ -416,7 +464,7 @@ function CreateProfile() {
                         } lg:gap-y-10 lg:gap-x-[26px] gap-4`}
                       >
                         {activeRafflerTab === "purchased"
-                          ? auctionPurchasedCards.map((r: any) => (
+                          ? sortedAuctionPurchasedCards.map((r: any) => (
                               <AuctionsCard
                                 key={r.id}
                                 {...r}
@@ -428,7 +476,7 @@ function CreateProfile() {
                               />
                             ))
                           : activeRafflerTab === "favourite"
-                            ? favouriteAuctions?.map((r: any) => (
+                            ? sortedFavouriteAuctions?.map((r: any) => (
                                 <AuctionsCard
                                   key={r.id}
                                   {...r}
@@ -439,7 +487,7 @@ function CreateProfile() {
                                   reservePrice={r.reservePrice ?? ""}
                                 />
                               ))
-                            : auctionCreatedCards.map((r: any) => (
+                            : sortedAuctionCreatedCards.map((r: any) => (
                                 <AuctionsCard
                                   key={r.id}
                                   {...r}
@@ -465,8 +513,10 @@ function CreateProfile() {
                         ))}
                       </div>
                     ) : (activeRafflerTab === "purchased"
-                        ? gumballPurchasedCards
-                        : gumballCreatedCards
+                        ? sortedGumballPurchasedCards
+                        : activeRafflerTab === "favourite"
+                          ? sortedFavouriteGumballs
+                          : sortedGumballCreatedCards
                       ).length < 1 ? (
                       <NoGumballs/>
                     ) : (
@@ -478,17 +528,17 @@ function CreateProfile() {
                         } lg:gap-y-10 lg:gap-x-[26px] gap-4`}
                       >
                         {activeRafflerTab === "purchased"
-                          ? gumballPurchasedCards.map((card: any) => (
+                          ? sortedGumballPurchasedCards.map((card: any) => (
                               <GumballsCardPurchased
                                 key={card.id}
                                 gumball={card}
                               />
                             ))
                           : activeRafflerTab === "favourite"
-                            ? favouriteGumballs?.map((card: any) => (
+                            ? sortedFavouriteGumballs?.map((card: any) => (
                                 <GumballsCard key={card.id} gumball={card} />
                               ))
-                            : gumballCreatedCards.map((card: any) => (
+                            : sortedGumballCreatedCards.map((card: any) => (
                                 <GumballsCardCreated
                                   key={card.id}
                                   gumball={card}

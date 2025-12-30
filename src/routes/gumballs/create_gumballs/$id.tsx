@@ -5,7 +5,7 @@ import { LoadPrizesTab } from '@/components/gumballs/LoadPrizesTab';
 import { createFileRoute, Link, useParams, useRouteContext } from '@tanstack/react-router'
 import { useGumballStore, type GumballTab } from 'store/useGumballStore';
 import { useCreateGumball } from '../../../../hooks/useCreateGumball';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useGumballById } from 'hooks/useGumballsQuery';
 
 export const Route = createFileRoute('/gumballs/create_gumballs/$id')({
@@ -14,9 +14,15 @@ export const Route = createFileRoute('/gumballs/create_gumballs/$id')({
 
 function CreateGumballs() {
   const { id } = Route.useParams();
-  const {data:gumball} = useGumballById(id || "");
+  const {data:gumball,isLoading} = useGumballById(id || "");
   const isActive = gumball?.status === "ACTIVE";
-  const [activeTab, setActiveTab] = useState<GumballTab>(isActive ? "loadPrizes" : "studio");
+  const [activeTab, setActiveTab] = useState<GumballTab>("studio");
+
+  useEffect(() => {
+    if (gumball && isActive) {
+      setActiveTab("loadPrizes");
+    }
+  }, [gumball, isActive]);
   
   const tabs: { name: string; key: GumballTab }[] = useMemo(()=>{
     if(isActive){
@@ -33,6 +39,16 @@ function CreateGumballs() {
   const handleTabClick = (tabKey: GumballTab) => {
       setActiveTab(tabKey);
   };
+  if(isLoading){
+    return <div className="flex items-center min-h-[60vh] justify-center">
+      <img src="/loading-vector.svg" alt="" />
+    </div>
+  }
+  if(!gumball){
+    return <div className="w-full h-full flex items-center justify-center">
+      <p className="text-xl text-red-500 font-inter font-semibold">Gumball not found</p>
+    </div>
+  }
 
   return (
     <section className="md:pt-10 pt-5 md:pb-[122px] pb-5">

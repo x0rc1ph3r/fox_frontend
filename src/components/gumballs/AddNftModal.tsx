@@ -307,7 +307,7 @@ export default function AddNftModal({ isOpen, onClose, gumballId }: AddNftModalP
                         </div>
 
                         <div className="font-semibold text-black-1000 font-inter">
-                          {nft.floorPrice.toFixed(2)} SOL
+                          {nft.floorPrice ? nft.floorPrice.toFixed(2) : 0} SOL
                         </div>
 
                         {isSelected && (
