@@ -30,6 +30,7 @@ export type AuctionOnChainArgs = {
 };
 
 const FAKE_MINT = new PublicKey('So11111111111111111111111111111111111111112');
+const MIN_TIME = (24 * 60 * 60) + 100; // 24 hours in seconds
 
 export const useCreateAuction = () => {
     const { createAuctionMutation, getAuctionConfig } = useAuctionAnchorProgram();
@@ -65,6 +66,12 @@ export const useCreateAuction = () => {
             }
             if (!args.bidMint) {
                 args.bidMint = FAKE_MINT.toString()
+            }
+            if (args.endTime - args.startTime < MIN_TIME) {
+                throw new Error("End time must be at least 24 hours after start time");
+            }
+            if (args.startImmediately === false && args.startTime * 1000 < Date.now() + 100) {
+                throw new Error("Start time must be in the future");
             }
 
             return true;
