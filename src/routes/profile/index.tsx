@@ -303,7 +303,7 @@ function CreateProfile() {
                           Total Volume
                         </p>
                         <p className="md:text-base text-sm font-medium font-inter text-black-1000 text-right">
-                          {auctionStats?.totalVolumeBid ?? 0}
+                          {((auctionStats?.totalVolumeBid)/10**9).toFixed(2) ?? 0}
                         </p>
                       </li>
                     </>

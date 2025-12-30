@@ -160,7 +160,7 @@ export const getAuctionCreated = async (publicKey:string): Promise<{message:stri
 
 export const getAuctionPurchased = async (publicKey:string): Promise<{message:string, auctions:AuctionTypeBackend[]}> => {
     try {
-        const response = await api.get(`/user/profile/${publicKey}/auctions/purchased`);
+        const response = await api.get(`/user/profile/${publicKey}/auctions/participated`);
         return response.data;
     } catch (error) {
         console.error(error);
