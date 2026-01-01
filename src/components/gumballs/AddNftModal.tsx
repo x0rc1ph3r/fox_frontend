@@ -70,12 +70,7 @@ export default function AddNftModal({ isOpen, onClose, gumballId }: AddNftModalP
   const [selectedNfts, setSelectedNfts] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
   const {userNfts, isLoading: isLoadingNfts, error: errorNfts} = useFetchUserNfts();
-  console.log("userNfts",userNfts); 
   const { collectionFPs, collectionFPMap, isLoading: isLoadingCollectionFP, hasError: hasErrorCollectionFP } = useGetCollectionFP();
-  console.log("collectionFPs",collectionFPs);
-  console.log("collectionFPMap",collectionFPMap);
-  console.log("isLoadingCollectionFP",isLoadingCollectionFP);
-  console.log("hasErrorCollectionFP",hasErrorCollectionFP);
 
   const nfts = useMemo(()=>{
     return userNfts.map((nft: any) => ({
@@ -138,23 +133,19 @@ export default function AddNftModal({ isOpen, onClose, gumballId }: AddNftModalP
 
     const startingPrizeIndex = gumball?.prizesAdded || 0;
 
-    console.log("Selected NFT Data:", selectedNftData);
-    console.log("Starting Prize Index:", startingPrizeIndex);
 
     const prizesData: AddPrizeInputData[] = selectedNftData.map((nft: any, index: number) => {
       return {
-        prizeIndex: startingPrizeIndex + index,
+        prizeIndex: startingPrizeIndex + 1,
         isNft: true,
         mint: nft.mint,
         name: nft.name,
         image: nft.image,
-        prizeAmount: 1, 
+        prizeAmount: nft.floorPrice || 0, 
         quantity: 1, 
         floorPrice: String(nft.floorPrice || 0),
       };
     });
-
-    console.log("Prizes Data being sent:", prizesData);
 
     addPrizes.mutate(
       {

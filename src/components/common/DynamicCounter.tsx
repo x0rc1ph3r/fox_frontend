@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-export const DynamicCounter = ({ endsAt ,status,className}: { endsAt: Date ,status:"ACTIVE"|"ENDED",className?:string}) => {
+export const DynamicCounter = ({ endsAt ,status,className}: { endsAt: Date ,status:"ACTIVE"|"ENDED"|"CANCELLED" ,className?:string}) => {
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [elapsedTime, setElapsedTime] = useState({ days: 0, hours: 0, minutes: 0 });
 
@@ -60,7 +60,7 @@ export const DynamicCounter = ({ endsAt ,status,className}: { endsAt: Date ,stat
   
   return (
     <div className={`w-full flex items-center justify-end ${className}`}>
-      <div className="inline-flex items-center justify-center px-2.5 py-2 divide-x divide-white/30 rounded-lg bg-black/60 border border-white/30">
+      <div className={`inline-flex items-center justify-center px-2.5 py-2 divide-x divide-white/30 rounded-lg ${status === "CANCELLED" ? "bg-red-1000" : "bg-black/60"} border border-white/30`}>
         {isActive ? (
           <>
             {countdown.days > 0 && (
@@ -78,6 +78,10 @@ export const DynamicCounter = ({ endsAt ,status,className}: { endsAt: Date ,stat
               {countdown.seconds}S
             </p>
           </>
+        ) : status === "CANCELLED" ? (
+          <p className="text-xs font-semibold font-inter uppercase text-white">
+            Cancelled
+          </p>
         ) : (
           <p className="text-xs font-semibold font-inter uppercase text-white">
             Ended {formatElapsedTime()} ago

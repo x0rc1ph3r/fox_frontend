@@ -127,11 +127,10 @@ export default function AddTokenModal({ isOpen, onClose, gumballId,remainingPriz
   const maxPrizes = gumball?.maxPrizes || 0;
 
   const availableTokens = useMemo(() => {
-    // return VerifiedTokens.filter(token => 
-    //   !tokenPrizes.some(tp => tp.token.address === token.address) &&
-    //   !existingPrizes.some(ep => ep.mint === token.address)
-    // );
-    return VerifiedTokens;
+      return VerifiedTokens.filter(token => 
+        token.symbol === "VOTE" 
+      );
+    // return VerifiedTokens;
   }, [tokenPrizes, existingPrizes]);
 
   const handleAddToken = () => {
@@ -185,7 +184,7 @@ export default function AddTokenModal({ isOpen, onClose, gumballId,remainingPriz
       // Convert prize amount to base units (e.g., lamports for SOL)
       const prizeAmountInBaseUnits = Math.floor(prizeSize * Math.pow(10, decimals));
       return {
-        prizeIndex: startingPrizeIndex + index,
+        prizeIndex: startingPrizeIndex + 1,
         isNft: false,
         mint: tp.token.address,
         name: tp.token.name,

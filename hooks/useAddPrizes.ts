@@ -37,12 +37,13 @@ export const useAddPrizes = () => {
             console.log("gumballId", args.gumballId);
             console.log("Input prizes:", args.prizes);
             const onChainPrizes: OnChainPrizeInput[] = args.prizes.map((prize) => {
+                console.log("Processing prize:", prize);
                 console.log("Processing prize with mint:", prize.mint);
                 const mintPubkey = new PublicKey(prize.mint);
                 console.log("Converted to PublicKey:", mintPubkey.toString());
                 return {
                     prizeIndex: prize.prizeIndex,
-                    prizeAmount: prize.prizeAmount,
+                    prizeAmount: prize.prizeAmount>0 ? prize.prizeAmount : 1,
                     quantity: prize.quantity,
                     prizeMint: mintPubkey,
                 };

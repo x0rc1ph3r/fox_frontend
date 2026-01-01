@@ -145,7 +145,7 @@ export const GumballsCardCreated: React.FC<GumballsCardCreatedProps> = ({
           </div>
 
           <div className="w-full h-full flex transition duration-300 group-hover:invisible group-hover:opacity-0 visible opacity-100 flex-col items-start justify-between">
-            <DynamicCounter endsAt={new Date(endTime)} status={status == "ACTIVE" ? "ACTIVE" : "ENDED"} />
+            <DynamicCounter endsAt={new Date(endTime)} status={status == "ACTIVE" ? "ACTIVE" : status === "CANCELLED" ? "CANCELLED" : "ENDED"} />
 
             <div className="w-full flex items-center gap-1.5">
               <div className="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-black/60">
@@ -156,7 +156,7 @@ export const GumballsCardCreated: React.FC<GumballsCardCreatedProps> = ({
 
               <div className="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-black/60">
                 <p className="text-xs font-semibold font-inter uppercase text-white">
-                  VAL : <span>{val / 10 ** tokenDecimals}</span>
+                  VAL : <span>{(val>0) ? val / 10 ** tokenDecimals : 0}</span>
                 </p>
               </div>
 
@@ -168,7 +168,7 @@ export const GumballsCardCreated: React.FC<GumballsCardCreatedProps> = ({
                   status === "CANCELLED" ? "bg-gray-600" : "bg-yellow-600"
                 }`}>
                   <p className="text-xs font-semibold font-inter uppercase text-white">
-                    {status}
+                    {status === "CANCELLED" ? "Cancelled" : status === "COMPLETED_SUCCESSFULLY" ? "Completed" : status === "COMPLETED_FAILED" ? "Failed" : "Active"}
                   </p>
                 </div>
               )}

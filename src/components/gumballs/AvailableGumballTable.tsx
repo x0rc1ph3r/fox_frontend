@@ -27,13 +27,14 @@ export const AvailableGumballTable = ({gumballId}: {gumballId: string}) => {
   }, [gumball?.prizes, gumball?.spins]);
   return (
     <div className="mt-5 border relative border-gray-1100 md:pb-32 pb-10 rounded-[20px] w-full overflow-hidden">
-      {availableGumballs?.length === 0 && (
+      {availableGumballs?.length === 0 || gumball?.status === "CANCELLED" && (
         <div className="absolute w-full h-full flex items-center justify-center py-20">
           <p className="md:text-base text-sm font-medium text-center font-inter text-black-1000">
             No data found
           </p>
         </div>
       )}
+      
     <div className="overflow-auto">
       <table className="table md:w-full w-[767px]">
         <thead className="bg-gray-1300">
@@ -49,6 +50,7 @@ export const AvailableGumballTable = ({gumballId}: {gumballId: string}) => {
             </th>
           </tr>
         </thead>
+        {gumball?.status !== "CANCELLED" && (
         <tbody>
           {availableGumballs?.map((row, idx) => {
             const displayQuantity = row.isNft 
@@ -87,7 +89,7 @@ export const AvailableGumballTable = ({gumballId}: {gumballId: string}) => {
               </tr>
             );
           })}
-        </tbody>
+        </tbody>)}
       </table>
     </div>
     </div>

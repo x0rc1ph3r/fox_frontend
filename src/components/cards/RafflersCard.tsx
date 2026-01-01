@@ -442,7 +442,7 @@ export const RafflersCard: React.FC<RafflersCardProps> = (props) => {
           </div>
 
           <div className="w-full h-full flex transition duration-300 group-hover:invisible group-hover:opacity-0 visible opacity-100 flex-col items-start justify-between">
-            <DynamicCounter endsAt={endsAt} status={state?.toLowerCase() === "active" ? "ACTIVE" : "ENDED"} />
+            <DynamicCounter endsAt={endsAt} status={state?.toLowerCase() === "active" ? "ACTIVE" : state?.toLowerCase() === "cancelled" ? "CANCELLED" : "ENDED"} />
           </div>
         </div>
       </div>

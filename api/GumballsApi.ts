@@ -20,7 +20,7 @@ export const fetchGumballs = async ({
   if (filter === "All Gumballs") {
     filteredData = filteredData.filter((r) => r.status === "ACTIVE");
   } else if (filter === "Past Gumballs") {
-    filteredData = filteredData.filter((r) => r.status === "COMPLETED_SUCCESSFULLY" || r.status === "COMPLETED_FAILED" || r.status === "CANCELLED");
+    filteredData = filteredData.filter((r) => r.status === "COMPLETED_SUCCESSFULLY" || r.status === "COMPLETED_FAILED");
   }else{
     filteredData = []
   }

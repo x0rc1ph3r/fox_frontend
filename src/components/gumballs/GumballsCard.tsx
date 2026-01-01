@@ -175,7 +175,7 @@ export const GumballsCard: React.FC<GumballsCardProps> = ({
                 </p>
               </div>
             </div> */}
-            <DynamicCounter endsAt={new Date(endTime)} status={gumball.status == "ACTIVE" ? "ACTIVE" : "ENDED"} />
+            <DynamicCounter endsAt={new Date(endTime)} status={gumball.status == "ACTIVE" ? "ACTIVE" : gumball.status === "CANCELLED" ? "CANCELLED" : "ENDED"} />
             <div className="w-full flex items-center  gap-1.5">
                 <div className="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-black/60">
                   <p className="text-xs font-semibold font-inter uppercase text-white">

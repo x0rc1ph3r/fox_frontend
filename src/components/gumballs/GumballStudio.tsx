@@ -8,6 +8,7 @@ import { useGumballById } from "../../../hooks/useGumballsQuery";
 import type { GumballBackendDataType } from "../../../types/backend/gumballTypes";
 import { useGetTokenPrice } from "hooks/useGetTokenPrice";
 import { VerifiedTokens } from "@/utils/verifiedTokens";
+import { Loader2 } from "lucide-react";
 interface GumballStudioProps {
   gumballId: string;
 }
@@ -38,14 +39,34 @@ const totalProceedsInSol = useMemo(()=>{
   console.log(totalProcesds / parseFloat(solPrice?.price || "0"));
   return totalProcesds / parseFloat(solPrice?.price || "0");
 }, [gumball?.totalProceeds, solPrice?.price]);
+
+const availablePrizeIndexes = useMemo(() => {
+  if (!gumball?.prizes) return [];
+  
+  const spinCountByPrizeIndex: Record<number, number> = {};
+  gumball.spins?.forEach((spin) => {
+    const prizeIndex = spin.transaction.metadata.prizeIndex;
+    spinCountByPrizeIndex[prizeIndex] = (spinCountByPrizeIndex[prizeIndex] || 0) + 1;
+  });
+  
+  return gumball.prizes
+    .filter((prize) => prize.quantity - (spinCountByPrizeIndex[prize.prizeIndex] || 0) > 0)
+    .map((prize) => prize.prizeIndex);
+}, [gumball?.prizes, gumball?.spins]);
  console.log(totalProceedsInSol);
   
  return (
     <div className="w-full md:pt-[48px]">
         <div className="w-full flex items-center lg:justify-end md:gap-[30px] gap-4 md:mb-7 mb-5">
-            <button onClick={() => cancelGumball.mutate(parseInt(gumballId))} className="inline-flex cursor-pointer items-center gap-2.5 md:text-base text-sm font-medium text-red-1000 font-inter">
-                <img src="/icons/delete-icon-1.svg" className="w-6 h-6" alt="no-img" />
-                <span>Cancel Gumball</span>
+            <button onClick={() => cancelGumball.mutate({
+              gumballId: parseInt(gumballId),
+              prizeIndexes: availablePrizeIndexes,
+            })} className="inline-flex cursor-pointer items-center gap-2.5 md:text-base text-sm font-medium text-red-1000 font-inter disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={cancelGumball.isPending || availablePrizeIndexes.length === 0 || gumball?.status === "CANCELLED"}
+            
+            >
+              {cancelGumball.isPending ? <Loader2 className="w-6 h-6 animate-spin" /> : <img src="/icons/delete-icon-1.svg" className="w-6 h-6" alt="no-img" />}
+                <span>{cancelGumball.isPending ? "Cancelling..." : "Cancel Gumball"}</span>
             </button>
             <div className="border-r border-gray-1100 h-[34px]"></div>
             <Link to="/gumballs/$id"
@@ -70,13 +91,13 @@ const totalProceedsInSol = useMemo(()=>{
                 <h4 className="text-base font-medium font-inter text-primary-color">{gumball?.uniqueBuyers} Unique Buyers</h4>
                 </div>
             </div>
-            {gumball?.status !== "ACTIVE" &&  
+            {/* {gumball?.status === "INITIALIZED" &&  
             <div className="py-3">
                 <button className="h-12 cursor-pointer hover:opacity-90 max-w-[260px] flex-1 w-full rounded-full font-medium text-black-1000 text-center bg-primary-color">
                       Launch Gumball Now
                   </button>
               </div>
-            }
+            } */}
           </div>
 
         <ul className="flex items-center gap-3 md:gap-5 md:w-auto w-full pt-16">
