@@ -308,7 +308,7 @@ export const CryptoCard: React.FC<CryptoCardProps> = ({
       </div>
 
       <div className="w-full relative group flex items-center justify-center">
-        {raffle.prizeData.type==="NFT" ? (
+        {raffle.prizeData.type === "NFT" ? (
           <img
             src={raffle.prizeData.image}
             alt={raffle.prizeData.name}
@@ -360,17 +360,29 @@ export const CryptoCard: React.FC<CryptoCardProps> = ({
             </Link>
           </div>
           <div className="w-full h-full flex transition duration-300 group-hover:invisible group-hover:opacity-0 visible opacity-100 flex-col items-start justify-between">
-            
-          <DynamicCounter endsAt={raffle.endsAt} status={raffle.state?.toLowerCase() == "active" ? "ACTIVE" : raffle.state?.toLowerCase() === "cancelled" ? "CANCELLED" : "ENDED"} />
+            <DynamicCounter
+              endsAt={raffle.endsAt}
+              status={
+                raffle.state?.toLowerCase() == "active"
+                  ? "ACTIVE"
+                  : raffle.state?.toLowerCase() === "cancelled"
+                  ? "CANCELLED"
+                  : "ENDED"
+              }
+            />
 
             <div className="w-full flex items-center justify-between">
               <div className="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-black/60">
                 <p className="text-xs font-semibold font-inter uppercase text-white">
-                  {raffle.prizeData.type==="NFT"? <>
-                  FP:<span>{raffle.prizeData.floor || 0}</span>
-                  </> : <>
-                  VAL : <span>{raffle.val || 0}</span>
-                  </>}
+                  {raffle.prizeData.type === "NFT" ? (
+                    <>
+                      FP:<span>{raffle.prizeData.floor || 0}</span>
+                    </>
+                  ) : (
+                    <>
+                      VAL : <span>{raffle.val || 0}</span>
+                    </>
+                  )}
                 </p>
               </div>
 
@@ -394,7 +406,15 @@ export const CryptoCard: React.FC<CryptoCardProps> = ({
       <div className="w-full flex flex-col px-4 py-4 gap-7">
         <div className="w-full flex items-center gap-5 justify-between">
           <h3 className="text-2xl text-black-1000 font-bold font-inter">
-            <span>{raffle.val || 1}</span> {raffle.prizeData.symbol}
+            {raffle.prizeData.type === "NFT" ? (
+              <>
+                <span>{raffle.prizeData.name}</span>
+              </>
+            ) : (
+              <>
+                <span>{raffle.val || 1}</span> {raffle.prizeData.symbol}
+              </>
+            )}
           </h3>
 
           {raffle.prizeData.verified && (
@@ -423,7 +443,14 @@ export const CryptoCard: React.FC<CryptoCardProps> = ({
               </h4>
             )}
             <h4 className="text-base text-black-1000 text-right font-inter font-semibold">
-              <span>{raffle.ticketPrice/10**(VerifiedTokens.find((token) => token.address === raffle.ticketTokenAddress)?.decimals || 0)}</span> SOL
+              <span>
+                {raffle.ticketPrice /
+                  10 **
+                    (VerifiedTokens.find(
+                      (token) => token.address === raffle.ticketTokenAddress
+                    )?.decimals || 0)}
+              </span>{" "}
+              SOL
             </h4>
           </div>
           <div className="w-full flex items-center justify-between gap-5">
@@ -438,74 +465,85 @@ export const CryptoCard: React.FC<CryptoCardProps> = ({
 
         {rafflesType === "All Raffles" && (
           <div className="w-full flex items-center sm:flex-row flex-col justify-between gap-4">
-          <div className="flex flex-1 items-center justify-between py-2 px-3 border border-gray-1100 rounded-full">
-            <button
-              onClick={decrease}
-              className="min-w-8 h-8 cursor-pointer rounded-lg bg-primary-color text-white flex items-center justify-center"
-            >
-              <svg
-                width={15}
-                height={2}
-                viewBox="0 0 15 2"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
+            <div className="flex flex-1 items-center justify-between py-2 px-3 border border-gray-1100 rounded-full">
+              <button
+                onClick={decrease}
+                className="min-w-8 h-8 cursor-pointer rounded-lg bg-primary-color text-white flex items-center justify-center"
               >
-                <path
-                  d="M0.799805 0.799988H14.1331"
-                  stroke="white"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
+                <svg
+                  width={15}
+                  height={2}
+                  viewBox="0 0 15 2"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M0.799805 0.799988H14.1331"
+                    stroke="white"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
 
-            <input
-              value={getTicketQuantityById(raffle.id || 0)}
-              onChange={(e) =>
-                updateTicketQuantityById(raffle.id || 0,
-                  Math.min(MAX, Math.max(1, Number(e.target.value)))
-                )
-              }
-              className="outline-0 w-full text-center font-bold font-inter text-black-1000"
-              type="number"
-              name="quantity"
-              id="quantity"
-            />
+              <input
+                value={getTicketQuantityById(raffle.id || 0)}
+                onChange={(e) =>
+                  updateTicketQuantityById(
+                    raffle.id || 0,
+                    Math.min(MAX, Math.max(1, Number(e.target.value)))
+                  )
+                }
+                className="outline-0 w-full text-center font-bold font-inter text-black-1000"
+                type="number"
+                name="quantity"
+                id="quantity"
+              />
 
-            <button
-              onClick={increase}
-              className="min-w-8 h-8 cursor-pointer rounded-lg bg-primary-color text-white flex items-center justify-center"
-            >
-              <svg
-                width={15}
-                height={15}
-                viewBox="0 0 15 15"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
+              <button
+                onClick={increase}
+                className="min-w-8 h-8 cursor-pointer rounded-lg bg-primary-color text-white flex items-center justify-center"
               >
-                <path
-                  d="M7.46647 0.799988V14.1333M0.799805 7.46665H14.1331"
-                  stroke="white"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+                <svg
+                  width={15}
+                  height={15}
+                  viewBox="0 0 15 15"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M7.46647 0.799988V14.1333M0.799805 7.46665H14.1331"
+                    stroke="white"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            </div>
+            <button
+              onClick={() => {
+                buyTicket.mutate({
+                  raffleId: raffle.id || 0,
+                  ticketsToBuy: getTicketQuantityById(raffle.id || 0),
+                });
+              }}
+              className="inline-flex px-2 py-3 sm:w-fit w-full flex-1 text-sm transition gap-1 duration-500 hover:opacity-90 bg-linear-to-r from-neutral-800 via-neutral-500 to-neutral-800 rounded-full h-11 items-center justify-center text-white font-semibold font-inter text-center"
+            >
+              Buy •{" "}
+              <span>
+                {totalCost /
+                  10 **
+                    (VerifiedTokens.find(
+                      (token) => token.address === raffle.ticketTokenAddress
+                    )?.decimals || 0)}
+              </span>{" "}
+              {VerifiedTokens.find(
+                (token) => token.address === raffle.ticketTokenAddress
+              )?.symbol || "SOL"}
             </button>
           </div>
-          <button
-            onClick={()=>{
-              buyTicket.mutate({
-                raffleId: raffle.id || 0,
-                ticketsToBuy: getTicketQuantityById(raffle.id || 0),
-              });
-            }}  
-            className="inline-flex px-2 py-3 sm:w-fit w-full flex-1 text-sm transition gap-1 duration-500 hover:opacity-90 bg-linear-to-r from-neutral-800 via-neutral-500 to-neutral-800 rounded-full h-11 items-center justify-center text-white font-semibold font-inter text-center"
-          >
-            Buy • <span>{totalCost/10**(VerifiedTokens.find((token) => token.address === raffle.ticketTokenAddress)?.decimals || 0)}</span> {VerifiedTokens.find((token) => token.address === raffle.ticketTokenAddress)?.symbol || "SOL"}
-          </button>
-        </div>
         )}
         {rafflesType === "Past Raffles" && (
           <div className="w-full flex items-center justify-between">
