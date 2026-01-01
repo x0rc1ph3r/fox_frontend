@@ -4,7 +4,7 @@ import { refreshToken } from "./routes/userRoutes";
 import { getToken, setToken, isTokenExpired, removeToken } from "../src/utils/auth";
 
 export const api = axios.create({
-    baseURL: `/api`,
+    baseURL: `${API_URL}/api`,
     headers: {
         "Content-Type": "application/json",
         'ngrok-skip-browser-warning': 'true',

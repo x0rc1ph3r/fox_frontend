@@ -35,7 +35,7 @@ interface CreateRaffleState {
   tokenPrizeAmount: string;
   tokenPrizeMint: string;
   prizeImage: string;
-  floor:number;
+  floor:string;
   val:string;
   ttv:number;
   percentage:string;
@@ -88,7 +88,7 @@ interface CreateRaffleState {
   setTokenPrizeMint: (mint: string) => void;
   setTicketPricePerSol: (price: string) => void;
   setPrizeImage: (image: string) => void;
-  setFloor: (floor:number) => void;
+  setFloor: (floor:string) => void;
   setNftCollection: (collection: string | null) => void;
   // Actions - Advanced Settings
   setHolderOnlyCollection: (collection: string) => void;
@@ -147,7 +147,7 @@ const initialState = {
   tokenPrizeAmount: "",
   tokenPrizeMint: "So11111111111111111111111111111111111111112",
   prizeImage:"",
-  floor:0,
+  floor:"0" ,
   val:"0",
   ttv:0,
   percentage:"0",
@@ -225,7 +225,14 @@ export const useCreateRaffleStore = create<CreateRaffleState>((set, get) => ({
   setTokenPrizeAmount: (amount) => set({ tokenPrizeAmount: amount }),
   setTokenPrizeMint: (mint) => set({ tokenPrizeMint: mint }),
   setPrizeImage: (image:string) => set({ prizeImage: image }),
-  setFloor: (floor:number) => set({ floor: floor }),
+  setFloor: (floor:string) => {
+    set({ floor: floor })
+    if(get().prizeType === "nft"){
+      if(get().ttv>0){
+        set({ percentage: (((get().ttv-(parseFloat(get().floor)/10**9)) / get().ttv) * 100).toFixed(2)});
+      }
+    }
+  },
   setVal: (val:string) => {
     set({ val: val });
     if(parseFloat(val)>0 && get().ttv>0){
@@ -234,8 +241,10 @@ export const useCreateRaffleStore = create<CreateRaffleState>((set, get) => ({
   },
   setTtv: (ttv:number) => {
     set({ ttv: ttv });
-    if(parseFloat(get().val)>0 && get().ttv>0){
+    if(get().prizeType !== "nft" && parseFloat(get().val)>0 && get().ttv>0){
       set({ percentage: ((get().ttv-parseFloat(get().val) / get().ttv) * 100).toFixed(2)});
+    }else if(get().prizeType === "nft"){
+      set({ percentage: (((get().ttv-(parseFloat(get().floor)/10**9)) / get().ttv) * 100).toFixed(2)});
     }
   },
   setPercentage: (percentage:string) => {
@@ -304,6 +313,8 @@ export const useCreateRaffleStore = create<CreateRaffleState>((set, get) => ({
     set({ ttv: Math.round(supply * ticketPrice * 1000) / 1000 });
     if(parseFloat(get().val)>0 && get().ttv>0){
       set({ percentage: ((get().ttv-parseFloat(get().val) / get().ttv) * 100).toFixed(2)});
+    }else if(get().prizeType === "nft"){
+      set({ percentage: (((get().ttv-(parseFloat(get().floor)/10**9)) / get().ttv) * 100).toFixed(2)});
     }
     return Math.round(supply * ticketPrice * 1000) / 1000;
   },

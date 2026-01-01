@@ -180,15 +180,14 @@ export const useCreateRaffle = () => {
           ?.decimals || 0,
       verified: true,
       image: prizeType === "nft" ? prizeImage : VerifiedTokens.find((token) => token.address === tokenPrizeMint)?.image || "",
-      floor: prizeType === "nft" ? floor : undefined,
-      amount: prizeType === "nft" ? floor :
+      floor: prizeType === "nft" ? parseFloat(floor)/10**9 : undefined,
+      amount: prizeType === "nft" ? parseFloat(floor)/10**9 :
         parseFloat(tokenPrizeAmount) *
         10 **
         (VerifiedTokens.find((token) => token.address === tokenPrizeMint)
           ?.decimals || 0),
     },
   };
-  console.log("raffleBackendPayload", raffleBackendPayload);
   const createRaffle = useMutation({
     mutationKey: ["createRaffle"],
     mutationFn: async () => {

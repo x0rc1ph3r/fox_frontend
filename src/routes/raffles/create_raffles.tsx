@@ -149,14 +149,13 @@ function CreateRaffles() {
         collectionAddress: selectedNftData.collectionAddress,
       };
   
-      console.log("prizeData", prizeData);
       setPrizeType("nft");
       setNftData(prizeData);
       setNftPrizeMint(selectedNftData.mint);
       setNftPrizeName(selectedNftData.name);
       setPrizeImage(selectedNftData.image);
       setNftCollection(selectedNftData.collectionAddress);
-      setFloor(selectedNftData.floorPrice ?? 0);
+      setFloor((selectedNftData.floorPrice ?? 0).toString());
       setNumberOfWinners("1");
       handleClose();
     };
@@ -166,7 +165,6 @@ function CreateRaffles() {
       setSearchQuery("");
       setIsPrizeModalOpen(false);
     };
-
  
   return (
     <div>
@@ -246,7 +244,27 @@ function CreateRaffles() {
                     <span>
                       <img src="icons/right-arw.svg" alt="" />
                     </span>
+                    
                   </button>
+                  <div className="flex items-center justify-end gap-3">
+                  {nftPrizeMint && (
+                      <p className="text-xs  text-white bg-primary-color text-center font-inter border rounded-md px-2 py-1 my-3">
+                        FP: {parseFloat(floor)/10**9}
+                      </p>
+                    )}
+                    {(ttv>0) && (
+                      <p className="text-xs  text-black-1000 text-center font-inter border rounded-md px-2 py-1 my-3">
+                        TTV: {ttv}
+                      </p>
+                    )}
+                    {(percentage && ttv>0) && (
+                      <p className="text-xs  text-black-1000 text-center font-inter border rounded-md px-2 py-1 my-3">
+                        {(ttv-(parseFloat(floor)/10**9)>0) ? '+' : ''}
+                        {percentage}%
+                      </p>
+                    )}
+                    
+                    </div>
                   <p className="md:text-2xl text-xl font-bold font-inter text-black-1000/30 pt-[22px] pb-[31px] md:pt-10 md:pb-7 text-center">
                     or
                   </p>
@@ -270,12 +288,13 @@ function CreateRaffles() {
                   <div className="w-full flex justify-end gap-2">
                   {userVerifiedTokens?.length != 0 ?(
                   <>
+                  
                   {tokenPrizeAmount && (    
                     <p className="text-xs text-black-1000 font-inter border rounded-md px-2 py-1 mb-5">
                       VAL: {val}
                     </p>
                   )}
-                  {(ttv && ttv>0) ? (
+                  {(ttv && ttv>0 && !nftPrizeMint) ? (
                     <p className="text-xs text-black-1000 font-inter border rounded-md px-2 py-1 mb-5">
                       TTV: {ttv} 
                     </p>
