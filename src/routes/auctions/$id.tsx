@@ -10,12 +10,11 @@ import { useToggleFavourite } from "../../../hooks/useToggleFavourite";
 import { useQueryFavourites } from "../../../hooks/useQueryFavourites";
 import { useBidAuction } from "hooks/useBidAuction";
 import { useCancelAuction } from "hooks/useCancelAuction";
+import { VerifiedTokens } from "@/utils/verifiedTokens";
 
 export const Route = createFileRoute("/auctions/$id")({
   component: AuctionDetails,
 });
-
-const LAMPORTS_PER_SOL = 1_000_000_000;
 
 const shortenAddress = (addr: string) =>
   addr ? `${addr.slice(0, 4)}...${addr.slice(-4)}` : "N/A";
@@ -36,6 +35,13 @@ function AuctionDetails() {
   const isCreator = useMemo(() => {
     return publicKey && auction?.createdBy === publicKey.toString();
   }, [publicKey, auction?.createdBy]);
+
+  const currencyDecimals = useMemo(() => {
+    return (
+      VerifiedTokens.find((token) => token.symbol === auction?.currency)
+        ?.decimals ?? 0
+    );
+  }, [auction?.currency]);
 
   const [tabs, setTabs] = useState([
     { name: "Participants", active: true },
@@ -104,9 +110,10 @@ function AuctionDetails() {
     if (!auction) return 0;
 
     // Convert base values from lamports to SOL
-    const reserveInSol = Number(auction.reservePrice ?? 0) / LAMPORTS_PER_SOL;
+    const reserveInSol =
+      Number(auction.reservePrice ?? 0) / Math.pow(10, currencyDecimals);
     const highestBidInSol =
-      Number(auction.highestBidAmount ?? 0) / LAMPORTS_PER_SOL;
+      Number(auction.highestBidAmount ?? 0) / Math.pow(10, currencyDecimals);
 
     if (!auction.hasAnyBid) {
       return reserveInSol;
@@ -129,7 +136,7 @@ function AuctionDetails() {
       setIsBiddingAuction(true);
       await bidAuction.mutateAsync({
         auctionId: Number(id),
-        bidAmount: Math.round(amount * LAMPORTS_PER_SOL), // Convert SOL to lamports
+        bidAmount: Math.round(amount * Math.pow(10, currencyDecimals)), // Convert SOL to lamports
       });
       setBidAmountInput(""); // Clear input on success
     } catch (error) {
@@ -260,7 +267,8 @@ function AuctionDetails() {
                           <span>
                             {typeof auction.reservePrice === "string" &&
                             auction.reservePrice
-                              ? parseInt(auction.reservePrice) / LAMPORTS_PER_SOL
+                              ? parseInt(auction.reservePrice) /
+                                Math.pow(10, currencyDecimals)
                               : "N/A"}{" "}
                             {auction.currency}
                           </span>
@@ -288,7 +296,8 @@ function AuctionDetails() {
                       RESERVE:{" "}
                       {typeof auction.reservePrice === "string" &&
                       auction.reservePrice
-                        ? parseInt(auction.reservePrice) / LAMPORTS_PER_SOL
+                        ? parseInt(auction.reservePrice) /
+                          Math.pow(10, currencyDecimals)
                         : "N/A"}{" "}
                       {auction.currency}
                     </li>
@@ -363,7 +372,8 @@ function AuctionDetails() {
                           Highest Bid
                         </p>
                         <h3 className="text-2xl font-bold text-primary-color">
-                          {auction.highestBidAmount / LAMPORTS_PER_SOL}{" "}
+                          {auction.highestBidAmount /
+                            Math.pow(10, currencyDecimals)}{" "}
                           {auction.currency}
                         </h3>
                         <p className="text-[10px] text-gray-400 truncate max-w-[120px]">
@@ -437,12 +447,13 @@ function AuctionDetails() {
                               {!auction.hasAnyBid
                                 ? typeof auction.reservePrice === "string" &&
                                   auction.reservePrice
-                                  ? parseInt(auction.reservePrice) / LAMPORTS_PER_SOL
+                                  ? parseInt(auction.reservePrice) /
+                                    Math.pow(10, currencyDecimals)
                                   : "N/A"
                                 : (
                                     Number(
                                       auction.highestBidAmount /
-                                        LAMPORTS_PER_SOL
+                                        Math.pow(10, currencyDecimals)
                                     ) *
                                     (1 +
                                       (auction.bidIncrementPercent ?? 0) / 100)
@@ -517,7 +528,9 @@ function AuctionDetails() {
                             Sold For
                           </p>
                           <p className="text-xl font-black">
-                            {auction.highestBidAmount / LAMPORTS_PER_SOL} {auction.currency}
+                            {auction.highestBidAmount /
+                              Math.pow(10, currencyDecimals)}{" "}
+                            {auction.currency}
                           </p>
                         </div>
                       </div>

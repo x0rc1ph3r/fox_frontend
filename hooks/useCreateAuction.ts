@@ -4,7 +4,7 @@ import { useAuctionAnchorProgram } from "./useAuctionAnchorProgram";
 import { PublicKey } from "@solana/web3.js";
 // import type { AuctionTypeBackend } from "../types/backend/auctionTypes";
 import { useWallet } from "@solana/wallet-adapter-react";
-// import { VerifiedTokens } from "../src/utils/verifiedTokens";
+import { VerifiedTokens } from "../src/utils/verifiedTokens";
 import {
     createAuctionOverBackend,
     deleteAuction,
@@ -27,6 +27,7 @@ export type AuctionOnChainArgs = {
     prizeImage: string;
     collectionName: string;
     floorPrice: number;
+    currency: string;
 };
 
 const FAKE_MINT = new PublicKey('So11111111111111111111111111111111111111112');
@@ -110,6 +111,10 @@ export const useCreateAuction = () => {
             if (!validateForm(args)) {
                 throw new Error("Validation failed");
             }
+
+            const decimals = VerifiedTokens.find(
+                (token) => token.symbol === args.currency
+            )?.decimals;
             const data = await createAuctionOverBackend({
                 id: fetchAuctionConfig(),
                 createdBy: publicKey?.toString() || "",
@@ -119,8 +124,8 @@ export const useCreateAuction = () => {
                 startsAt: args.startImmediately ? new Date() : new Date(args.startTime * 1000),
                 endsAt: new Date((args.endTime + 100) * 1000),
                 timeExtension: args.timeExtension,
-                reservePrice: args.baseBid.toString(),
-                currency: args.isBidMintSol ? "SOL" : "SPL",
+                reservePrice: (args.baseBid * Math.pow(10, decimals!)).toString(),
+                currency: args.isBidMintSol ? "SOL" : args.currency,
                 bidIncrementPercent: args.minIncrement,
                 payRoyalties: false,
                 royaltyPercentage: 0,
@@ -138,7 +143,7 @@ export const useCreateAuction = () => {
                 endTime: args.endTime + 100,
                 startImmediately: args.startImmediately,
                 isBidMintSol: args.isBidMintSol,
-                baseBid: args.baseBid,
+                baseBid: args.baseBid * Math.pow(10, decimals!),
                 minIncrement: args.minIncrement,
                 timeExtension: args.timeExtension,
                 prizeMint: new PublicKey(args.prizeMint),

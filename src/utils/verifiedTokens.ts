@@ -21,8 +21,8 @@ export const VerifiedTokens = [
         decimals: 6,
     },
     {
-        name:"FOX",
-        address:"FoX9UZETJzXJ2qh6B5g2mBSA9hiWWnLEq1GcHoEEg4fv",
+        name:"FOX Token",
+        address:"BZfZhBoQSAMQVshvApFzwbKNA3dwuxKhK8m5GVCQ26yG",
         symbol:"FOX",
         image:"/icons/fox-logo.png",
         decimals: 6,

@@ -9,7 +9,7 @@ export const ticketTokens = [
     },
     {
         symbol: "FOX",
-        address: "FoX9UZETJzXJ2qh6B5g2mBSA9hiWWnLEq1GcHoEEg4fv"
+        address: "BZfZhBoQSAMQVshvApFzwbKNA3dwuxKhK8m5GVCQ26yG"
     },
     {
         symbol: "MEA",

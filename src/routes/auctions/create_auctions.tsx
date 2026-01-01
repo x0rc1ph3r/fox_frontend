@@ -120,9 +120,10 @@ function CreateAuctions() {
         startImmediately: startType === "manual" ? true : false,
         startTime: getStartTimestamp()!,
         endTime: getEndTimestamp()!,
-        baseBid: parseFloat(basePrice) * 10 ** 9, // Convert SOL to lamports
+        baseBid: parseFloat(basePrice),
         bidMint: baseMint,
         isBidMintSol: symbol === "SOL" ? true : false,
+        currency: symbol,
         minIncrement: parseInt(bidIncrement),
         prizeMint: nftData?.mint || "",
         timeExtension: parseInt(timeExtension),
@@ -145,9 +146,7 @@ function CreateAuctions() {
 
   // Mapping raw NFT data to a clean format
   const nfts = useMemo(() => {
-    {
-      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-    }
+    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
     return (userNfts || []).map((nft: any) => ({
       id: nft.id,
       name: nft.content.metadata.name,
@@ -161,9 +160,7 @@ function CreateAuctions() {
   const filteredNfts = useMemo(() => {
     if (!searchQuery.trim()) return nfts;
     const query = searchQuery.toLowerCase();
-    {
-      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-    }
+    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
     return nfts.filter((nft: any) => nft.name.toLowerCase().includes(query));
   }, [searchQuery, nfts]);
 
@@ -173,9 +170,7 @@ function CreateAuctions() {
   };
 
   const handleAddPrizes = async () => {
-    {
-      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-    }
+    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
     const selectedNftData = nfts.find((nft: any) => nft.id === selectedNftId);
 
     if (!selectedNftData) return;

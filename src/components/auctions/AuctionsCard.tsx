@@ -3,6 +3,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useToggleFavourite } from "../../../hooks/useToggleFavourite";
 import { useQueryFavourites } from "../../../hooks/useQueryFavourites";
+import { VerifiedTokens } from "../../utils/verifiedTokens";
 
 // Strictly matching the provided API object structure
 export interface AuctionsCardProps {
@@ -21,8 +22,6 @@ export interface AuctionsCardProps {
   highestBidderWallet: string;
   status: string;
 }
-
-const LAMPORTS_PER_SOL = 1_000_000_000;
 
 export const AuctionsCard: React.FC<AuctionsCardProps> = (props) => {
   const {
@@ -52,6 +51,12 @@ export const AuctionsCard: React.FC<AuctionsCardProps> = (props) => {
   const [computedStatus, setComputedStatus] = useState<
     "UPCOMING" | "LIVE" | "COMPLETED" | "CANCELLED"
   >("UPCOMING");
+
+  const currencyDecimals = useMemo(() => {
+    return (
+      VerifiedTokens.find((token) => token.symbol === currency)?.decimals ?? 0
+    );
+  }, [currency]);
 
   useEffect(() => {
     const calculateStatus = () => {
@@ -168,7 +173,10 @@ export const AuctionsCard: React.FC<AuctionsCardProps> = (props) => {
               <div className="bg-black/60 backdrop-blur-md px-3 py-1 rounded-lg">
                 <p className="text-[10px] text-white/70 uppercase">Reserve</p>
                 <p className="text-xs font-bold text-white">
-                  {parseInt(reservePrice) / LAMPORTS_PER_SOL} {currency}
+                  {currencyDecimals > 0
+                    ? parseInt(reservePrice) / Math.pow(10, currencyDecimals)
+                    : parseInt(reservePrice)}{" "}
+                  {currency}
                 </p>
               </div>
               {/* <div className="bg-black/60 backdrop-blur-md px-3 py-1 rounded-lg">
@@ -211,7 +219,10 @@ export const AuctionsCard: React.FC<AuctionsCardProps> = (props) => {
               Winning Bid
             </p>
             <p className="text-sm font-bold text-green-600">
-              {highestBidAmount / LAMPORTS_PER_SOL} {currency}
+              {currencyDecimals > 0
+                ? highestBidAmount / Math.pow(10, currencyDecimals)
+                : highestBidAmount}{" "}
+              {currency}
             </p>
           </div>
         </div>
