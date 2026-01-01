@@ -136,7 +136,7 @@ export default function AddNftModal({ isOpen, onClose, gumballId }: AddNftModalP
 
     const prizesData: AddPrizeInputData[] = selectedNftData.map((nft: any, index: number) => {
       return {
-        prizeIndex: startingPrizeIndex + 1,
+        prizeIndex: startingPrizeIndex + 1 + index,
         isNft: true,
         mint: nft.mint,
         name: nft.name,

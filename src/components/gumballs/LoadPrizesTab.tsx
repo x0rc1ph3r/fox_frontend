@@ -5,6 +5,7 @@ import { useGumballById } from '../../../hooks/useGumballsQuery';
 import type { GumballBackendDataType } from 'types/backend/gumballTypes';
 import { VerifiedTokens } from '@/utils/verifiedTokens';
 import { useGetTotalPrizeValueInSol } from '../../../hooks/useGetTotalPrizeValueInSol';
+import { useGetTokenPrice } from '../../../hooks/useGetTokenPrice';
 
 export const LoadPrizesTab = ({gumballId}: {gumballId: string}) => {
   const [isAddTokenModalOpen, setIsAddTokenModalOpen] = useState(false);
@@ -13,18 +14,23 @@ export const LoadPrizesTab = ({gumballId}: {gumballId: string}) => {
   console.log("gumball", gumball);
 
   const { totalValueInSol, isLoading: isPriceLoading, formattedValue } = useGetTotalPrizeValueInSol(gumball?.prizes);
+  const {data: ticketTokenPrice} = useGetTokenPrice(gumball?.ticketMint);
+  const {data: solPrice} = useGetTokenPrice("So11111111111111111111111111111111111111112");
+
   
+
+  const maxProceeds = useMemo(()=>{
+    const ticketPriceInSol = (ticketTokenPrice?.price && solPrice?.price) ? ticketTokenPrice.price / solPrice.price : 0;
+    const maxProceeds = gumball.maxPrizes * ticketPriceInSol;
+    return maxProceeds;
+  },[gumball?.maxPrizes, gumball?.ticketMint, ticketTokenPrice?.price, solPrice?.price])
+
   const maxROI = useMemo(() => {
     if (!gumball) return '0';
-    const maxProceeds = gumball.maxPrizes * parseFloat(gumball.ticketPrice) / (10 ** (VerifiedTokens.find((token: typeof VerifiedTokens[0]) => token.address === gumball.ticketMint)?.decimals || 0));
     const roi = (maxProceeds - totalValueInSol) / maxProceeds * 100;
-    console.log("maxProceeds", maxProceeds);
-    console.log("totalValueInSol", totalValueInSol);
-    console.log("roi", roi);
     if (isNaN(roi) || roi === Infinity) return '0';
     return Math.max(roi, 0).toFixed(2); 
-  }, [gumball, totalValueInSol]);
-  console.log(maxROI);
+  }, [maxProceeds, totalValueInSol]);
 
   if (isLoading || !gumball) {
     return <div className='w-full'>
@@ -46,7 +52,7 @@ export const LoadPrizesTab = ({gumballId}: {gumballId: string}) => {
                 Load your prizes into the Gumball machine
               </p>
               <p className="md:text-lg text-sm font-medium text-black-1000 font-inter leading-7">
-                You can load a mix of NFTs or  Tokens from our verified list. If you enable buy back, you’ll be able to top this up when the machine is live
+                You can load a mix of NFTs or  Tokens from our verified list.
               </p>
             </div>
           </div>
@@ -66,7 +72,7 @@ export const LoadPrizesTab = ({gumballId}: {gumballId: string}) => {
 
                <div className="">
                 <h3 className='text-base text-black-1000 font-medium font-inter mb-[22px]'>Max Proceeds</h3>
-                <h4 className='text-2xl font-bold font-inter text-black-1000'>{gumball?.maxPrizes * parseFloat(gumball?.ticketPrice)/(10**(VerifiedTokens.find((token: typeof VerifiedTokens[0]) => token.address === gumball?.ticketMint)?.decimals || 0))} SOL</h4>
+                <h4 className='text-2xl font-bold font-inter text-black-1000'>{maxProceeds} SOL</h4>
             </div>
 
                <div className="">

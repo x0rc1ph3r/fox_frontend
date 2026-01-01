@@ -173,18 +173,18 @@ export default function AddTokenModal({ isOpen, onClose, gumballId,remainingPriz
     if (validPrizes.length === 0) return;
 
     // Calculate starting prize index based on existing prizes
-    const startingPrizeIndex = existingPrizes.length;
+    const startingPrizeIndex = gumball?.prizesAdded || 0;
 
     // Prepare data for on-chain transaction and backend
     const prizesData: AddPrizeInputData[] = validPrizes.map((tp, index) => {
       const prizeSize = parseFloat(tp.prizeSize) || 0;
       const numberOfPrizes = parseInt(tp.numberOfPrizes) || 0;
       const decimals = tp.token.decimals || 9;
-      
+      console.log("startingPrizeIndex", startingPrizeIndex);
       // Convert prize amount to base units (e.g., lamports for SOL)
       const prizeAmountInBaseUnits = Math.floor(prizeSize * Math.pow(10, decimals));
       return {
-        prizeIndex: startingPrizeIndex + 1,
+        prizeIndex: startingPrizeIndex + 1 + index,
         isNft: false,
         mint: tp.token.address,
         name: tp.token.name,

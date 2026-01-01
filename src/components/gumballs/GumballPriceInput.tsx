@@ -7,7 +7,7 @@ export default function GumballPriceInput() {
   const [currency, setCurrency] = useState("SOL");
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { ticketCurrency,ticketPrice, setTicketCurrency, setTicketPrice } = useGumballStore();
+  const { ticketCurrency,ticketPrice, setTicketCurrency, setTicketPrice,setIsTicketSol } = useGumballStore();
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -57,6 +57,7 @@ export default function GumballPriceInput() {
                     className="w-full text-left px-4 py-2 hover:bg-gray-1100 font-inter text-sm text-black-1000"
                     onClick={() => {
                       setCurrency(cur.symbol);
+                      setIsTicketSol(cur.symbol === "SOL");
                       setTicketCurrency({
                         symbol: cur.symbol,
                         address: cur.address,

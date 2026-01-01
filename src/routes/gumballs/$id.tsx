@@ -15,6 +15,7 @@ import { useToggleFavourite } from "../../../hooks/useToggleFavourite";
 import { useQueryFavourites } from "../../../hooks/useQueryFavourites";
 import { DynamicCounter } from '@/components/common/DynamicCounter';
 import { GumballBouncingBalls } from '../../components/gumballs/GumballBouncingBalls';
+import { useGetTotalPrizeValueInSol } from '../../../hooks/useGetTotalPrizeValueInSol';
 
 
 interface Prize{
@@ -162,6 +163,8 @@ function GumballsDetails() {
     }
   };
 
+  // Calculate total prize value in SOL
+  const { totalValueInSol, isLoading: isPrizeValueLoading, formattedValue: totalPrizeValueFormatted } = useGetTotalPrizeValueInSol(gumball?.prizes);
   const formatPrice = (price: string | undefined, isTicketSol: boolean | undefined) => {
     if (!price) return "0";
     if (isTicketSol) {
@@ -303,16 +306,18 @@ function GumballsDetails() {
                             <div className="w-full flex items-center justify-between py-4 px-5 border border-gray-1100 rounded-[20px] bg-gray-1300">
                                 <div className="inline-flex flex-col gap-2.5">
                                     <p className='font-inter text-sm text-gray-1200'>Ticket Price</p>
-                                    <h3 className='lg:text-[28px] text-xl font-semibold font-inter text-primary-color'>{formatPrice(gumball.ticketPrice, gumball.isTicketSol)}</h3>
+                                    <h4 className='lg:text-[24px] text-xl font-semibold font-inter text-primary-color'>{formatPrice(gumball.ticketPrice, gumball.isTicketSol)}{gumball.isTicketSol ? " SOL" : VerifiedTokens.find((token: typeof VerifiedTokens[0]) => token.address === gumball.ticketMint)?.symbol}</h4>
                                 </div>
                                 <div className="inline-flex flex-col gap-2.5 text-right">
                                     <p className='font-inter text-sm text-gray-1200'>Total Prize Value</p>
-                                    <h3 className='lg:text-[28px] text-xl font-semibold font-inter text-black-1000'>{formatPrice(gumball.totalPrizeValue, gumball.isTicketSol)}</h3>
+                                    <h3 className='lg:text-[28px] text-xl font-semibold font-inter text-black-1000'>
+                                      {isPrizeValueLoading ? 'Loading...' : totalPrizeValueFormatted}
+                                    </h3>
                                 </div>
                             </div>
 
                             <div className="w-full">
-                                {isActive && gumball?.prizesAdded > 0 && gumball.creatorAddress !== publicKey?.toString() ? 
+                                {isActive && gumball?.prizesAdded > 0 && gumball.creatorAddress === publicKey?.toString() ? 
                                 <div className="w-full">
                                 {/* <div className="w-full flex items-center justify-between pt-7 pb-5">
                                         <p className="text-sm font-medium font-inter text-gray-1200">

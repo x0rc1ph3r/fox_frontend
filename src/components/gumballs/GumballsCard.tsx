@@ -6,6 +6,7 @@ import { VerifiedTokens } from "@/utils/verifiedTokens";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useToggleFavourite } from "../../../hooks/useToggleFavourite";
 import { useQueryFavourites } from "../../../hooks/useQueryFavourites";
+import { useGetTotalPrizeValueInSol } from "../../../hooks/useGetTotalPrizeValueInSol";
 
 export interface GumballsCardProps {
   gumball: GumballBackendDataType;
@@ -45,7 +46,8 @@ export const GumballsCard: React.FC<GumballsCardProps> = ({
       gumballId: id || 0,
     });
   };
-
+  // Calculate total prize value in SOL
+  const { totalValueInSol, isLoading: isPrizeValueLoading, formattedValue: totalPrizeValueFormatted } = useGetTotalPrizeValueInSol(gumball?.prizes);
   // Compute remaining tickets
   const remainingTickets = (totalTickets || 0) - (ticketsSold || 0);
 
@@ -68,19 +70,19 @@ export const GumballsCard: React.FC<GumballsCardProps> = ({
     return { hours, minutes, seconds };
   }, [endTime]);
  
-  // Calculate EV (Expected Value) = totalPrizeValue / (totalTickets * ticketPrice)
+  // Calculate EV (Expected Value) = totalPrizeValueFormatted / (totalTickets * ticketPrice)
   const evValue = useMemo(() => {
-    const prizeVal = parseFloat(totalPrizeValue) || 0;
-    const ticketPriceNum = parseFloat(ticketPrice) || 0;
+    const prizeVal = parseFloat(totalPrizeValueFormatted) || 0;
+    const ticketPriceNum = parseFloat(ticketPrice)/10**(VerifiedTokens.find((token) => token.address === gumball.ticketMint)?.decimals || 0);
     const maxProceeds = totalTickets * ticketPriceNum;
     if (maxProceeds === 0) return "0.00";
     return (prizeVal / maxProceeds).toFixed(2);
-  }, [totalPrizeValue, totalTickets, ticketPrice]);
+  }, [totalPrizeValueFormatted, totalTickets, ticketPrice, gumball.ticketMint]);
 
   // VAL is the total prize value
   const val = useMemo(() => {
-    return parseFloat(totalPrizeValue) || 0;
-  }, [totalPrizeValue]);
+    return parseFloat(totalPrizeValueFormatted) || 0;
+  }, [totalPrizeValueFormatted]);
 
   // Truncate creator address for display
   const displayAddress = useMemo(() => {
@@ -150,7 +152,7 @@ export const GumballsCard: React.FC<GumballsCardProps> = ({
               </button>
 
                 <div className="w-full">
-                 <p className="bg-black/60 rounded-lg py-1 mb-3.5 px-4 w-full text-white text-center text-xs font-semibold font-inter">EV is 15% higher than the average EV.</p>
+                 {/* <p className="bg-black/60 rounded-lg py-1 mb-3.5 px-4 w-full text-white text-center text-xs font-semibold font-inter">EV is 15% higher than the average EV.</p> */}
                  <Link 
                   to="/gumballs/$id"
                   params={{ id: id.toString() }}
