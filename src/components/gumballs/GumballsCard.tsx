@@ -51,7 +51,7 @@ export const GumballsCard: React.FC<GumballsCardProps> = ({
 
   // Get main image from first prize or use placeholder
   const mainImage = useMemo(() => {
-    const prizeWithImage = prizes?.find((prize) => prize.image);
+    const prizeWithImage = prizes?.find((prize) => prize.isNft ? prize.image : null);
     return prizeWithImage?.image || "/images/gumballs/sol-img-frame.png";
   }, [prizes]);
 

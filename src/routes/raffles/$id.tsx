@@ -578,9 +578,9 @@ function RouteComponent() {
                         </h3>
                         <div className="w-full md:mb-5">
                           <PrimaryButton
-                            className={`w-full h-[54px] ${cancelRaffle.isPending ? "opacity-50 cursor-not-allowed" : ""} `}
+                            className={`w-full h-[54px] ${cancelRaffle.isPending|| (raffle.ticketSold && raffle.ticketSold > 0) ? true : false || raffle.state !== "active" ? "opacity-50 cursor-not-allowed" : ""} `}
                             text={`Cancel Raffle`}
-                            disabled={cancelRaffle.isPending || (raffle.ticketSold && raffle.ticketSold > 0) ? true : false || raffle.state !== "active"}
+                            disabled={false}
                             onclick={() => {
                               cancelRaffle.mutate(raffle?.id || 0);
                             }}

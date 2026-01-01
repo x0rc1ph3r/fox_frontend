@@ -14,6 +14,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { useToggleFavourite } from "../../../hooks/useToggleFavourite";
 import { useQueryFavourites } from "../../../hooks/useQueryFavourites";
 import { DynamicCounter } from '@/components/common/DynamicCounter';
+import { GumballBouncingBalls } from '../../components/gumballs/GumballBouncingBalls';
 
 
 interface Prize{
@@ -222,20 +223,12 @@ function GumballsDetails() {
             <div className="w-full flex gap-[60px] md:gap-10 md:flex-row flex-col">
                 <div className="flex-1">
                     <div className="md:p-[18px] p-2 rounded-[20px] border border-gray-1100">
-                        {isActive ? 
-                      <img src={gumball.prizes[0]?.image || "/images/gumballs/sol-img-frame.png"} className="w-full h-[506px] rounded-[20px] object-cover" alt={gumball.name} />
-                    :
-                    <div className="relative flex items-center justify-center rounded-lg overflow-hidden">
-                        <img src={gumball.prizes[0]?.image || "/images/ended-img-1.png"} className="w-full object-cover lg:h-[604px] h-[406px]" alt={gumball.name} />
-                        <div className="absolute top-0 left-0 w-full h-full bg-black/50"></div>
-                        <p className='md:text-[28px] text-lg text-white font-bold font-inter absolute z-10'>
-                          {gumball.status === "CANCELLED" ? "Cancelled" : (gumball.status === "COMPLETED_SUCCESSFULLY" || gumball.status === "COMPLETED_FAILED") ? "Sale Ended" : "Not Started"}
-                        </p>
+                        <GumballBouncingBalls 
+                          prizes={gumball.prizes || []} 
+                          isActive={isActive} 
+                          status={gumball.status} 
+                        />
                     </div>
-                    
-                    }
-                    </div>
-                
                 </div>
 
                 <div className="flex-1 max-w-[467px]">
