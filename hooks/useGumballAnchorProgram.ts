@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useMemo } from "react";
 import * as anchor from "@coral-xyz/anchor";
-import { Keypair, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
+import { Keypair, PublicKey, SystemProgram, Transaction, TransactionInstruction } from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
@@ -759,7 +759,7 @@ export function useGumballAnchorProgram() {
                 /* -------- Add Prize Instruction -------- */
                 const ix = await gumballProgram.methods
                     .addPrize(
-                        
+
                         args.gumballId,
                         prize.prizeIndex,
                         new BN(prize.prizeAmount),
@@ -867,6 +867,123 @@ export function useGumballAnchorProgram() {
         },
     });
 
+    const cancelAndClaimSelectedPrizesMutation = useMutation({
+        mutationKey: ["gumball", "cancel-and-claim-selected"],
+        mutationFn: async ({
+            gumballId,
+            prizeIndexes,
+        }: {
+            gumballId: number;
+            prizeIndexes: number[]; // Array of prize indexes to claim back
+        }) => {
+            if (!gumballProgram || !wallet.publicKey || !provider || !connection) {
+                throw new Error("Wallet / program not ready");
+            }
+
+            if (prizeIndexes.length === 0) {
+                throw new Error("No prizes selected to claim back");
+            }
+
+            const tx = new Transaction();
+
+            // const gumballAddress = gumballPda(gumballId);
+
+            // 1. Cancel Gumball instruction
+            const cancelIx = await gumballProgram.methods
+                .cancelGumball(gumballId)
+                .accounts({
+                    // gumballConfig: gumballConfigPda,
+                    // gumball: gumballAddress,
+                    creator: wallet.publicKey,
+                    gumballAdmin: GUMBALL_ADMIN_KEYPAIR.publicKey,
+                })
+                .instruction();
+
+            tx.add(cancelIx);
+
+            // 2. Claim back only the selected prize indexes
+            const claimIxs: TransactionInstruction[] = [];
+
+            for (const prizeIndex of prizeIndexes) {
+                const prizeAddress = prizePda(gumballId, prizeIndex);
+
+                let prizeState;
+                try {
+                    prizeState = await gumballProgram.account.prize.fetch(prizeAddress);
+                } catch (err) {
+                    console.log(err);
+                    continue; // Skip if prize doesn't exist
+                }
+
+                const prizeMint: PublicKey = prizeState.mint;
+
+                const prizeTokenProgram = await getTokenProgramFromMint(connection, prizeMint);
+
+                // Ensure escrow ATA (owned by gumball)
+                // const prizeEscrowRes = await ensureAtaIx({
+                //     connection,
+                //     mint: prizeMint,
+                //     owner: gumballAddress,
+                //     payer: wallet.publicKey,
+                //     tokenProgram: prizeTokenProgram,
+                //     allowOwnerOffCurve: true,
+                // });
+
+                // Ensure creator ATA (user's wallet)
+                const creatorPrizeRes = await ensureAtaIx({
+                    connection,
+                    mint: prizeMint,
+                    owner: wallet.publicKey,
+                    payer: wallet.publicKey,
+                    tokenProgram: prizeTokenProgram,
+                });
+
+                if (creatorPrizeRes.ix) tx.add(creatorPrizeRes.ix);
+
+                const claimIx = await gumballProgram.methods
+                    .claimPrizeBack(gumballId, prizeIndex)
+                    .accounts({
+                        // gumballConfig: gumballConfigPda,
+                        // gumball: gumballAddress,
+                        // prize: prizeAddress,
+
+                        creator: wallet.publicKey,
+                        gumballAdmin: GUMBALL_ADMIN_KEYPAIR.publicKey,
+
+                        prizeMint,
+
+                        // prizeEscrow: prizeEscrowRes.ata,
+                        // creatorPrizeAta: creatorPrizeRes.ata,
+
+                        prizeTokenProgram,
+                        // associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+                        // systemProgram: anchor.web3.SystemProgram.programId,
+                    })
+                    .instruction();
+
+                claimIxs.push(claimIx);
+            }
+
+            if (claimIxs.length === 0) {
+                throw new Error("No valid prizes found to claim back");
+            }
+
+            tx.add(...claimIxs);
+
+            const signature = await provider.sendAndConfirm(tx, [GUMBALL_ADMIN_KEYPAIR]);
+
+            return { signature, claimedCount: claimIxs.length };
+        },
+
+        onSuccess: (tx) => {
+            console.log("Cancelled and Multiple prizes claimed back successfully:", tx);
+        },
+
+        onError: (err) => {
+            console.error("Cancel an Claim multiple prizes back failed:", err);
+        },
+    });
+
 
     return {
         /* ---------------- Program ---------------- */
@@ -898,6 +1015,7 @@ export function useGumballAnchorProgram() {
         updateGumballDataMutation,
         cancelGumballMutation,
         endGumballMutation,
+        cancelAndClaimSelectedPrizesMutation,
 
         /* ---------------- Prize actions ---------------- */
         addMultiplePrizesMutation,
