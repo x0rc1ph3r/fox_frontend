@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useCreateRaffleStore } from "../../../store/createRaffleStore";
-import { ticketTokens } from "@/utils/ticketTokens";
+import { VerifiedTokens } from "@/utils/verifiedTokens";
 import { useGetTokenPrice } from "hooks/useGetTokenPrice";
 
 export default function AmountInput() {
@@ -16,7 +16,7 @@ export default function AmountInput() {
   console.log("solPrice",solPrice)
   console.log("ticketPricePerSol",(parseFloat(ticketPrice) * (ticketTokenPrice?.price/solPrice?.price)).toFixed(2))
   const handleSelect = (value: string) => {
-    setTicketCurrency(ticketTokens.find((token) => token.symbol === value) || { symbol: "", address: "" });
+    setTicketCurrency(VerifiedTokens.find((token) => token.symbol === value) || { symbol: "", address: "" });
     setTicketPricePerSol((parseFloat(ticketPrice) * (ticketTokenPrice?.price/solPrice?.price)).toFixed(2));
     getComputedTTV();
     setIsOpen(false);
@@ -71,7 +71,7 @@ export default function AmountInput() {
 
         {isOpen && (
           <ol className="absolute top-full right-0 w-full bg-white border border-gray-1100 rounded-md mt-3 z-10">
-            {ticketTokens.map((token) => (
+            {VerifiedTokens.map((token) => (
               <li key={token.symbol}>
                 <button
                   type="button"

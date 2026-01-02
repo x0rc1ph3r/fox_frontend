@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useRef, useEffect, Fragment, useMemo, use } from "react";
-import { ticketTokens } from "@/utils/ticketTokens";
+import { VerifiedTokens } from "@/utils/verifiedTokens";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Dialog, DialogPanel, Transition } from "@headlessui/react";
 import { AgreeCheckbox } from "@/components/common/AgreeCheckbox";
@@ -416,7 +416,7 @@ function CreateAuctions() {
 
                             {isOpen && (
                               <ol className="absolute top-full right-0 w-full bg-white border border-gray-1100 rounded-md mt-3 z-10">
-                                {ticketTokens.map((token) => (
+                                {VerifiedTokens.map((token) => (
                                   <li key={token.symbol}>
                                     <button
                                       type="button"
