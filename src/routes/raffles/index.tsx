@@ -65,6 +65,7 @@ function RafflesPage() {
 
     useEffect(() => {
       setPageType("raffles");
+      
     }, [setPageType]);
 
     const filterOptions = {
@@ -123,6 +124,8 @@ function RafflesPage() {
       }
     }, [raffles]);
     console.log("userNFTS",userNfts);
+
+
   return (
     <main className="flex-1 font-inter">
       <section className="w-full md:pt-0 pt-5">
@@ -133,6 +136,7 @@ function RafflesPage() {
           >
             Buy tickets, earn Juice! 🥤
           </Link>
+          
           {/* <div className="p-10 pb-2 md:pt-10 pt-5 px-0 border border-gray-1100 rounded-[30px] bg-gray-1300 mt-5 relative">
             <div className="absolute top-10 left-0 w-full hidden md:block h-[150px] bg-linear-to-b from-gray-1300 to-transparent pointer-events-none"></div>
             <div className="w-full md:px-10 px-4 flex items-center justify-between relative xl:pb-0 pb-0 md:pb-10">

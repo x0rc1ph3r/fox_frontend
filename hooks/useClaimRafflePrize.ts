@@ -24,7 +24,8 @@ export const useClaimRafflePrize = () => {
             toast.success("Prize claimed successfully");
         },
         onError: (error) => {
-            toast.error(error.message?error.message:error.toString());
+            console.error(error);
+            toast.error("Failed to claim prize");
         },
     });
     return {

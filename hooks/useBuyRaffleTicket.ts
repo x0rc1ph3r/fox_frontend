@@ -26,7 +26,8 @@ export const useBuyRaffleTicket = () => {
       toast.success("Tickets bought successfully");
     },
     onError:(error:any)=>{
-      toast.error(error.message?error.message:error.toString());
+      console.error(error);
+      toast.error("Failed to buy tickets");
     }
   });
   return { buyTicket };

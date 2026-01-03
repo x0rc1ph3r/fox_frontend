@@ -13,6 +13,7 @@ import {
 } from "../api/routes/raffleRoutes";
 import { useRouter } from "@tanstack/react-router";
 import { VerifiedNftCollections } from "@/utils/verifiedNftCollections";
+import { useCheckAuth } from "./useCheckAuth";
 
 export const useCreateRaffle = () => {
   // const { getAllRaffles } = useRaffleAnchorProgram();
@@ -47,11 +48,16 @@ export const useCreateRaffle = () => {
   } = useCreateRaffleStore();
 
   const { createRaffleMutation, getRaffleConfig } = useRaffleAnchorProgram();
+  const { checkAndInvalidateToken } = useCheckAuth();
   const router = useRouter();
-  const validateForm = () => {
+  const validateForm = async () => {
     try {
+      const isValid = await checkAndInvalidateToken(publicKey?.toBase58() || "");
       if (!publicKey) {
         throw new Error("Wallet not connected");
+      }
+      if(!isValid){
+        throw new Error("Invalid token");
       }
       if (!endDate) {
         throw new Error("End Date is required");
@@ -193,7 +199,7 @@ export const useCreateRaffle = () => {
   const createRaffle = useMutation({
     mutationKey: ["createRaffle"],
     mutationFn: async () => {
-      if (!validateForm()) {
+      if (!(await validateForm())) {
         setIsCreatingRaffle(false);
         throw new Error("Validation failed");
       }

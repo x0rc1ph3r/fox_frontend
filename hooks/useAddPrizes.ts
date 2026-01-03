@@ -85,7 +85,8 @@ export const useAddPrizes = () => {
             toast.success("Prizes added successfully");
         },
         onError: (error: Error) => {
-            toast.error(error.message || "Failed to add prizes");
+            console.error(error);
+            toast.error("Failed to add prizes");
         },
     });
     
