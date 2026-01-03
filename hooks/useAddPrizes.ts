@@ -4,6 +4,8 @@ import { addMultiplePrizesToGumball } from "../api/routes/gumballRoutes";
 import toast from "react-hot-toast";
 import { PublicKey } from "@solana/web3.js";
 import { useGumballAnchorProgram } from "./useGumballAnchorProgram";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useCheckAuth } from "./useCheckAuth";
 
 type OnChainPrizeInput = {
     prizeIndex: number;
@@ -27,6 +29,36 @@ export type AddPrizeInputData = {
 
 export const useAddPrizes = () => {
     const { addMultiplePrizesMutation } = useGumballAnchorProgram();
+    const { checkAndInvalidateToken } = useCheckAuth();
+    const { publicKey } = useWallet();
+
+    const validateForm = async (args: { gumballId: string; prizes: AddPrizeInputData[] }) => {
+        try {
+            if (!publicKey) {
+                throw new Error("Wallet not connected");
+            }
+            const isValid = await checkAndInvalidateToken(publicKey.toBase58());
+            if (!isValid) {
+                throw new Error("Signature verification failed");
+            }
+            if (!args.gumballId) {
+                throw new Error("Gumball ID is required");
+            }
+            if (args.prizes.length === 0) {
+                throw new Error("At least one prize must be added");
+            }
+
+            return true;
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                toast.error(error.message);
+            } else {
+                toast.error("Something went wrong");
+            }
+            return false;
+        }
+
+    };
     
     const addPrizes = useMutation({
         mutationKey: ["addPrizes"],
@@ -34,6 +66,9 @@ export const useAddPrizes = () => {
             gumballId: string;
             prizes: AddPrizeInputData[];
         }) => {
+            if (!await validateForm(args)) {
+                throw new Error("Validation failed");
+            }
             console.log("gumballId", args.gumballId);
             console.log("Input prizes:", args.prizes);
             const onChainPrizes: OnChainPrizeInput[] = args.prizes.map((prize) => {

@@ -19,7 +19,7 @@ export const useCancelGumball = () => {
             }
             const isValid = await checkAndInvalidateToken(publicKey.toBase58());
             if (!isValid) {
-                throw new Error("Invalid token");
+                throw new Error("Signature verification failed");
             }
             if (!args.gumballId) {
                 throw new Error("Gumball ID is required");

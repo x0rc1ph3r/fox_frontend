@@ -34,7 +34,7 @@ export const useCreateGumball = () => {
         }
         const isValid = await checkAndInvalidateToken(publicKey.toBase58());
         if (!isValid) {
-            throw new Error("Invalid token");
+            throw new Error("Signature verification failed");
         }
         if (args.name.length === 0) {
             throw new Error("Name is required");

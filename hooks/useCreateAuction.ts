@@ -48,7 +48,7 @@ export const useCreateAuction = () => {
             }
             const isValid = await checkAndInvalidateToken(publicKey.toBase58());
             if (!isValid) {
-                throw new Error("Invalid token");
+                throw new Error("Signature verification failed");
             }
             if (!args.startTime) {
                 throw new Error("Start Time is required");
