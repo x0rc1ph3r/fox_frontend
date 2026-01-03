@@ -65,7 +65,7 @@ export const useCreateAuction = () => {
             if (!args.bidMint) {
                 args.bidMint = FAKE_MINT.toString()
             }
-            if ((args.endTime) - args.startTime < MIN_TIME) {
+            if ((args.endTime+100) - args.startTime < MIN_TIME) {
                 console.log((args.endTime+100) - args.startTime, MIN_TIME)
                 throw new Error("End time must be at least 24 hours after start time");
             }
@@ -120,7 +120,7 @@ export const useCreateAuction = () => {
                 collectionVerified: true,
                 floorPrice: args.floorPrice,
                 startsAt: args.startImmediately ? new Date() : new Date(args.startTime * 1000),
-                endsAt: new Date((args.endTime) * 1000),
+                endsAt: new Date((args.endTime+100) * 1000),
                 timeExtension: args.timeExtension,
                 reservePrice: (args.baseBid * Math.pow(10, decimals!)).toString(),
                 currency: args.isBidMintSol ? "SOL" : args.currency,
