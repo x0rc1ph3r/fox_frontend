@@ -560,7 +560,7 @@ function CreateAuctions() {
                               1.
                             </span>
                             <p className="flex-1 w-full text-black-1000 font-medium font-inter text-sm md:text-base leading-[160%] break-all">
-                              When you add prizes to a Gumball, the prizes will
+                              When you add prizes to a Auction, the prizes will
                               be transferred from your wallet into an escrow
                               wallet.
                             </p>
@@ -572,9 +572,9 @@ function CreateAuctions() {
                             <p className="flex-1 w-full text-black-1000 font-medium font-inter text-sm md:text-base leading-[160%] break-all">
                               You will be charged an up-front rent fee, in SOL,
                               which will be taken in proportion to the number of
-                              prizes you choose to add to the Gumball, with a
+                              prizes you choose to add to the Auction, with a
                               maximum rent fee of 0.72 SOL. The rent fee will be
-                              automatically refunded after the Gumball has been
+                              automatically refunded after the Auction has been
                               closed.
                             </p>
                           </li>
@@ -585,7 +585,7 @@ function CreateAuctions() {
                             <p className="flex-1 w-full text-black-1000 font-medium font-inter text-sm md:text-base leading-[160%] break-all">
                               FFF and TFF holders will get a 50% fee waiver for
                               staking or sending foxes on missions prior to
-                              creating the Gumball and will be hosted on the
+                              creating the Auction and will be hosted on the
                               "Featured" section of the home page.
                             </p>
                           </li>
@@ -595,7 +595,7 @@ function CreateAuctions() {
                             </span>
                             <p className="flex-1 w-full text-black-1000 font-medium font-inter text-sm md:text-base leading-[160%] break-all">
                               The prizes that do not get sold will be returned
-                              to you upon closing the Gumball.
+                              to you upon closing the Auction.
                             </p>
                           </li>
                           <li className="flex items-start gap-1.5">
@@ -603,8 +603,8 @@ function CreateAuctions() {
                               5.
                             </span>
                             <p className="flex-1 w-full text-black-1000 font-medium font-inter text-sm md:text-base leading-[160%] break-all">
-                              You can specify the amount of time a Gumball runs
-                              at the creation of the Gumball. Gumballs require a
+                              You can specify the amount of time a Auction runs
+                              at the creation of the Auction. Auctions require a
                               minimum 24 hour run time.
                             </p>
                           </li>
@@ -613,10 +613,10 @@ function CreateAuctions() {
                               6.
                             </span>
                             <p className="flex-1 w-full text-black-1000 font-medium font-inter text-sm md:text-base leading-[160%] break-all">
-                              You can end the Gumball machine early if the
+                              You can end the Auction machine early if the
                               expected value is at least -90% based on remaining
                               prizes or if it has been at least 10 hours since
-                              the last spin on that Gumball.
+                              the last spin on that Auction.
                             </p>
                           </li>
                           <li className="flex items-start gap-1.5">
@@ -625,7 +625,7 @@ function CreateAuctions() {
                             </span>
                             <p className="flex-1 w-full text-black-1000 font-medium font-inter text-sm md:text-base leading-[160%] break-all">
                               FFF will take a total of 5% commission fee from
-                              the Gumball sales.
+                              the Auction sales.
                             </p>
                           </li>
                           <li className="flex items-start gap-1.5">
@@ -634,9 +634,9 @@ function CreateAuctions() {
                             </span>
                             <p className="flex-1 w-full text-black-1000 font-medium font-inter text-sm md:text-base leading-[160%] break-all">
                               To enable Holder-only, you will be charged 1 SOL
-                              per Gumball creation, withdrawn at the time of
+                              per Auction creation, withdrawn at the time of
                               creation. More information about holder-only
-                              Gumballs is available on the create Gumball site.
+                              Auctions is available on the create Auction site.
                             </p>
                           </li>
                           <li className="flex items-start gap-1.5">
@@ -644,7 +644,7 @@ function CreateAuctions() {
                               9.
                             </span>
                             <p className="flex-1 w-full text-black-1000 font-medium font-inter text-sm md:text-base leading-[160%] break-all">
-                              Scheduled Gumballs will start at the scheduled
+                              Scheduled Auctions will start at the scheduled
                               date and time even if not all prizes have been
                               added.
                             </p>
@@ -654,8 +654,8 @@ function CreateAuctions() {
                               10.
                             </span>
                             <p className="flex-1 w-full text-black-1000 font-medium font-inter text-sm md:text-base leading-[160%] break-all">
-                              Gumballs CANNOT be edited once it has been
-                              launched. Gumballs cannot restart once it has been
+                              Auctions CANNOT be edited once it has been
+                              launched. Auctions cannot restart once it has been
                               stopped.
                             </p>
                           </li>
@@ -664,7 +664,7 @@ function CreateAuctions() {
                               11.
                             </span>
                             <p className="flex-1 w-full text-black-1000 font-medium font-inter text-sm md:text-base leading-[160%] break-all">
-                              Once one Gumball has sold, the machine cannot be
+                              Once one Auction has sold, the machine cannot be
                               closed until the specified end date.
                             </p>
                           </li>
@@ -673,10 +673,10 @@ function CreateAuctions() {
                               12.
                             </span>
                             <p className="flex-1 w-full text-black-1000 font-medium font-inter text-sm md:text-base leading-[160%] break-all">
-                              Gumball, its agents, directors, or officers shall
+                              Auction, its agents, directors, or officers shall
                               not assume any liability or responsibility for
-                              your use of Gumball, promoting or marketing the
-                              Gumballs.
+                              your use of Auction, promoting or marketing the
+                              Auctions.
                             </p>
                           </li>
                           <li className="flex items-start gap-1.5">
@@ -684,7 +684,7 @@ function CreateAuctions() {
                               13.
                             </span>
                             <p className="flex-1 w-full text-black-1000 font-medium font-inter text-sm md:text-base leading-[160%] break-all">
-                              Gumball currently does not support cNFTs, the
+                              Auction currently does not support cNFTs, the
                               program ID is:
                               <strong className="font-medium block">
                                 MGUMqztv7MHgoHBYWbvMyL3E3NJ4UHfTwgLJUQAbKGa

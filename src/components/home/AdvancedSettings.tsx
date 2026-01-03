@@ -99,13 +99,7 @@ export default function AdvancedSettingsAccordion() {
               </div>
             </div>
 
-            <div className="border border-solid border-primary-color bg-primary-color/5 rounded-[10px] py-[15px] px-3.5 lg:px-[26px]">
-              <p className="text-primary-color text-sm lg:text-lg font-medium font-inter">
-                For raffles with multi-winners - you will need to use a
-                placeholder. This placeholder NFT will not be sent to any
-                winner. Contact us here to verify.
-              </p>
-            </div>
+           
           </div>
         )}
       </div>
