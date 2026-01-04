@@ -25,6 +25,7 @@ import { useFetchUserNfts } from "hooks/useFetchUserNfts";
 import { useGetCollectionFP } from "hooks/useGetCollectionFP";
 import clsx from "clsx";
 import { VerifiedNftCollections } from "@/utils/verifiedNftCollections";
+import { VerifiedTokens } from "@/utils/verifiedTokens";
 
 function CreateRaffles() {
   const {
@@ -71,6 +72,12 @@ function CreateRaffles() {
 
     collectionSearchQuery,
     setCollectionSearchQuery,
+
+    tokenSearchQuery,
+    setTokenSearchQuery,
+    isVerifiedTokensModalOpen,
+    openVerifiedTokensModal,
+    closeVerifiedTokensModal,
 
     prizeImage,
     setPrizeImage,
@@ -123,12 +130,30 @@ function CreateRaffles() {
       }));
     }, [userNfts, collectionFPMap]);
   
-    const filteredNfts = useMemo(() => {
-      if (!searchQuery.trim()) return nfts;
-      const query = searchQuery.toLowerCase();
-      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-      return nfts.filter((nft: any) => nft.name.toLowerCase().includes(query));
-    }, [searchQuery, nfts]);
+  const filteredNfts = useMemo(() => {
+    if (!searchQuery.trim()) return nfts;
+    const query = searchQuery.toLowerCase();
+    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+    return nfts.filter((nft: any) => nft.name.toLowerCase().includes(query));
+  }, [searchQuery, nfts]);
+
+  const filteredVerifiedCollections = useMemo(() => {
+    if (!collectionSearchQuery.trim()) return VerifiedNftCollections;
+    const query = collectionSearchQuery.toLowerCase();
+    return VerifiedNftCollections.filter((collection) =>
+      collection.name.toLowerCase().includes(query)
+    );
+  }, [collectionSearchQuery]);
+
+  const filteredVerifiedTokens = useMemo(() => {
+    if (!tokenSearchQuery.trim()) return VerifiedTokens;
+    const query = tokenSearchQuery.toLowerCase();
+    return VerifiedTokens.filter(
+      (token) =>
+        token.name.toLowerCase().includes(query) ||
+        token.symbol.toLowerCase().includes(query)
+    );
+  }, [tokenSearchQuery]);
   
     const handleSelectNft = (id: string) => {
       setSelectedNftId((prevId) => (prevId === id ? null : id));
@@ -317,9 +342,10 @@ function CreateRaffles() {
                     </p>
                   )}
                   </div>
-                  <Link
-                    to={"."}
-                    className="flex items-center justify-between border border-solid border-gray-1100 rounded-[20px] h-[54px] md:h-[60px] px-5"
+                  <button
+                    type="button"
+                    onClick={openVerifiedTokensModal}
+                    className="flex w-full cursor-pointer items-center justify-between border border-solid border-gray-1100 rounded-[20px] h-[54px] md:h-[60px] px-5"
                   >
                     <p className="text-black-1000 xl:text-lg text-base font-medium font-inter">
                       View all prize tokens
@@ -327,7 +353,7 @@ function CreateRaffles() {
                     <span>
                       <img src="icons/right-arw.svg" alt="" />
                     </span>
-                  </Link>
+                  </button>
                 </div>
               </div>
               <div className="lg:w-4/6 md:w-3/5 w-full">
@@ -661,111 +687,133 @@ function CreateRaffles() {
                       </button>
                     </div>
                   </div>
-                  <div className="grid md:grid-cols-2 px-5 gap-2.5 md:gap-10">
+                  <div className="grid px-5 gap-2.5 grid-cols-1 md:gap-10 max-h-[50vh] overflow-y-auto">
                     <div>
-                      <ol>
-                        <li className="md:pb-5 pb-2.5">
-                          <Link
-                            to="."
-                            className="rounded-lg hover:bg-gray-1300 h-10 md:h-12 px-3.5 md:px-5 flex items-center text-sm md:text-base font-medium font-inter text-black-1000 border border-solid border-gray-1100"
-                          >
-                            Famous Fox Federation
-                          </Link>
-                        </li>
-                        <li className="md:pb-5 pb-2.5">
-                          <Link
-                            to="."
-                            className="rounded-lg hover:bg-gray-1300 h-10 md:h-12 px-3.5 md:px-5 flex items-center text-sm md:text-base font-medium font-inter text-black-1000 border border-solid border-gray-1100"
-                          >
-                            Famous Fox Dens
-                          </Link>
-                        </li>
-                        <li className="md:pb-5 pb-2.5">
-                          <Link
-                            to="."
-                            className="rounded-lg hover:bg-gray-1300 h-10 md:h-12 px-3.5 md:px-5 flex items-center text-sm md:text-base font-medium font-inter text-black-1000 border border-solid border-gray-1100"
-                          >
-                            0rphans
-                          </Link>
-                        </li>
-                        <li className="md:pb-5 pb-2.5">
-                          <Link
-                            to="."
-                            className="rounded-lg hover:bg-gray-1300 h-10 md:h-12 px-3.5 md:px-5 flex items-center text-sm md:text-base font-medium font-inter text-black-1000 border border-solid border-gray-1100"
-                          >
-                            AGE of SAM
-                          </Link>
-                        </li>
-                        <li className="md:pb-5 pb-2.5">
-                          <Link
-                            to="."
-                            className="rounded-lg hover:bg-gray-1300 h-10 md:h-12 px-3.5 md:px-5 flex items-center text-sm md:text-base font-medium font-inter text-black-1000 border border-solid border-gray-1100"
-                          >
-                            Aiternate - Entities
-                          </Link>
-                        </li>
-                        <li className="md:block hidden">
-                          <Link
-                            to="."
-                            className="rounded-lg hover:bg-gray-1300 h-10 md:h-12 px-3.5 md:px-5 flex items-center text-sm md:text-base font-medium font-inter text-black-1000 border border-solid border-gray-1100"
-                          >
-                            Alpha Pharaohs
-                          </Link>
-                        </li>
+                      <ol className="grid grid-cols-1 gap-2.5 place-items-center">
+                        {filteredVerifiedCollections.length === 0 ? (
+                          <li className="py-10 text-gray-500 font-medium">
+                            No collections found
+                          </li>
+                        ) : (
+                          filteredVerifiedCollections.map((collection) => (
+                            <li key={collection.address} className="md:pb-5 pb-2.5">
+                              <Link
+                                to="."
+                                className="rounded-lg text-center w-[200px] justify-center hover:bg-gray-1300 h-10 md:h-12 px-3.5 md:px-5 flex items-center text-sm md:text-base font-medium font-inter text-black-1000 border border-solid border-gray-1100"
+                              >
+                                {collection.name}
+                              </Link>
+                            </li>
+                          ))
+                        )}
                       </ol>
                     </div>
-                    <div className="md:block hidden">
-                      <ol>
-                        <li className="md:pb-5 pb-2.5">
-                          <Link
-                            to="."
-                            className="rounded-lg hover:bg-gray-1300 h-10 md:h-12 px-3.5 md:px-5 flex items-center text-sm md:text-base font-medium font-inter text-black-1000 border border-solid border-gray-1100"
-                          >
-                            Transdimensional Fox Federation
-                          </Link>
-                        </li>
-                        <li className="md:pb-5 pb-2.5">
-                          <Link
-                            to="."
-                            className="rounded-lg hover:bg-gray-1300 h-10 md:h-12 px-3.5 md:px-5 flex items-center text-sm md:text-base font-medium font-inter text-black-1000 border border-solid border-gray-1100"
-                          >
-                            Famous Fox Friends & Foes
-                          </Link>
-                        </li>
-                        <li className="md:pb-5 pb-2.5">
-                          <Link
-                            to="."
-                            className="rounded-lg hover:bg-gray-1300 h-10 md:h-12 px-3.5 md:px-5 flex items-center text-sm md:text-base font-medium font-inter text-black-1000 border border-solid border-gray-1100"
-                          >
-                            ABC
-                          </Link>
-                        </li>
-                        <li className="md:pb-5 pb-2.5">
-                          <Link
-                            to="."
-                            className="rounded-lg hover:bg-gray-1300 h-10 md:h-12 px-3.5 md:px-5 flex items-center text-sm md:text-base font-medium font-inter text-black-1000 border border-solid border-gray-1100"
-                          >
-                            AGE of SAM PFP
-                          </Link>
-                        </li>
-                        <li className="md:pb-5 pb-2.5">
-                          <Link
-                            to="."
-                            className="rounded-lg hover:bg-gray-1300 h-10 md:h-12 px-3.5 md:px-5 flex items-center text-sm md:text-base font-medium font-inter text-black-1000 border border-solid border-gray-1100"
-                          >
-                            Aiternate - Holotabs
-                          </Link>
-                        </li>
-                        <li>
-                          <Link
-                            to="."
-                            className="rounded-lg hover:bg-gray-1300 h-10 md:h-12 px-3.5 md:px-5 flex items-center text-sm md:text-base font-medium font-inter text-black-1000 border border-solid border-gray-1100"
-                          >
-                            Alpha Wolves
-                          </Link>
-                        </li>
-                      </ol>
+                    
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
+
+      {/* Verified Tokens Modal */}
+      <Transition appear show={isVerifiedTokensModalOpen} as={Fragment}>
+        <Dialog
+          as="div"
+          className="relative z-50"
+          onClose={closeVerifiedTokensModal}
+        >
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black/80" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4 text-center">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="max-w-[962px] relative w-full transform overflow-hidden pt-5 pb-6 md:pb-[89px] rounded-[20px] bg-white text-left align-middle shadow-xl transition-all">
+                  <div className="flex md:gap-0 gap-5 md:items-center md:flex-row flex-col justify-between px-5 pb-5 md:pb-7 mb-7 border-b border-solid border-gray-1100">
+                    <div>
+                      <Dialog.Title
+                        as="h3"
+                        className="text-lg font-semibold leading-6 text-black-1000 pb-3.5"
+                      >
+                        Verified Tokens
+                      </Dialog.Title>
+                      <p className="text-sm font-medium font-inter text-black-1000">
+                        These are the tokens available for raffle prizes
+                      </p>
                     </div>
+                    <div className="flex items-center gap-10">
+                      <div className="relative md:w-auto w-full">
+                        <FormInput
+                          className="h-10 pl-[46px] rounded-[80px]"
+                          placeholder="Search tokens"
+                          value={tokenSearchQuery}
+                          onChange={(e) => setTokenSearchQuery(e.target.value)}
+                        />
+                        <span className="absolute top-1/2 left-3 -translate-y-1/2">
+                          <img src="icons/search-icon.svg" alt="" />
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        className="inline-flex cursor-pointer justify-center md:static absolute top-[25px] right-4 border border-transparent focus:outline-none focus-visible:ring-0"
+                        onClick={closeVerifiedTokensModal}
+                      >
+                        <img src="icons/cross-icon.svg" alt="" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="grid px-5 gap-2.5 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-h-[50vh] overflow-y-auto">
+                    {filteredVerifiedTokens.length === 0 ? (
+                      <div className="col-span-full py-10 text-center text-gray-500 font-medium">
+                        No tokens found
+                      </div>
+                    ) : (
+                      filteredVerifiedTokens.map((token) => (
+                        <div
+                          key={token.address}
+                          className="flex items-center gap-4 p-4 rounded-xl border border-solid border-gray-1100 hover:bg-gray-1300 transition-colors"
+                        >
+                          <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
+                            <img
+                              src={token.image}
+                              alt={token.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src =
+                                  "/icons/token-placeholder.png";
+                              }}
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-base font-semibold text-black-1000 truncate">
+                              {token.symbol}
+                            </p>
+                            <p className="text-sm text-gray-500 truncate">
+                              {token.name}
+                            </p>
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </Dialog.Panel>
               </Transition.Child>

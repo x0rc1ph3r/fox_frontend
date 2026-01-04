@@ -57,6 +57,10 @@ interface CreateRaffleState {
 
   // Search (for modals)
   collectionSearchQuery: string;
+  tokenSearchQuery: string;
+
+  // Verified Tokens Modal
+  isVerifiedTokensModalOpen: boolean;
 
   // User Verified Tokens
   userVerifiedTokens: string[];
@@ -107,6 +111,11 @@ interface CreateRaffleState {
 
   // Actions - Search
   setCollectionSearchQuery: (query: string) => void;
+  setTokenSearchQuery: (query: string) => void;
+
+  // Actions - Verified Tokens Modal
+  openVerifiedTokensModal: () => void;
+  closeVerifiedTokensModal: () => void;
 
   // Actions - Utilities
   reset: () => void;
@@ -170,7 +179,11 @@ const initialState = {
 
   // Search
   collectionSearchQuery: "",
+  tokenSearchQuery: "",
   userVerifiedTokens: [],
+
+  // Verified Tokens Modal
+  isVerifiedTokensModalOpen: false,
 };
 
 /* ----------------------------- Store ----------------------------- */
@@ -294,6 +307,11 @@ export const useCreateRaffleStore = create<CreateRaffleState>((set, get) => ({
 
   // Actions - Search
   setCollectionSearchQuery: (query) => set({ collectionSearchQuery: query }),
+  setTokenSearchQuery: (query) => set({ tokenSearchQuery: query }),
+
+  // Actions - Verified Tokens Modal
+  openVerifiedTokensModal: () => set({ isVerifiedTokensModalOpen: true }),
+  closeVerifiedTokensModal: () => set({ isVerifiedTokensModalOpen: false, tokenSearchQuery: "" }),
 
   // Actions - Utilities
   reset: () => set(initialState),

@@ -130,7 +130,7 @@ function Gumballs() {
           <div className="flex-1 flex items-center justify-between lg:gap-10 gap-5 flex-col lg:flex-row">
             <div className="overflow-x-auto md:overflow-hidden lg:w-1/2 w-full">
               <ul className="flex items-center sm:justify-center md:justify-start justify-start md:gap-5 gap-3">
-                {["Featured", "All Gumballs", "Past Gumballs"].map(
+                {["All Gumballs", "Past Gumballs"].map(
                   (f, index) => (
                     <li key={index}>
                       <button

@@ -166,7 +166,7 @@ function RafflesPage() {
         <div className="w-full max-w-[1440px] px-4 md:px-5 mx-auto">
           <div className="w-full flex items-center justify-between gap-5 lg:gap-10 flex-wrap">
             <ul className="flex items-center md:gap-5 gap-1.5 xs:gap-3">
-              {["Featured", "All Raffles", "Past Raffles"].map((f, index) => (
+              {["All Raffles", "Past Raffles"].map((f, index) => (
                 <li key={index}>
                   <button
                     onClick={() => setFilter(f)}
