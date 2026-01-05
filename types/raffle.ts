@@ -1,3 +1,9 @@
+/**
+ * Program IDL in camelCase format in order to be used in JS/TS.
+ *
+ * Note that this is only a type helper and is not the actual IDL. The original
+ * IDL can be found at `target/idl/raffle.json`.
+ */
 export type Raffle = {
     "address": "3f4Hj369oD79D71UeVZ5NQSxxh1vJ7WLmzyKghPx8bHF",
     "metadata": {
@@ -741,6 +747,10 @@ export type Raffle = {
                 {
                     "name": "startRaffle",
                     "type": "bool"
+                },
+                {
+                    "name": "maximumTickets",
+                    "type": "u16"
                 }
             ]
         },
@@ -1085,6 +1095,10 @@ export type Raffle = {
                 {
                     "name": "newMaxPerWalletPct",
                     "type": "u8"
+                },
+                {
+                    "name": "newMaximumTickets",
+                    "type": "u16"
                 }
             ]
         },
@@ -1767,96 +1781,106 @@ export type Raffle = {
         },
         {
             "code": 6018,
+            "name": "invalidMaximumTickets",
+            "msg": "Invalid Maximum Tickets"
+        },
+        {
+            "code": 6019,
+            "name": "timeOrTicketsNotMet",
+            "msg": "Time or Tickets not met"
+        },
+        {
+            "code": 6020,
             "name": "exceedMaxWinners",
             "msg": "Winners count exceed maximum"
         },
         {
-            "code": 6019,
+            "code": 6021,
             "name": "invalidZeroWinnersCount",
             "msg": "Invalid zero winners count"
         },
         {
-            "code": 6020,
+            "code": 6022,
             "name": "insufficientPrizeAmount",
             "msg": "Insufficient prize amount"
         },
         {
-            "code": 6021,
+            "code": 6023,
             "name": "stateShouldBeInInitialized",
             "msg": "Raffle State not in Initialized state"
         },
         {
-            "code": 6022,
+            "code": 6024,
             "name": "invalidRaffleStateForUpdate",
             "msg": "Invalid raffle state for update"
         },
         {
-            "code": 6023,
+            "code": 6025,
             "name": "raffleNotSuccessEnded",
             "msg": "Raffle is not Successfully ended"
         },
         {
-            "code": 6024,
+            "code": 6026,
             "name": "raffleNotActive",
             "msg": "Raffle is not active"
         },
         {
-            "code": 6025,
+            "code": 6027,
             "name": "invalidWinnersLength",
             "msg": "Invalid winners length"
         },
         {
-            "code": 6026,
+            "code": 6028,
             "name": "duplicateWinnersNotAllowed",
             "msg": "Duplicate Winners are not allowed"
         },
         {
-            "code": 6027,
+            "code": 6029,
             "name": "invalidWinShares",
             "msg": "Invalid win shares"
         },
         {
-            "code": 6028,
+            "code": 6030,
             "name": "moreThanOneTicketSolded",
             "msg": "More than one ticket is solded"
         },
         {
-            "code": 6029,
+            "code": 6031,
             "name": "cannotUpdateWinnersForNftPrize",
             "msg": "Cannot update winners for NFT prize"
         },
         {
-            "code": 6030,
+            "code": 6032,
             "name": "startTimeExceedEndTime",
             "msg": "Start time do not exceed end time"
         },
         {
-            "code": 6031,
+            "code": 6033,
             "name": "invalidZeroTickets",
             "msg": "Invalid zero tickets"
         },
         {
-            "code": 6032,
+            "code": 6034,
             "name": "ticketsSoldOut",
             "msg": "Tickets are sold out"
         },
         {
-            "code": 6033,
+            "code": 6035,
             "name": "invalidTicketZeroPrice",
             "msg": "Invalid ticket zero price"
         },
         {
-            "code": 6034,
+            "code": 6036,
             "name": "invalidTotalTickets",
             "msg": "Invalid total tickets"
         },
         {
-            "code": 6035,
+            "code": 6037,
             "name": "winnersExceedTotalTickets",
             "msg": "Total tickets should be greater than winners count"
         },
         {
-            "code": 6036,
+            "code": 6038,
             "name": "maxTicketsPerWalletExceeded",
             "msg": "Maximum Tickets Per Wallet Exceeded"
         }
@@ -2114,6 +2138,10 @@ export type Raffle = {
                     {
                         "name": "raffleBump",
                         "type": "u8"
+                    },
+                    {
+                        "name": "maximumTickets",
+                        "type": "u16"
                     }
                 ]
             }

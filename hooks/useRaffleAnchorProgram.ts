@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useMemo } from "react";
 import * as anchor from "@coral-xyz/anchor";
@@ -243,7 +244,8 @@ export function useRaffleAnchorProgram() {
                     args.numWinners,
                     Buffer.from(args.winShares),
                     args.isUniqueWinners,
-                    args.startRaffle
+                    args.startRaffle,
+                    args.maximumTickets,
                 )
                 .accounts({
                     creator: wallet.publicKey,
@@ -824,6 +826,7 @@ export function useRaffleAnchorProgram() {
             newTotalTickets: number;
             newTicketPrice: number;
             newMaxPerWalletPct: number;
+            newMaximumTickets: number;
         }) => {
             if (!raffleProgram || !wallet.publicKey) {
                 throw new Error("Wallet not ready");
@@ -834,7 +837,8 @@ export function useRaffleAnchorProgram() {
                     args.raffleId,
                     args.newTotalTickets,
                     new BN(args.newTicketPrice),
-                    args.newMaxPerWalletPct
+                    args.newMaxPerWalletPct,
+                    args.newMaximumTickets,
                 )
                 .accounts({
                     creator: wallet.publicKey,
@@ -1239,6 +1243,7 @@ type CreateRaffleArgs = {
     winShares: number[];
     isUniqueWinners: boolean;
     startRaffle: boolean;
+    maximumTickets: number;
 
     // accounts
     ticketMint: PublicKey;
