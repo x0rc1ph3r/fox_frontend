@@ -41,7 +41,7 @@ export const useCancelRaffle = () => {
     const cancelRaffle = useMutation({
         mutationKey: ["cancelRaffle"],
         mutationFn: async (raffleId: number) => {
-            if (!await validateForm(raffleId)) {
+            if (!(await validateForm(raffleId))) {
                 throw new Error("Validation failed");
             }
             const tx = await cancelRaffleMutation.mutateAsync({ raffleId });

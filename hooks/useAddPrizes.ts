@@ -66,7 +66,7 @@ export const useAddPrizes = () => {
             gumballId: string;
             prizes: AddPrizeInputData[];
         }) => {
-            if (!await validateForm(args)) {
+            if (!(await validateForm(args))) {
                 throw new Error("Validation failed");
             }
             console.log("gumballId", args.gumballId);

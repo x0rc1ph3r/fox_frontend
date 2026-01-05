@@ -154,7 +154,7 @@ export const GumballSetup = () => {
                               Prize count
                             </p>
                             <p className="text-gray-1200 font-inter text-sm font-medium">
-                              Min: 2 / Max: 1,000
+                              Min: 3 / Max: 10,000
                             </p>
                           </div>
                           <input
@@ -165,6 +165,8 @@ export const GumballSetup = () => {
                             value={prizeCount}
                             onChange={(e) => setPrizeCount(e.target.value)}
                             disabled={isCreatingGumball}
+                            min={3}
+                            max={10000}
                           />
                           <p className="text-sm font-medium text-black-1000 pt-2.5 font-inter">
                             Rent: {rent} SOL

@@ -46,7 +46,7 @@ export const useCancelGumball = () => {
             gumballId: number;
             prizeIndexes: number[];
         }) => {
-            if (!await validateForm(args)) {
+            if (!(await validateForm(args))) {
                 throw new Error("Validation failed");
             }
             const tx = await cancelAndClaimSelectedPrizesMutation.mutateAsync({

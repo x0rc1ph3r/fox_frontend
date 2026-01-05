@@ -63,7 +63,7 @@ export const useBidAuction = () => {
     const bidAuction = useMutation({
         mutationKey: ["bidAuction", publicKey?.toBase58()],
         mutationFn: async (args: BidAuctionArgs) => {
-            if (!await validateForm(args)) {
+            if (!(await validateForm(args))) {
                 throw new Error("Validation failed");
             }
             const tx = await placeBidMutation.mutateAsync({

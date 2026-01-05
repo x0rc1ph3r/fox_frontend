@@ -112,7 +112,7 @@ export const useCreateAuction = () => {
     const createAuction = useMutation({
         mutationKey: ["createAuction"],
         mutationFn: async (args: AuctionOnChainArgs) => {
-            if (!await validateForm(args)) {
+            if (!(await validateForm(args))) {
                 throw new Error("Validation failed");
             }
 

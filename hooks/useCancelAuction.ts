@@ -47,7 +47,7 @@ export const useCancelAuction = () => {
     const cancelAuction = useMutation({
         mutationKey: ["cancelAuction", publicKey?.toBase58()],
         mutationFn: async (args: CancelAuctionArgs) => {
-            if (!await validateForm(args)) {
+            if (!(await validateForm(args))) {
                 throw new Error("Validation failed");
             }
             const tx = await cancelAuctionMutation.mutateAsync(args.auctionId);

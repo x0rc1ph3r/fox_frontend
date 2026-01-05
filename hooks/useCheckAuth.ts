@@ -24,6 +24,9 @@ const checkAndInvalidateToken = async (publicKey:string):Promise<boolean> => {
     if(tokenDetails && tokenDetails?.publicKey !== publicKey){
         localStorage.removeItem('authToken');
     }
+    if(tokenDetails && tokenDetails?.publicKey === publicKey){
+      return true;
+    }
     const message = await requestMessage(publicKey);
     const result = await signAndVerifyMessage(message.message);
     if(!result.success){

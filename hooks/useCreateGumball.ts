@@ -33,6 +33,10 @@ export const useCreateGumball = () => {
             throw new Error("Wallet not connected");
         }
         const isValid = await checkAndInvalidateToken(publicKey.toBase58());
+        console.log("args timeperiod", args.endTime-args.startTime);
+        console.log("max timeperiod", 24 * 60 * 60 * 7);
+        console.log("endTime",new Date(args.endTime * 1000).toISOString());
+        console.log("startTime", new Date(args.startTime * 1000).toISOString());
         if (!isValid) {
             throw new Error("Signature verification failed");
         }
@@ -54,6 +58,18 @@ export const useCreateGumball = () => {
         if (!args.isTicketSol && args.ticketMint === undefined) {
             throw new Error("Ticket mint is required");
         }
+        if (args.endTime-args.startTime > (24 * 60 * 60 * 7)) {
+            throw new Error("Gumball duration must be less than 7 days");
+        }
+        if(args.endTime-args.startTime < (24*60*60)){
+            throw new Error("Gumball duration must be equal or greater than 2 days")
+        }
+        if(args.totalTickets < 3) { 
+            throw new Error("Total tickets must be greater than 2");
+        }
+        if(args.totalTickets > 10000) {
+            throw new Error("Total tickets must be less than 10,000");
+        }
         return true;
     }
     const { getGumballConfig } = useGumballAnchorProgram();
@@ -71,12 +87,8 @@ export const useCreateGumball = () => {
             // Ticket configuration
             ticketMint?: PublicKey;
         }) => {
-            console.log("createGumball");
-            console.log(args);
-            console.log("gumballCount", gumballCount);
-            const validatedData = await validateForm(args);
-            if (!validatedData) {
-                throw new Error();
+            if (!(await validateForm(args))) {
+                return null;
             }
             const createGumball = await createGumballOverBackend({
                 id: gumballCount,
@@ -94,7 +106,6 @@ export const useCreateGumball = () => {
             if (!createGumball) {
                 return createGumball.gumball.id;
             }
-            console.log(createGumball);
             const tx = await createGumballMutation.mutateAsync({
                 startTime: args.startTime,
                 endTime: args.endTime,
@@ -121,9 +132,9 @@ export const useCreateGumball = () => {
             setActiveTab("loadPrizes");
             router.navigate({ to: "/gumballs/create_gumballs/$id", params: { id: gumballId.toString() } });
         },
-        onError: () => {
+        onError: (error: Error) => {
             deleteGumballOverBackend(gumballCount.toString());
-            toast.error("Failed to create gumball");
+            toast.error(error.message);
         }
     });
     return { createGumball };

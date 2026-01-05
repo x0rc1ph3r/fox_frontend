@@ -46,7 +46,7 @@ export const useBuyRaffleTicket = () => {
       ticketsToBuy: number;
     }) => {
       console.log("args", args);
-      if (!await validateForm(args)) {
+      if (!(await validateForm(args))) {
         throw new Error("Validation failed");
       }
       const tx = await buyTicketMutation.mutateAsync(args);

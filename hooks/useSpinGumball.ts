@@ -51,7 +51,7 @@ export const useSpinGumball = () => {
             prizeIndex: number;
             prizeMint: string;
         }) => {
-            if (!await validateForm(args)) {
+            if (!(await validateForm(args))) {
                 throw new Error("Validation failed");
             }
             console.log("args", args);

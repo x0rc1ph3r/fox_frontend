@@ -41,7 +41,7 @@ export const useClaimRafflePrize = () => {
         mutationFn: async (args: {
             raffleId: number;
         }) => {
-            if (!await validateForm(args.raffleId)) {
+            if (!(await validateForm(args.raffleId))) {
                 throw new Error("Validation failed");
             }
             const tx = await buyerClaimPrizeMutation.mutateAsync(args);
