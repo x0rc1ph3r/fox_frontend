@@ -140,3 +140,28 @@ export const getBidsByUser = async () => {
         throw error;
     }
 }
+
+export const getCreateAuctionTx = async (startTime: number, endTime: number, startImmediately: boolean, isBidMintSol: boolean, baseBid: number, minIncrement: number, timeExtension: number, prizeMint: string, bidMint?: string) => {
+    try {
+        const response = await api.post("/auction/create-tx", {
+            startTime,
+            endTime,
+            startImmediately,
+            isBidMintSol,
+            baseBid,
+            minIncrement,
+            timeExtension,
+            prizeMint,
+            bidMint
+        }, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}

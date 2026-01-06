@@ -1,17 +1,19 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { useAuctionAnchorProgram } from "./useAuctionAnchorProgram";
-import { PublicKey } from "@solana/web3.js";
+import { PublicKey, Transaction } from "@solana/web3.js";
 // import type { AuctionTypeBackend } from "../types/backend/auctionTypes";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { VerifiedTokens } from "../src/utils/verifiedTokens";
 import {
     createAuctionOverBackend,
     deleteAuction,
+    getCreateAuctionTx,
     verifyAuctionCreation,
 } from "../api/routes/auctionRoutes";
 import { useRouter } from "@tanstack/react-router";
 import { useCheckAuth } from "./useCheckAuth";
+import { connection } from "./helpers";
 
 
 export type AuctionOnChainArgs = {
@@ -37,7 +39,7 @@ const MIN_TIME = (24 * 60 * 60) + 100; // 24 hours in seconds
 export const useCreateAuction = () => {
     const { createAuctionMutation, getAuctionConfig } = useAuctionAnchorProgram();
     const router = useRouter();
-    const { publicKey } = useWallet();
+    const { publicKey, sendTransaction } = useWallet();
     const queryClient = useQueryClient();
     const { checkAndInvalidateToken } = useCheckAuth();
 
@@ -71,8 +73,8 @@ export const useCreateAuction = () => {
             if (!args.bidMint) {
                 args.bidMint = FAKE_MINT.toString()
             }
-            if (!args.startImmediately && (args.endTime+100) - args.startTime < MIN_TIME) {
-                console.log((args.endTime+100) - args.startTime, MIN_TIME)
+            if (!args.startImmediately && (args.endTime + 100) - args.startTime < MIN_TIME) {
+                console.log((args.endTime + 100) - args.startTime, MIN_TIME)
                 throw new Error("End time must be at least 24 hours after start time");
             }
             if (args.startImmediately === false && (args.startTime - 100) * 1000 < Date.now()) {
@@ -126,7 +128,7 @@ export const useCreateAuction = () => {
                 collectionVerified: true,
                 floorPrice: args.floorPrice,
                 startsAt: args.startImmediately ? new Date() : new Date(args.startTime * 1000),
-                endsAt: new Date((args.endTime+100) * 1000),
+                endsAt: new Date((args.endTime + 100) * 1000),
                 timeExtension: args.timeExtension,
                 reservePrice: (args.baseBid * Math.pow(10, decimals!)).toString(),
                 currency: args.isBidMintSol ? "SOL" : args.currency,
@@ -142,18 +144,36 @@ export const useCreateAuction = () => {
                 highestBidderWallet: "",
                 status: "INITIALIZED",
             });
-            const tx = await createAuctionMutation.mutateAsync({
-                startTime: args.startTime,
-                endTime: args.endTime + 100,
-                startImmediately: args.startImmediately,
-                isBidMintSol: args.isBidMintSol,
-                baseBid: args.baseBid * Math.pow(10, decimals!),
-                minIncrement: args.minIncrement,
-                timeExtension: args.timeExtension,
-                prizeMint: new PublicKey(args.prizeMint),
-                bidMint: new PublicKey(args.bidMint!) // ignored if SOL
+
+            const { base64Transaction, minContextSlot, blockhash, lastValidBlockHeight } = await getCreateAuctionTx(args.startTime, args.endTime + 100, args.startImmediately, args.isBidMintSol, args.baseBid * Math.pow(10, decimals!), args.minIncrement, args.timeExtension, args.prizeMint, args.bidMint);
+            console.log("Received transaction from backend", base64Transaction);
+            const decodedTx = Buffer.from(base64Transaction, "base64");
+            const transaction = Transaction.from(decodedTx);
+
+            //Send Transaction
+            const signature = await sendTransaction(transaction, connection, {
+                minContextSlot,
             });
-            if (!tx || data.error) {
+
+            const confirmation = await connection.confirmTransaction({
+                blockhash,
+                lastValidBlockHeight,
+                signature,
+            });
+            console.log('success', 'Transaction successful!', signature);
+
+            // const tx = await createAuctionMutation.mutateAsync({
+            //     startTime: args.startTime,
+            //     endTime: args.endTime + 100,
+            //     startImmediately: args.startImmediately,
+            //     isBidMintSol: args.isBidMintSol,
+            //     baseBid: args.baseBid * Math.pow(10, decimals!),
+            //     minIncrement: args.minIncrement,
+            //     timeExtension: args.timeExtension,
+            //     prizeMint: new PublicKey(args.prizeMint),
+            //     bidMint: new PublicKey(args.bidMint!) // ignored if SOL
+            // });
+            if (confirmation.value.err || data.error) {
                 throw new Error("Failed to create auction");
             } else {
                 await new Promise((resolve) =>
@@ -161,7 +181,7 @@ export const useCreateAuction = () => {
                         resolve(true);
                     }, 2000)
                 );
-                const verifyData = await verifyAuctionCreation(data.auction.id, tx);
+                const verifyData = await verifyAuctionCreation(data.auction.id, signature);
                 if (verifyData.error) {
                     return data.auction.id;
                 }

@@ -12,6 +12,8 @@ import { SOLANA_RPC } from "@/constants";
 import type { RaffleTypeBackend } from "types/backend/raffleTypes";
 import type { Raffle } from "types/raffle";
 
+export const connection = new Connection(SOLANA_RPC, "confirmed");
+
 // audit: can we use connnection form different imports
 export async function ensureAtaIx(params: {
   connection: Connection;

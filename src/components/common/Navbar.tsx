@@ -215,9 +215,7 @@ export const Navbar = () => {
               </li>
             ))}
 
-            <li>
-              <StatsDropdown />
-            </li>
+            <StatsDropdown />
 
             {/* Mobile icons */}
             <ul className="lg:hidden flex items-center gap-2 mt-4">
