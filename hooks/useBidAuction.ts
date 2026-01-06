@@ -1,13 +1,15 @@
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { useAuctionAnchorProgram } from "./useAuctionAnchorProgram";
 // import type { AuctionTypeBackend } from "../types/backend/auctionTypes";
 import { useWallet } from "@solana/wallet-adapter-react";
 // import { VerifiedTokens } from "../src/utils/verifiedTokens";
 import {
-    bidInAuction
+    bidInAuction,
+    getBidAuctionTx,
 } from "../api/routes/auctionRoutes";
 import { useCheckAuth } from "./useCheckAuth";
+import { connection } from "./helpers";
+import { Transaction } from "@solana/web3.js";
 
 interface BidAuctionArgs {
     highestBidder: string;
@@ -16,8 +18,7 @@ interface BidAuctionArgs {
 }
 
 export const useBidAuction = () => {
-    const { placeBidMutation } = useAuctionAnchorProgram();
-    const { publicKey } = useWallet();
+    const { publicKey, sendTransaction } = useWallet();
     const queryClient = useQueryClient();
     const { checkAndInvalidateToken } = useCheckAuth();
 
@@ -39,7 +40,7 @@ export const useBidAuction = () => {
             if (args.bidAmount <= 0) {
                 throw new Error("Bid amount must be greater than zero");
             }
-            
+
 
             return true;
         } catch (error: unknown) {
@@ -71,14 +72,25 @@ export const useBidAuction = () => {
             if (!(await validateForm(args))) {
                 throw new Error("Validation failed");
             }
-            const tx = await placeBidMutation.mutateAsync({
-                auctionId: args.auctionId,
-                bidAmount: args.bidAmount,
+            const { base64Transaction, minContextSlot, blockhash, lastValidBlockHeight } = await getBidAuctionTx(args.auctionId, args.bidAmount);
+            console.log("Received transaction from backend", base64Transaction);
+            const decodedTx = Buffer.from(base64Transaction, "base64");
+            const transaction = Transaction.from(decodedTx);
+
+            //Send Transaction
+            const signature = await sendTransaction(transaction, connection, {
+                minContextSlot,
             });
-            if (!tx) {
+
+            const confirmation = await connection.confirmTransaction({
+                blockhash,
+                lastValidBlockHeight,
+                signature,
+            });
+            if (confirmation.value.err) {
                 throw new Error("Failed to bid in auction");
             }
-            await bidAuctionOverBackend(args.auctionId, tx, args.bidAmount.toString());
+            await bidAuctionOverBackend(args.auctionId, signature, args.bidAmount.toString());
             return args.auctionId;
         },
         onSuccess: (auctionId: number) => {

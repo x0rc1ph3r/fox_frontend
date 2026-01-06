@@ -165,3 +165,36 @@ export const getCreateAuctionTx = async (startTime: number, endTime: number, sta
         throw error;
     }
 }
+
+export const getCancelAuctionTx = async (auctionId: string) => {
+    try {
+        const response = await api.get(`/auction/cancel-tx/${auctionId}`, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export const getBidAuctionTx = async (auctionId: number, bidAmount: number) => {
+    try {
+        const response = await api.post("/auction/bid-tx", {
+            auctionId,
+            bidAmount
+        }, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}

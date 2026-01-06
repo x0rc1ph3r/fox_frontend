@@ -1,21 +1,22 @@
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { useAuctionAnchorProgram } from "./useAuctionAnchorProgram";
 // import type { AuctionTypeBackend } from "../types/backend/auctionTypes";
 import { useWallet } from "@solana/wallet-adapter-react";
 // import { VerifiedTokens } from "../src/utils/verifiedTokens";
 import {
-    cancelAuctionOverBackend
+    cancelAuctionOverBackend,
+    getCancelAuctionTx
 } from "../api/routes/auctionRoutes";
 import { useCheckAuth } from "./useCheckAuth";
+import { connection } from "./helpers";
+import { Transaction } from "@solana/web3.js";
 
 interface CancelAuctionArgs {
     auctionId: number;
 }
 
 export const useCancelAuction = () => {
-    const { cancelAuctionMutation } = useAuctionAnchorProgram();
-    const { publicKey } = useWallet();
+    const { publicKey, sendTransaction } = useWallet();
     const queryClient = useQueryClient();
     const { checkAndInvalidateToken } = useCheckAuth();
 
@@ -50,11 +51,25 @@ export const useCancelAuction = () => {
             if (!(await validateForm(args))) {
                 throw new Error("Validation failed");
             }
-            const tx = await cancelAuctionMutation.mutateAsync(args.auctionId);
-            if (!tx) {
+            const { base64Transaction, minContextSlot, blockhash, lastValidBlockHeight } = await getCancelAuctionTx(args.auctionId.toString());
+            console.log("Received transaction from backend", base64Transaction);
+            const decodedTx = Buffer.from(base64Transaction, "base64");
+            const transaction = Transaction.from(decodedTx);
+
+            //Send Transaction
+            const signature = await sendTransaction(transaction, connection, {
+                minContextSlot,
+            });
+
+            const confirmation = await connection.confirmTransaction({
+                blockhash,
+                lastValidBlockHeight,
+                signature,
+            });
+            if (confirmation.value.err) {
                 throw new Error("Failed to cancel auction");
             }
-            await cancelAuctionOverBackend(args.auctionId.toString(), tx);
+            await cancelAuctionOverBackend(args.auctionId.toString(), signature);
             return args.auctionId;
         },
         onSuccess: (auctionId: number) => {

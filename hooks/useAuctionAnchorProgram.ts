@@ -15,7 +15,6 @@ export const AUCTION_PROGRAM_ID = new anchor.web3.PublicKey(auctionIdl.address);
 const FAKE_MINT = new PublicKey('So11111111111111111111111111111111111111112');
 const FAKE_ATA = new PublicKey('B9W4wPFWjTbZ9ab1okzB4D3SsGY7wntkrBKwpp5RC1Uv')
 const AUCTION_ADMIN_PUBKEY = new PublicKey('3FMdoxapmosa5vFHWKT9eVp3nKqHy8ebUhHCLFcgSKLc');
-const AUCTION_ADMIN_KEYPAIR = Keypair.fromSecretKey(Uint8Array.from([214, 195, 221, 90, 116, 238, 191, 49, 125, 52, 76, 239, 68, 25, 144, 85, 125, 238, 21, 60, 157, 1, 180, 229, 79, 34, 252, 213, 224, 131, 52, 3, 33, 100, 214, 59, 229, 171, 12, 132, 229, 175, 48, 210, 5, 182, 82, 46, 140, 62, 152, 210, 153, 80, 185, 240, 181, 75, 2, 7, 87, 48, 51, 49]));
 
 function getAuctionProgram(provider: anchor.AnchorProvider): anchor.Program<Auction> {
     return new anchor.Program<Auction>(auctionIdl as anchor.Idl, provider);
@@ -226,77 +225,77 @@ export function useAuctionAnchorProgram() {
     //     },
     // });
 
-    const createAuctionMutation = useMutation({
-        mutationKey: ["auction", "create"],
-        mutationFn: async (args: {
-            startTime: number;
-            endTime: number;
-            startImmediately: boolean;
-            isBidMintSol: boolean;
-            baseBid: number;
-            minIncrement: number;
-            timeExtension: number;
-            prizeMint: PublicKey;
-            bidMint?: PublicKey; // ignored if SOL
-        }) => {
-            if (!auctionProgram || !wallet.publicKey) {
-                throw new Error("Wallet not ready");
-            }
+    // const createAuctionMutation = useMutation({
+    //     mutationKey: ["auction", "create"],
+    //     mutationFn: async (args: {
+    //         startTime: number;
+    //         endTime: number;
+    //         startImmediately: boolean;
+    //         isBidMintSol: boolean;
+    //         baseBid: number;
+    //         minIncrement: number;
+    //         timeExtension: number;
+    //         prizeMint: PublicKey;
+    //         bidMint?: PublicKey; // ignored if SOL
+    //     }) => {
+    //         if (!auctionProgram || !wallet.publicKey) {
+    //             throw new Error("Wallet not ready");
+    //         }
 
-            // // fetch config to get auction_count
-            // const config = await auctionProgram.account.auctionConfig.fetch(
-            //     auctionConfigPda
-            // );
+    //         // // fetch config to get auction_count
+    //         // const config = await auctionProgram.account.auctionConfig.fetch(
+    //         //     auctionConfigPda
+    //         // );
 
-            // const auctionAccountPda = auctionPda(config.auctionCount);
+    //         // const auctionAccountPda = auctionPda(config.auctionCount);
 
-            // const creatorPrizeAta = await getAtaAddress(
-            //     connection,
-            //     args.prizeMint,
-            //     wallet.publicKey
-            // );
+    //         // const creatorPrizeAta = await getAtaAddress(
+    //         //     connection,
+    //         //     args.prizeMint,
+    //         //     wallet.publicKey
+    //         // );
 
-            // const prizeEscrowAta = await getAtaAddress(
-            //     connection,
-            //     args.prizeMint,
-            //     auctionAccountPda,
-            //     true // PDA owner
-            // );
+    //         // const prizeEscrowAta = await getAtaAddress(
+    //         //     connection,
+    //         //     args.prizeMint,
+    //         //     auctionAccountPda,
+    //         //     true // PDA owner
+    //         // );
 
-            const prizeTokenProgram = await getTokenProgramFromMint(
-                connection,
-                args.prizeMint
-            );
+    //         const prizeTokenProgram = await getTokenProgramFromMint(
+    //             connection,
+    //             args.prizeMint
+    //         );
 
-            return await auctionProgram.methods
-                .createAuction(
-                    new BN(args.startTime),
-                    new BN(args.endTime),
-                    args.startImmediately,
-                    args.isBidMintSol,
-                    new BN(args.baseBid),
-                    new BN(args.minIncrement),
-                    args.timeExtension
-                )
-                .accounts({
-                    creator: wallet.publicKey,
-                    auctionAdmin: AUCTION_ADMIN_PUBKEY,
+    //         return await auctionProgram.methods
+    //             .createAuction(
+    //                 new BN(args.startTime),
+    //                 new BN(args.endTime),
+    //                 args.startImmediately,
+    //                 args.isBidMintSol,
+    //                 new BN(args.baseBid),
+    //                 new BN(args.minIncrement),
+    //                 args.timeExtension
+    //             )
+    //             .accounts({
+    //                 creator: wallet.publicKey,
+    //                 auctionAdmin: AUCTION_ADMIN_PUBKEY,
 
-                    prizeMint: args.prizeMint,
-                    bidMint: args.bidMint ?? FAKE_MINT,
+    //                 prizeMint: args.prizeMint,
+    //                 bidMint: args.bidMint ?? FAKE_MINT,
 
-                    prizeTokenProgram,
-                })
-                .signers([AUCTION_ADMIN_KEYPAIR])
-                .rpc();
-        },
-        onSuccess: (tx) => {
-            console.log("Auction created:", tx);
-        },
-        onError: (error) => {
-            console.error("Create auction failed:", error);
-        },
-    });
+    //                 prizeTokenProgram,
+    //             })
+    //             .signers([AUCTION_ADMIN_KEYPAIR])
+    //             .rpc();
+    //     },
+    //     onSuccess: (tx) => {
+    //         console.log("Auction created:", tx);
+    //     },
+    //     onError: (error) => {
+    //         console.error("Create auction failed:", error);
+    //     },
+    // });
 
     // const updateAuctionMutation = useMutation({
     //     mutationKey: ["auction", "update"],
@@ -338,57 +337,57 @@ export function useAuctionAnchorProgram() {
     //     },
     // });
 
-    const cancelAuctionMutation = useMutation({
-        mutationKey: ["auction", "cancel"],
-        mutationFn: async (auctionId: number) => {
-            if (!auctionProgram || !wallet.publicKey) {
-                throw new Error("Wallet not ready");
-            }
+    // const cancelAuctionMutation = useMutation({
+    //     mutationKey: ["auction", "cancel"],
+    //     mutationFn: async (auctionId: number) => {
+    //         if (!auctionProgram || !wallet.publicKey) {
+    //             throw new Error("Wallet not ready");
+    //         }
 
-            const auctionAccountPda = auctionPda(auctionId);
+    //         const auctionAccountPda = auctionPda(auctionId);
 
-            const auctionData = await auctionProgram.account.auction.fetch(
-                auctionAccountPda
-            );
+    //         const auctionData = await auctionProgram.account.auction.fetch(
+    //             auctionAccountPda
+    //         );
 
-            // const prizeEscrow = await getAtaAddress(
-            //     connection,
-            //     auctionData.prizeMint,
-            //     auctionAccountPda,
-            //     true
-            // );
+    //         // const prizeEscrow = await getAtaAddress(
+    //         //     connection,
+    //         //     auctionData.prizeMint,
+    //         //     auctionAccountPda,
+    //         //     true
+    //         // );
 
-            // const creatorPrizeAta = await getAtaAddress(
-            //     connection,
-            //     auctionData.prizeMint,
-            //     wallet.publicKey
-            // );
+    //         // const creatorPrizeAta = await getAtaAddress(
+    //         //     connection,
+    //         //     auctionData.prizeMint,
+    //         //     wallet.publicKey
+    //         // );
 
-            const prizeTokenProgram = await getTokenProgramFromMint(
-                connection,
-                auctionData.prizeMint
-            );
+    //         const prizeTokenProgram = await getTokenProgramFromMint(
+    //             connection,
+    //             auctionData.prizeMint
+    //         );
 
-            return await auctionProgram.methods
-                .cancelAuction(auctionId)
-                .accounts({
-                    creator: wallet.publicKey,
-                    auctionAdmin: AUCTION_ADMIN_PUBKEY,
+    //         return await auctionProgram.methods
+    //             .cancelAuction(auctionId)
+    //             .accounts({
+    //                 creator: wallet.publicKey,
+    //                 auctionAdmin: AUCTION_ADMIN_PUBKEY,
 
-                    prizeMint: auctionData.prizeMint,
+    //                 prizeMint: auctionData.prizeMint,
 
-                    prizeTokenProgram,
-                })
-                .signers([AUCTION_ADMIN_KEYPAIR])
-                .rpc();
-        },
-        onSuccess: (tx) => {
-            console.log("Auction cancelled:", tx);
-        },
-        onError: (error) => {
-            console.error("Cancel auction failed:", error);
-        },
-    });
+    //                 prizeTokenProgram,
+    //             })
+    //             .signers([AUCTION_ADMIN_KEYPAIR])
+    //             .rpc();
+    //     },
+    //     onSuccess: (tx) => {
+    //         console.log("Auction cancelled:", tx);
+    //     },
+    //     onError: (error) => {
+    //         console.error("Cancel auction failed:", error);
+    //     },
+    // });
 
     // const completeAuctionMutation = useMutation({
     //     mutationKey: ["auction", "complete"],
@@ -662,119 +661,119 @@ export function useAuctionAnchorProgram() {
     //     },
     // });
 
-    const placeBidMutation = useMutation({
-        mutationKey: ["auction", "placeBid"],
-        mutationFn: async (args: {
-            auctionId: number;
-            bidAmount: number;
-        }) => {
-            if (!auctionProgram || !wallet.publicKey) {
-                throw new Error("Wallet not ready");
-            }
+    // const placeBidMutation = useMutation({
+    //     mutationKey: ["auction", "placeBid"],
+    //     mutationFn: async (args: {
+    //         auctionId: number;
+    //         bidAmount: number;
+    //     }) => {
+    //         if (!auctionProgram || !wallet.publicKey) {
+    //             throw new Error("Wallet not ready");
+    //         }
 
-            const tx = new Transaction();
+    //         const tx = new Transaction();
 
-            /* ---------------- PDAs ---------------- */
-            const auctionAccountPda = auctionPda(args.auctionId);
+    //         /* ---------------- PDAs ---------------- */
+    //         const auctionAccountPda = auctionPda(args.auctionId);
 
-            const auctionData = await auctionProgram.account.auction.fetch(
-                auctionAccountPda
-            );
+    //         const auctionData = await auctionProgram.account.auction.fetch(
+    //             auctionAccountPda
+    //         );
 
-            const isSolBid = auctionData.bidMint === null;
-            const bidMint = auctionData.bidMint ?? FAKE_MINT;
+    //         const isSolBid = auctionData.bidMint === null;
+    //         const bidMint = auctionData.bidMint ?? FAKE_MINT;
 
-            let currentBidderAta: PublicKey = FAKE_ATA;
-            let prevBidderAta: PublicKey = FAKE_ATA;
-            let bidEscrow: PublicKey = FAKE_ATA;
-            let highestBidder: PublicKey = wallet.publicKey;
+    //         let currentBidderAta: PublicKey = FAKE_ATA;
+    //         let prevBidderAta: PublicKey = FAKE_ATA;
+    //         let bidEscrow: PublicKey = FAKE_ATA;
+    //         let highestBidder: PublicKey = wallet.publicKey;
 
-            /* ---------------- Token program ---------------- */
-            const bidTokenProgram = await getTokenProgramFromMint(
-                connection,
-                bidMint
-            );
+    //         /* ---------------- Token program ---------------- */
+    //         const bidTokenProgram = await getTokenProgramFromMint(
+    //             connection,
+    //             bidMint
+    //         );
 
-            if (!isSolBid) {
-                /* -------- Ensure Escrow ATA -------- */
-                const escrowRes = await ensureAtaIx({
-                    connection,
-                    mint: bidMint,
-                    owner: auctionAccountPda,
-                    payer: wallet.publicKey,
-                    tokenProgram: bidTokenProgram,
-                    allowOwnerOffCurve: true,
-                });
+    //         if (!isSolBid) {
+    //             /* -------- Ensure Escrow ATA -------- */
+    //             const escrowRes = await ensureAtaIx({
+    //                 connection,
+    //                 mint: bidMint,
+    //                 owner: auctionAccountPda,
+    //                 payer: wallet.publicKey,
+    //                 tokenProgram: bidTokenProgram,
+    //                 allowOwnerOffCurve: true,
+    //             });
 
-                bidEscrow = escrowRes.ata;
-                if (escrowRes.ix) tx.add(escrowRes.ix);
+    //             bidEscrow = escrowRes.ata;
+    //             if (escrowRes.ix) tx.add(escrowRes.ix);
 
-                /* -------- Ensure current bidder ATA -------- */
-                const currentRes = await ensureAtaIx({
-                    connection,
-                    mint: bidMint,
-                    owner: wallet.publicKey,
-                    payer: wallet.publicKey,
-                    tokenProgram: bidTokenProgram,
-                });
+    //             /* -------- Ensure current bidder ATA -------- */
+    //             const currentRes = await ensureAtaIx({
+    //                 connection,
+    //                 mint: bidMint,
+    //                 owner: wallet.publicKey,
+    //                 payer: wallet.publicKey,
+    //                 tokenProgram: bidTokenProgram,
+    //             });
 
-                currentBidderAta = currentRes.ata;
-                if (currentRes.ix) tx.add(currentRes.ix);
+    //             currentBidderAta = currentRes.ata;
+    //             if (currentRes.ix) tx.add(currentRes.ix);
 
-                /* -------- Ensure previous bidder ATA (refund path) -------- */
-                if (!auctionData.highestBidder.equals(PublicKey.default)) {
-                    const prevRes = await ensureAtaIx({
-                        connection,
-                        mint: bidMint,
-                        owner: auctionData.highestBidder,
-                        payer: wallet.publicKey,
-                        tokenProgram: bidTokenProgram,
-                    });
+    //             /* -------- Ensure previous bidder ATA (refund path) -------- */
+    //             if (!auctionData.highestBidder.equals(PublicKey.default)) {
+    //                 const prevRes = await ensureAtaIx({
+    //                     connection,
+    //                     mint: bidMint,
+    //                     owner: auctionData.highestBidder,
+    //                     payer: wallet.publicKey,
+    //                     tokenProgram: bidTokenProgram,
+    //                 });
 
-                    prevBidderAta = prevRes.ata;
-                    if (prevRes.ix) tx.add(prevRes.ix);
-                }
-            } else {
-                if (!auctionData.highestBidder.equals(PublicKey.default)) {
-                    highestBidder = auctionData.highestBidder;
-                }
-            }
+    //                 prevBidderAta = prevRes.ata;
+    //                 if (prevRes.ix) tx.add(prevRes.ix);
+    //             }
+    //         } else {
+    //             if (!auctionData.highestBidder.equals(PublicKey.default)) {
+    //                 highestBidder = auctionData.highestBidder;
+    //             }
+    //         }
 
-            /* ---------------- Anchor instruction ---------------- */
-            const ix = await auctionProgram.methods
-                .placeBid(
-                    args.auctionId,
-                    new BN(args.bidAmount)
-                )
-                .accounts({
-                    bidder: wallet.publicKey,
-                    auctionAdmin: AUCTION_ADMIN_PUBKEY,
+    //         /* ---------------- Anchor instruction ---------------- */
+    //         const ix = await auctionProgram.methods
+    //             .placeBid(
+    //                 args.auctionId,
+    //                 new BN(args.bidAmount)
+    //             )
+    //             .accounts({
+    //                 bidder: wallet.publicKey,
+    //                 auctionAdmin: AUCTION_ADMIN_PUBKEY,
 
-                    prevBidderAccount: highestBidder,
+    //                 prevBidderAccount: highestBidder,
 
-                    bidMint,
-                    currentBidderAta,
-                    prevBidderAta,
-                    bidEscrow,
+    //                 bidMint,
+    //                 currentBidderAta,
+    //                 prevBidderAta,
+    //                 bidEscrow,
 
-                    bidTokenProgram,
-                })
-                .instruction();
+    //                 bidTokenProgram,
+    //             })
+    //             .instruction();
 
-            tx.add(ix);
+    //         tx.add(ix);
 
-            /* ---------------- Send TX ---------------- */
-            return await provider.sendAndConfirm(tx, [
-                AUCTION_ADMIN_KEYPAIR,
-            ]);
-        },
-        onSuccess: (tx) => {
-            console.log("Bid placed:", tx);
-        },
-        onError: (error) => {
-            console.log("Place bid failed:", error);
-        },
-    });
+    //         /* ---------------- Send TX ---------------- */
+    //         return await provider.sendAndConfirm(tx, [
+    //             AUCTION_ADMIN_KEYPAIR,
+    //         ]);
+    //     },
+    //     onSuccess: (tx) => {
+    //         console.log("Bid placed:", tx);
+    //     },
+    //     onError: (error) => {
+    //         console.log("Place bid failed:", error);
+    //     },
+    // });
 
 
     /* ---------------- Return API ---------------- */
@@ -799,14 +798,14 @@ export function useAuctionAnchorProgram() {
         // updateAuctionPauseMutation,
 
         /* ---------------- Auction Lifecycle ---------------- */
-        createAuctionMutation,
+        // createAuctionMutation,
         // updateAuctionMutation,
-        cancelAuctionMutation,
+        // cancelAuctionMutation,
         // startAuctionMutation,
         // completeAuctionMutation,
 
         /* ---------------- Bidding ---------------- */
-        placeBidMutation,
+        // placeBidMutation,
 
         /* ---------------- Fee Withdrawals ---------------- */
         // withdrawAuctionSolFeesMutation,

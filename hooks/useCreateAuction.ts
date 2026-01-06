@@ -37,7 +37,7 @@ const FAKE_MINT = new PublicKey('So11111111111111111111111111111111111111112');
 const MIN_TIME = (24 * 60 * 60) + 100; // 24 hours in seconds
 
 export const useCreateAuction = () => {
-    const { createAuctionMutation, getAuctionConfig } = useAuctionAnchorProgram();
+    const { getAuctionConfig } = useAuctionAnchorProgram();
     const router = useRouter();
     const { publicKey, sendTransaction } = useWallet();
     const queryClient = useQueryClient();
@@ -160,7 +160,6 @@ export const useCreateAuction = () => {
                 lastValidBlockHeight,
                 signature,
             });
-            console.log('success', 'Transaction successful!', signature);
 
             // const tx = await createAuctionMutation.mutateAsync({
             //     startTime: args.startTime,
