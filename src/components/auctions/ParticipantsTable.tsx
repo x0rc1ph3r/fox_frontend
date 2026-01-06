@@ -1,3 +1,6 @@
+import { VerifiedTokens } from "@/utils/verifiedTokens";
+import { useMemo } from "react";
+
 interface Bid {
   id: string;
   bidAmount: number;
@@ -72,6 +75,13 @@ export const ParticipantsTable = ({
     })}, ${time}`;
   };
 
+  const currencyDecimals = useMemo(() => {
+    return (
+      VerifiedTokens.find((token) => token.symbol === currency)
+        ?.decimals ?? 0
+    );
+  }, [currency]);
+
   return (
     <div className="border border-gray-1100 md:pb-36 pb-24 rounded-[20px] w-full md:overflow-hidden overflow-x-auto">
       <table className="table w-full min-w-[600px]">
@@ -144,7 +154,7 @@ export const ParticipantsTable = ({
                   <td>
                     <div className="px-5 py-6 border-b border-gray-1100">
                       <p className="text-base text-black-1000 font-medium font-inter">
-                        {p.bidAmount / 10 ** 9} {currency}
+                        {p.bidAmount / Math.pow(10, currencyDecimals)} {currency}
                       </p>
                     </div>
                   </td>
