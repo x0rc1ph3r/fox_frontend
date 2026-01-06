@@ -45,6 +45,7 @@ export const useCreateRaffle = () => {
     agreedToTerms,
     getEndTimestamp,
     setIsCreatingRaffle,
+    maximumTickets,
   } = useCreateRaffleStore();
 
   const { createRaffleMutation, getRaffleConfig } = useRaffleAnchorProgram();
@@ -100,6 +101,15 @@ export const useCreateRaffle = () => {
       }
       if (!agreedToTerms) {
         throw new Error("You must agree to the terms and conditions");
+      }
+      if(maximumTickets.length === 0) {
+        throw new Error("Maximum Tickets is required");
+      }
+      if(maximumTickets.length > 0 && parseInt(maximumTickets) < 1) {
+        throw new Error("Maximum Tickets must be greater than 0");
+      }
+      if(maximumTickets.length > 0 && parseInt(maximumTickets) > parseInt(supply)) {
+        throw new Error("Maximum Tickets must be less than or equal to Supply");
       }
       if (ticketLimitPerWallet && parseInt(ticketLimitPerWallet) < 1) {
         throw new Error("Ticket Limit Per Wallet must be greater than 0");
@@ -164,6 +174,7 @@ export const useCreateRaffle = () => {
     val: parseFloat(val),
     ttv: ttv,
     roi: parseFloat(percentage),
+    maxTickets: parseInt(maximumTickets),
     maxEntries: Math.floor(
       (parseInt(ticketLimitPerWallet) * parseInt(supply)) / 100
     ),
@@ -208,6 +219,7 @@ export const useCreateRaffle = () => {
       const tx = await createRaffleMutation.mutateAsync({
         startTime: now + 60,
         endTime: getEndTimestamp()!,
+        maximumTickets: parseInt(maximumTickets),
 
         totalTickets: parseInt(supply),
         ticketPrice:

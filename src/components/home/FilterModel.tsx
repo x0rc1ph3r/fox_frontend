@@ -172,7 +172,8 @@ export default function FilterModal() {
                           period={endTimeAfter.time.split(":")[2] as "AM" | "PM"}
                           onTimeChange={(hour: string, minute: string, period: "AM" | "PM") =>
                             setEndTimeAfter(endTimeAfter.date, `${hour}:${minute}:${period}`)
-                          }/>
+                          }
+                          hasValue={!!endTimeAfter.date}/>
                       </div>
 
                       <div className="grid grid-cols-2 md:flex lg:flex-row flex-row md:flex-col items-end md:gap-x-5 gap-y-5 gap-x-2.5">
@@ -188,7 +189,8 @@ export default function FilterModal() {
                           period={endTimeBefore.time.split(":")[2] as "AM" | "PM"}
                           onTimeChange={(hour: string, minute: string, period: "AM" | "PM") =>
                             setEndTimeBefore(endTimeBefore.date, `${hour}:${minute}:${period}`)
-                          }/>
+                          }
+                          hasValue={!!endTimeBefore.date}/>
                       </div>
                     </div>
                   </div>

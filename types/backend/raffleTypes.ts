@@ -66,6 +66,7 @@ const raffleSchema = z.object({
     prize: z.string().min(1).optional(),
     maxEntries: z.number().gt(0),
     numberOfWinners: z.number().gt(0),
+    maxTickets: z.number().gt(0).optional(),
     prizeData: prizeDataSchema,
     raffleEntries: z.array(z.object({
         id: z.number().gt(0),

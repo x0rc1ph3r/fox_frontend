@@ -7,6 +7,7 @@ interface TimeSelectorProps
   minute?: string;
   period?: "AM" | "PM";
   onTimeChange?: (hour: string, minute: string, period: "AM" | "PM") => void;
+  hasValue?: boolean;
 }
 
 export default function TimeSelector({ 
@@ -15,6 +16,7 @@ export default function TimeSelector({
   minute = "00",
   period = "PM",
   onTimeChange,
+  hasValue = false,
   ...props 
 }: TimeSelectorProps) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -71,7 +73,7 @@ export default function TimeSelector({
           value={inputValue}
           onChange={handleChange}
           {...props}
-          className="w-full text-base font-medium text-gray-1200 placeholder:text-gray-1200 outline outline-gray-1100 focus:outline-primary-color h-12 md:px-5 px-3 md:pr-5 py-3 rounded-lg border-transparent appearance-none"
+          className={`w-full text-base font-medium ${hasValue ? 'text-black-1000' : 'text-gray-1200'} placeholder:text-gray-1200 outline outline-gray-1100 focus:outline-primary-color h-12 md:px-5 px-3 md:pr-5 py-3 rounded-lg border-transparent appearance-none`}
         />
         <span
           onClick={handleIconClick}

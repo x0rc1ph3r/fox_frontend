@@ -398,6 +398,7 @@ function CreateRaffles() {
                             minute={endTimeMinute}
                             period={endTimePeriod}
                             onTimeChange={handleTimeChange}
+                            hasValue={!!endDate}
                           />
                         </div>
                       </div>

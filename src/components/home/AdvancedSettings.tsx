@@ -5,7 +5,7 @@ import { useCreateRaffleStore } from "store/createRaffleStore";
 
 export default function AdvancedSettingsAccordion() {
   const [isOpen, setIsOpen] = useState(false);
-  const {numberOfWinners, ticketLimitPerWallet, setNumberOfWinners, setTicketLimitPerWallet, getComputedRent, prizeType} = useCreateRaffleStore();
+  const {numberOfWinners, ticketLimitPerWallet, setNumberOfWinners, setTicketLimitPerWallet, getComputedRent, prizeType, maximumTickets, setMaximumTickets} = useCreateRaffleStore();
   
   const isNftPrize = prizeType === "nft";
 
@@ -71,7 +71,7 @@ export default function AdvancedSettingsAccordion() {
                 >
                   Ticket limit per wallet in percentage
                 </label>
-                <FormInput value={ticketLimitPerWallet} onChange={(e) => setTicketLimitPerWallet(e.target.value)} placeholder="No Limit" className="bg-white" />
+                <FormInput value={ticketLimitPerWallet} onChange={(e) => setTicketLimitPerWallet(e.target.value)} placeholder="0" className="bg-white" />
                 <p className="md:text-sm text-xs font-medium font-inter text-black-1000 pt-2.5">
                   Users can purchase 40% of total tickets as standard
                 </p>
@@ -95,6 +95,19 @@ export default function AdvancedSettingsAccordion() {
                 />
                 <p className="md:text-sm text-xs font-medium font-inter text-black-1000 pt-2.5">
                   {isNftPrize ? "NFT prizes can only have 1 winner" : "Max 10 Winners"}
+                </p>
+              </div>
+              <div>
+                <label
+                  className="text-sm font-medium font-inter text-gray-1200 pb-2.5 block"
+                >
+                  Maximum tickets
+                </label>
+                <FormInput type="number" value={maximumTickets} onChange={(e) => {
+                  setMaximumTickets(e.target.value);
+                }} placeholder="0" className="bg-white" />
+                <p className="md:text-sm text-xs font-medium font-inter text-black-1000 pt-2.5">
+                  Raffle will end when this many tickets are sold
                 </p>
               </div>
             </div>

@@ -68,7 +68,7 @@ export default function DateSelector({
           onChange={handleChange}
           min={minValue}
           {...restProps}
-          className="w-full text-sm md:text-base font-medium text-gray-1200 placeholder:text-gray-1200 outline outline-gray-1100 focus:outline-primary-color h-12 md:px-5 px-3 md:pr-5 py-3 rounded-lg border-transparent appearance-none"
+          className={`w-full text-sm md:text-base font-medium ${inputValue ? 'text-black-1000' : 'text-gray-1200'} placeholder:text-gray-1200 outline outline-gray-1100 focus:outline-primary-color h-12 md:px-5 px-3 md:pr-5 py-3 rounded-lg border-transparent appearance-none`}
         />
         <span
           onClick={handleIconClick}

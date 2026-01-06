@@ -65,6 +65,9 @@ interface CreateRaffleState {
   // User Verified Tokens
   userVerifiedTokens: string[];
 
+  // Maximum Tickets
+  maximumTickets: string;
+
   // Actions - UI
   openVerifiedCollectionsModal: () => void;
   closeVerifiedCollectionsModal: () => void;
@@ -108,6 +111,7 @@ interface CreateRaffleState {
   setUserVerifiedTokens: (tokens: string[]) => void;
   // Actions - Terms
   setAgreedToTerms: (agreed: boolean) => void;
+  setMaximumTickets: (maximumTickets: string) => void;
 
   // Actions - Search
   setCollectionSearchQuery: (query: string) => void;
@@ -169,7 +173,7 @@ const initialState = {
   // Advanced Settings
   holderOnlyCollection: "",
   additionalCollections: [] as string[],
-  ticketLimitPerWallet: "",
+  ticketLimitPerWallet: "40",
   numberOfWinners: "1",
   winShares: [100] as number[],
   isUniqueWinners: true,
@@ -184,6 +188,9 @@ const initialState = {
 
   // Verified Tokens Modal
   isVerifiedTokensModalOpen: false,
+
+  // Maximum Tickets
+  maximumTickets: "0",
 };
 
 /* ----------------------------- Store ----------------------------- */
@@ -234,7 +241,7 @@ export const useCreateRaffleStore = create<CreateRaffleState>((set, get) => ({
   },
 
   // Actions - Ticket Configuration
-  setSupply: (supply) => set({ supply,ticketLimitPerWallet: "40" }),
+  setSupply: (supply) => set({ supply,ticketLimitPerWallet: "40", maximumTickets: supply }),
   setTicketPrice: (price) => set({ ticketPrice: price }),
   setTicketCurrency: (currency: { symbol: string; address: string }) => set({ ticketCurrency: currency }),
   setTicketPricePerSol: (price: string) => set({ ticketPricePerSol: price }),
@@ -304,7 +311,7 @@ export const useCreateRaffleStore = create<CreateRaffleState>((set, get) => ({
 
   // Actions - Terms
   setAgreedToTerms: (agreed) => set({ agreedToTerms: agreed }),
-
+  setMaximumTickets: (maximumTickets) => set({ maximumTickets: maximumTickets }),
   // Actions - Search
   setCollectionSearchQuery: (query) => set({ collectionSearchQuery: query }),
   setTokenSearchQuery: (query) => set({ tokenSearchQuery: query }),

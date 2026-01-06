@@ -578,6 +578,9 @@ function RouteComponent() {
                         <h3 className="text-lg font-medium font-inter text-black-1000">
                           Raffle Administrator
                         </h3>
+                        <p className="text-base font-medium font-inter text-red-1000">
+                          Maximum tickets sold to end raffle: {raffle?.maxTickets}
+                        </p>
                         <div className="w-full md:mb-5">
 
                           <PrimaryButton

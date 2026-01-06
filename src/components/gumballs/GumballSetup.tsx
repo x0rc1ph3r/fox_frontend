@@ -140,6 +140,7 @@ export const GumballSetup = () => {
                             setStartTimePeriod(period);
                           }}
                           disabled={isCreatingGumball}
+                          hasValue={!!startDate}
                         />
                       </div>
                     </div>}

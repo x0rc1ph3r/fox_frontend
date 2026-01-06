@@ -50,10 +50,10 @@ export const useCreateGumball = () => {
             throw new Error("End time is required");
         }
         if (args.totalTickets <= 0) {
-            throw new Error("Total tickets must be greater than 0");
+            throw new Error("Prize Count must be greater than 0");
         }
         if (args.ticketPrice && args.ticketPrice <= 0) {
-            throw new Error("Ticket price must be greater than 0");
+            throw new Error("Gumball price must be greater than 0");
         }
         if (!args.isTicketSol && args.ticketMint === undefined) {
             throw new Error("Ticket mint is required");
@@ -65,10 +65,10 @@ export const useCreateGumball = () => {
             throw new Error("Gumball duration must be equal or greater than 2 days")
         }
         if(args.totalTickets < 3) { 
-            throw new Error("Total tickets must be greater than 2");
+            throw new Error("Prize Count must be greater than 2");
         }
         if(args.totalTickets > 10000) {
-            throw new Error("Total tickets must be less than 10,000");
+            throw new Error("Prize Count must be less than 10,000");
         }
         return true;
     }

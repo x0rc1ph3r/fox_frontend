@@ -329,6 +329,7 @@ function CreateAuctions() {
                                 setStartTimePeriod(period);
                               }}
                               disabled={isCreatingAuction}
+                              hasValue={!!startDate}
                             />
                           </div>
                         </div>
@@ -372,6 +373,7 @@ function CreateAuctions() {
                             minute={endTimeMinute}
                             period={endTimePeriod}
                             onTimeChange={handleTimeChange}
+                            hasValue={!!endDate}
                           />
                         </div>
                       </div>
