@@ -48,7 +48,7 @@ enum TransactionType {
 
 const raffleSchema = z.object({
     id: z.number().gt(0).optional(),
-    state: z.enum(["active", "ended", "cancelled", "successEnded", "failedEnded"]).optional(),
+    state: z.enum(["Active", "Ended", "Cancelled", "SuccessEnded", "FailedEnded"]).optional(),
     ticketSold: z.number().gt(0).optional(),
     raffle: z.string().min(1).optional(),
     createdAt: z.coerce.date().optional(),

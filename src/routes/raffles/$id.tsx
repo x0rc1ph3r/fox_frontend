@@ -1,8 +1,8 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Disclosure, Dialog, Transition } from "@headlessui/react";
 import { Fragment } from "react";
-import { PrimaryLink } from "@/components/ui/PrimaryLink";
+// import { PrimaryLink } from "@/components/ui/PrimaryLink";
 import { ParticipantsTable } from "@/components/home/ParticipantsTable";
 import { TransactionsTable } from "@/components/auctions/TransactionsTable";
 import { TermsConditions } from "@/components/auctions/TermsConditions";
@@ -17,7 +17,7 @@ import { useBuyRaffleTicket } from "../../../hooks/useBuyRaffleTicket";
 import { useBuyRaffleTicketStore } from "../../../store/buyraffleticketstore";
 import { useCancelRaffle } from "../../../hooks/useCancelRaffle";
 import { useClaimRafflePrize } from "../../../hooks/useClaimRafflePrize";
-import { getRaffleWinnersWhoClaimedPrize } from "../../../api/routes/raffleRoutes";
+// import { getRaffleWinnersWhoClaimedPrize } from "../../../api/routes/raffleRoutes";
 import { useQueryFavourites } from "hooks/useQueryFavourites";
 import { useToggleFavourite } from "hooks/useToggleFavourite";
 import { VerifiedNftCollections } from "@/utils/verifiedNftCollections";
@@ -66,7 +66,6 @@ function RouteComponent() {
   // >([]);
   const { data: winnersWhoClaimedPrize } = useRaffleWinnersWhoClaimedPrize(id || "");
   const [showWinnersModal, setShowWinnersModal] = useState(false);
-  const { connect } = useWallet();
   const [tabs, setTabs] = useState([
     { name: "Participants", active: true },
     { name: "Transactions", active: false },
@@ -78,22 +77,18 @@ function RouteComponent() {
   const { getFavouriteRaffle } = useQueryFavourites(
     publicKey?.toString() || ""
   );
-  const [TimeExtension, setTimeExtension] = useState(true);
   const shouldBeDisabled = useMemo(() => {
     return cancelRaffle.isPending || 
       (raffle?.ticketSold && raffle?.ticketSold > 0) || 
       (raffle?.state?.toLowerCase() !== "active" && raffle?.state?.toLowerCase()!=="failedended")
-  }, [raffle?.ticketSold, raffle?.state, cancelRaffle.isPending, raffle]);
-  useEffect(() => {
-    if (
-      raffle?.endsAt &&
-      new Date(raffle.endsAt) < new Date() &&
-      raffle.state !== "successEnded" &&
-      raffle.state !== "failedEnded"
-    ) {
-      setTimeExtension(false);
-    }
-  }, [raffle?.endsAt, raffle?.state]);
+  }, [raffle?.ticketSold, raffle?.state, cancelRaffle.isPending]);
+
+  const isActive = useMemo(() => {
+    return (
+      raffle?.state !== "SuccessEnded" &&
+      raffle?.state !== "FailedEnded"
+    );
+  }, [raffle?.state]);
 
   // useEffect(() => {
   //   if (raffle?.id) {
@@ -362,7 +357,7 @@ function RouteComponent() {
                       />
                     </a> */}
                   </div>
-                  {TimeExtension ? (
+                  {isActive ? (
                     <div className="w-full flex items-center flex-col-reverse md:flex-row justify-between py-[22px] px-[26px] border border-gray-1100 rounded-[20px] bg-gray-1300">
                       <div className="inline-flex w-full md:w-fit flex-col gap-2.5">
                         <DynamicCounter endsAt={raffle?.endsAt} status={raffle?.state?.toLowerCase() === "active" ? "ACTIVE" : "ENDED"} />
@@ -549,12 +544,12 @@ function RouteComponent() {
                           <PrimaryButton
                             className="w-full h-[54px]"
                             text={`Buy for ${
-                              raffle?.ticketPrice /
+                              (raffle?.ticketPrice /
                               10 **
                                 (VerifiedTokens.find(
                                   (token) =>
                                     token.address === raffle?.ticketTokenAddress
-                                )?.decimals || 0)
+                                )?.decimals || 0)) * ticketQuantity
                             } ${
                               VerifiedTokens.find(
                                 (token) =>
@@ -572,7 +567,7 @@ function RouteComponent() {
                       </div>
                     </div>
                   )}
-                  {publicKey && publicKey.toBase58() === raffle?.createdBy ? (
+                  {publicKey && publicKey.toBase58() === raffle?.createdBy && !shouldBeDisabled ? (
                     <div className="w-full mt-6">
                       <div className="w-full border rounded-xl px-10 items-center flex flex-col gap-5 justify-center py-2">
                         <h3 className="text-lg font-medium font-inter text-black-1000">
