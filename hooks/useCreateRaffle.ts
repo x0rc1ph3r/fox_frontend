@@ -2,22 +2,24 @@ import { useCreateRaffleStore } from "../store/createRaffleStore";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { useRaffleAnchorProgram } from "./useRaffleAnchorProgram";
-import { PublicKey } from "@solana/web3.js";
+import { Transaction } from "@solana/web3.js";
 import type { RaffleTypeBackend } from "types/backend/raffleTypes";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { VerifiedTokens } from "../src/utils/verifiedTokens";
 import {
   createRaffleOverBackend,
+  createRaffleTx,
   deleteRaffle,
   verifyRaffleCreation,
 } from "../api/routes/raffleRoutes";
 import { useRouter } from "@tanstack/react-router";
 // import { VerifiedNftCollections } from "@/utils/verifiedNftCollections";
 import { useCheckAuth } from "./useCheckAuth";
+import { connection } from "./helpers";
 
 export const useCreateRaffle = () => {
   // const { getAllRaffles } = useRaffleAnchorProgram();
-  const { publicKey } = useWallet();
+  const { publicKey, sendTransaction } = useWallet();
   const queryClient = useQueryClient();
   const {
     endDate,
@@ -48,7 +50,7 @@ export const useCreateRaffle = () => {
     maximumTickets,
   } = useCreateRaffleStore();
 
-  const { createRaffleMutation, getRaffleConfig } = useRaffleAnchorProgram();
+  const { getRaffleConfig } = useRaffleAnchorProgram();
   const { checkAndInvalidateToken } = useCheckAuth();
   const router = useRouter();
   const validateForm = async () => {
@@ -102,13 +104,13 @@ export const useCreateRaffle = () => {
       if (!agreedToTerms) {
         throw new Error("You must agree to the terms and conditions");
       }
-      if(maximumTickets.length === 0) {
+      if (maximumTickets.length === 0) {
         throw new Error("Maximum Tickets is required");
       }
-      if(maximumTickets.length > 0 && parseInt(maximumTickets) < 1) {
+      if (maximumTickets.length > 0 && parseInt(maximumTickets) < 1) {
         throw new Error("Maximum Tickets must be greater than 0");
       }
-      if(maximumTickets.length > 0 && parseInt(maximumTickets) > parseInt(supply)) {
+      if (maximumTickets.length > 0 && parseInt(maximumTickets) > parseInt(supply)) {
         throw new Error("Maximum Tickets must be less than or equal to Supply");
       }
       if (ticketLimitPerWallet && parseInt(ticketLimitPerWallet) < 1) {
@@ -185,28 +187,28 @@ export const useCreateRaffle = () => {
       mintAddress: prizeType === "nft" ? nftPrizeMint : tokenPrizeMint,
       mint: prizeType === "nft" ? nftPrizeMint : tokenPrizeMint,
       name: prizeType === "nft" ? nftPrizeName : VerifiedTokens.find((token) => token.address === tokenPrizeMint)?.name || "",
-      collection: prizeType === "nft" ? (nftCollection?nftCollection:"") : undefined,
+      collection: prizeType === "nft" ? (nftCollection ? nftCollection : "") : undefined,
       symbol:
         prizeType === "nft" ?
-        "":
-        VerifiedTokens.find((token) => token.address === tokenPrizeMint)
-          ?.symbol || "",
+          "" :
+          VerifiedTokens.find((token) => token.address === tokenPrizeMint)
+            ?.symbol || "",
       decimals:
         prizeType === "nft" ?
-        0 :
-        VerifiedTokens.find((token) => token.address === tokenPrizeMint)
-          ?.decimals || 0,
+          0 :
+          VerifiedTokens.find((token) => token.address === tokenPrizeMint)
+            ?.decimals || 0,
       verified: true,
       image: prizeType === "nft" ? prizeImage : VerifiedTokens.find((token) => token.address === tokenPrizeMint)?.image || "",
-      floor: prizeType === "nft" ? parseFloat(floor)/10**9 : undefined,
-      amount: prizeType === "nft" ? parseFloat(floor)/10**9 :
+      floor: prizeType === "nft" ? parseFloat(floor) / 10 ** 9 : undefined,
+      amount: prizeType === "nft" ? parseFloat(floor) / 10 ** 9 :
         parseFloat(tokenPrizeAmount) *
         10 **
         (VerifiedTokens.find((token) => token.address === tokenPrizeMint)
           ?.decimals || 0),
     },
   };
-  console.log("raffleBackendPayload",raffleBackendPayload);
+  console.log("raffleBackendPayload", raffleBackendPayload);
   const createRaffle = useMutation({
     mutationKey: ["createRaffle"],
     mutationFn: async () => {
@@ -215,8 +217,8 @@ export const useCreateRaffle = () => {
         throw new Error("Validation failed");
       }
       const data = await createRaffleOverBackend(raffleBackendPayload);
-      
-      const tx = await createRaffleMutation.mutateAsync({
+
+      const { base64Transaction, minContextSlot, blockhash, lastValidBlockHeight } = await createRaffleTx({
         startTime: now + 60,
         endTime: getEndTimestamp()!,
         maximumTickets: parseInt(maximumTickets),
@@ -242,18 +244,28 @@ export const useCreateRaffle = () => {
         isUniqueWinners: parseInt(numberOfWinners) == 1,
         startRaffle: true,
 
-        ticketMint: new PublicKey(ticketCurrency.address),
-        prizeMint: new PublicKey(prizeType === "nft" ? nftPrizeMint : tokenPrizeMint),
+        ticketMint: ticketCurrency.address,
+        prizeMint: prizeType === "nft" ? nftPrizeMint : tokenPrizeMint,
       });
-      if (!tx || data.error) {
+      console.log("Received transaction from backend", base64Transaction);
+      const decodedTx = Buffer.from(base64Transaction, "base64");
+      const transaction = Transaction.from(decodedTx);
+
+      //Send Transaction
+      const signature = await sendTransaction(transaction, connection, {
+        minContextSlot,
+      });
+
+      const confirmation = await connection.confirmTransaction({
+        blockhash,
+        lastValidBlockHeight,
+        signature,
+      });
+
+      if (confirmation.value.err || data.error) {
         throw new Error("Failed to create raffle");
       } else {
-        await new Promise((resolve) =>
-          setTimeout(() => {
-            resolve(true);
-          }, 2000)
-        );
-        const verifyData = await verifyRaffleCreation(data.raffle.id, tx);
+        const verifyData = await verifyRaffleCreation(data.raffle.id, signature);
         if (verifyData.error) {
           return data.raffle.id;
         }
@@ -267,7 +279,6 @@ export const useCreateRaffle = () => {
       queryClient.invalidateQueries({ queryKey: ["raffles", raffleId.toString()] });
       setIsCreatingRaffle(false);
       toast.success("Raffle created successfully");
-      new Promise((resolve) => setTimeout(resolve, 2000));
       router.navigate({ to: "/raffles/$id", params: { id: raffleId.toString() } });
     },
     onError: async (_error, _args, context) => {

@@ -69,7 +69,10 @@ export const useCancelAuction = () => {
             if (confirmation.value.err) {
                 throw new Error("Failed to cancel auction");
             }
-            await cancelAuctionOverBackend(args.auctionId.toString(), signature);
+            const response = await cancelAuctionOverBackend(args.auctionId.toString(), signature);
+            if (response.error) {
+                throw new Error(response.error);
+            }
             return args.auctionId;
         },
         onSuccess: (auctionId: number) => {

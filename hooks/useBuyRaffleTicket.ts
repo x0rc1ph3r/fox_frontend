@@ -1,14 +1,14 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRaffleAnchorProgram } from "./useRaffleAnchorProgram";
-import { buyRaffleTicket } from "../api/routes/raffleRoutes";
+import { buyRaffleTicket, buyTicketTx } from "../api/routes/raffleRoutes";
 import toast from "react-hot-toast";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useCheckAuth } from "./useCheckAuth";
+import { connection } from "./helpers";
+import { Transaction } from "@solana/web3.js";
 
 export const useBuyRaffleTicket = () => {
-  const { buyTicketMutation } = useRaffleAnchorProgram();
   const queryClient = useQueryClient();
-  const { publicKey } = useWallet();
+  const { publicKey, sendTransaction } = useWallet();
   const { checkAndInvalidateToken } = useCheckAuth();
 
   const validateForm = async (args: { raffleId: number; ticketsToBuy: number }) => {
@@ -49,8 +49,25 @@ export const useBuyRaffleTicket = () => {
       if (!(await validateForm(args))) {
         throw new Error("Validation failed");
       }
-      const tx = await buyTicketMutation.mutateAsync(args);
-      const response = await buyRaffleTicket(args.raffleId.toString(), tx, args.ticketsToBuy);
+      const { base64Transaction, minContextSlot, blockhash, lastValidBlockHeight } = await buyTicketTx(args.raffleId, args.ticketsToBuy);
+      console.log("Received transaction from backend", base64Transaction);
+      const decodedTx = Buffer.from(base64Transaction, "base64");
+      const transaction = Transaction.from(decodedTx);
+
+      //Send Transaction
+      const signature = await sendTransaction(transaction, connection, {
+        minContextSlot,
+      });
+
+      const confirmation = await connection.confirmTransaction({
+        blockhash,
+        lastValidBlockHeight,
+        signature,
+      });
+      if (confirmation.value.err) {
+        throw new Error("Failed to cancel auction");
+      }
+      const response = await buyRaffleTicket(args.raffleId.toString(), signature, args.ticketsToBuy);
       console.log("response", response);
       if (response.error) {
         throw new Error(response.error);

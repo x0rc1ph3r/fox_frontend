@@ -1,16 +1,16 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRaffleAnchorProgram } from "./useRaffleAnchorProgram";
 import toast from "react-hot-toast";
-import { cancelRaffleOverBackend } from "../api/routes/raffleRoutes";
+import { cancelRaffleOverBackend, getCancelRaffleTx } from "../api/routes/raffleRoutes";
 import { useRouter } from "@tanstack/react-router";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useCheckAuth } from "./useCheckAuth";
+import { connection } from "./helpers";
+import { Transaction } from "@solana/web3.js";
 
 export const useCancelRaffle = () => {
-    const { cancelRaffleMutation } = useRaffleAnchorProgram();
     const router = useRouter();
     const queryClient = useQueryClient();
-    const { publicKey } = useWallet();
+    const { publicKey, sendTransaction } = useWallet();
     const { checkAndInvalidateToken } = useCheckAuth();
 
     const validateForm = async (raffleId: number) => {
@@ -44,8 +44,25 @@ export const useCancelRaffle = () => {
             if (!(await validateForm(raffleId))) {
                 throw new Error("Validation failed");
             }
-            const tx = await cancelRaffleMutation.mutateAsync({ raffleId });
-            const response = await cancelRaffleOverBackend(raffleId.toString(), tx);
+            const { base64Transaction, minContextSlot, blockhash, lastValidBlockHeight } = await getCancelRaffleTx(raffleId.toString());
+            console.log("Received transaction from backend", base64Transaction);
+            const decodedTx = Buffer.from(base64Transaction, "base64");
+            const transaction = Transaction.from(decodedTx);
+
+            //Send Transaction
+            const signature = await sendTransaction(transaction, connection, {
+                minContextSlot,
+            });
+
+            const confirmation = await connection.confirmTransaction({
+                blockhash,
+                lastValidBlockHeight,
+                signature,
+            });
+            if (confirmation.value.err) {
+                throw new Error("Failed to cancel auction");
+            }
+            const response = await cancelRaffleOverBackend(raffleId.toString(), signature);
             if (response.error) {
                 throw new Error(response.error);
             }

@@ -175,11 +175,6 @@ export const useCreateAuction = () => {
             if (confirmation.value.err || data.error) {
                 throw new Error("Failed to create auction");
             } else {
-                await new Promise((resolve) =>
-                    setTimeout(() => {
-                        resolve(true);
-                    }, 2000)
-                );
                 const verifyData = await verifyAuctionCreation(data.auction.id, signature);
                 if (verifyData.error) {
                     return data.auction.id;
@@ -193,7 +188,6 @@ export const useCreateAuction = () => {
         onSuccess: (auctionId: number) => {
             queryClient.invalidateQueries({ queryKey: ["auctions", auctionId.toString()] });
             toast.success("Auction created successfully");
-            new Promise((resolve) => setTimeout(resolve, 2000));
             router.navigate({ to: "/auctions/$id", params: { id: auctionId.toString() } });
         },
         onError: async (_error, _args, context) => {

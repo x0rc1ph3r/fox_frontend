@@ -1,14 +1,14 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRaffleAnchorProgram } from "./useRaffleAnchorProgram";
 import toast from "react-hot-toast";
-import { claimRafflePrize } from "../api/routes/raffleRoutes";
+import { claimRafflePrize, getClaimRaffleTx } from "../api/routes/raffleRoutes";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useCheckAuth } from "./useCheckAuth";
+import { connection } from "./helpers";
+import { Transaction } from "@solana/web3.js";
 
 export const useClaimRafflePrize = () => {
-    const { buyerClaimPrizeMutation } = useRaffleAnchorProgram();
     const queryClient = useQueryClient();
-    const { publicKey } = useWallet();
+    const { publicKey, sendTransaction } = useWallet();
     const { checkAndInvalidateToken } = useCheckAuth();
 
     const validateForm = async (raffleId: number) => {
@@ -44,8 +44,25 @@ export const useClaimRafflePrize = () => {
             if (!(await validateForm(args.raffleId))) {
                 throw new Error("Validation failed");
             }
-            const tx = await buyerClaimPrizeMutation.mutateAsync(args);
-            const response = await claimRafflePrize(args.raffleId.toString(), tx);
+            const { base64Transaction, minContextSlot, blockhash, lastValidBlockHeight } = await getClaimRaffleTx(args.raffleId.toString());
+            console.log("Received transaction from backend", base64Transaction);
+            const decodedTx = Buffer.from(base64Transaction, "base64");
+            const transaction = Transaction.from(decodedTx);
+
+            //Send Transaction
+            const signature = await sendTransaction(transaction, connection, {
+                minContextSlot,
+            });
+
+            const confirmation = await connection.confirmTransaction({
+                blockhash,
+                lastValidBlockHeight,
+                signature,
+            });
+            if (confirmation.value.err) {
+                throw new Error("Failed to cancel auction");
+            }
+            const response = await claimRafflePrize(args.raffleId.toString(), signature);
             if (response.error) {
                 throw new Error(response.error);
             }
