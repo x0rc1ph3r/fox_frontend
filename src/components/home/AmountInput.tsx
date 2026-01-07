@@ -4,20 +4,16 @@ import { VerifiedTokens } from "@/utils/verifiedTokens";
 import { useGetTokenPrice } from "hooks/useGetTokenPrice";
 
 export default function AmountInput() {
-  const { ticketPrice, ticketCurrency,ticketPricePerSol, getComputedTTV,setTicketPrice, setTicketCurrency, setTicketPricePerSol } = useCreateRaffleStore();
+  const { ticketPrice, supply,ticketCurrency,ticketPricePerSol, getComputedTTV,setTicketPrice, setTicketCurrency, setTicketPricePerSol } = useCreateRaffleStore();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { data: ticketTokenPrice } = useGetTokenPrice(ticketCurrency.address);
   const { data: solPrice } = useGetTokenPrice("So11111111111111111111111111111111111111112");
   const toggleDropdown = () => setIsOpen((prev) => !prev);
-  console.log("ticketPrice",ticketPrice)
-  console.log("ticketCurrency",ticketCurrency)
-  console.log("ticketTokenPrice",ticketTokenPrice)
-  console.log("solPrice",solPrice)
-  console.log("ticketPricePerSol",(parseFloat(ticketPrice) * (ticketTokenPrice?.price/solPrice?.price)).toFixed(2))
+
   const handleSelect = (value: string) => {
     setTicketCurrency(VerifiedTokens.find((token) => token.symbol === value) || { symbol: "", address: "" });
-    setTicketPricePerSol((parseFloat(ticketPrice) * (ticketTokenPrice?.price/solPrice?.price)).toFixed(2));
+    setTicketPricePerSol((parseFloat(ticketPrice) * (ticketTokenPrice?.price/solPrice?.price)).toString());
     getComputedTTV();
     setIsOpen(false);
   };
@@ -43,7 +39,7 @@ export default function AmountInput() {
         value={ticketPrice}
         onChange={(e) => {
           setTicketPrice(e.target.value);
-          setTicketPricePerSol((parseFloat(e.target.value) * (ticketTokenPrice?.price/solPrice?.price)).toFixed(2));
+          setTicketPricePerSol((parseFloat(e.target.value) * (ticketTokenPrice?.price/solPrice?.price)).toFixed(5));
           getComputedTTV();
         }}
         className="text-black-1000 focus:outline-0 bg-white focus:border-primary-color placeholder:text-gray-1200 text-base w-full font-inter px-5 h-12 border border-solid border-gray-1100 rounded-lg font-medium"

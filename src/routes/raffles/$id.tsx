@@ -90,6 +90,15 @@ function RouteComponent() {
     );
   }, [raffle?.state]);
 
+  const maxTickets = useMemo(()=>{
+    if(raffle){
+      console.log("maxTickets",raffle?.maxEntries, raffle?.ticketSupply, raffle?.ticketSold);
+      return Math.min(raffle?.maxEntries!, (raffle?.ticketSupply!-raffle?.ticketSold!));
+    }else{
+      return 0;
+    }
+  },[raffle])
+
   // useEffect(() => {
   //   if (raffle?.id) {
   //     getRaffleWinnersWhoClaimedPrize(raffle?.id.toString() || "")
@@ -538,7 +547,7 @@ function RouteComponent() {
                   {publicKey && publicKey.toBase58() !== raffle?.createdBy && raffle.state?.toLowerCase() === "active" && (
                     <div className="w-full mt-6">
                       <div className="w-full items-center grid lg:grid-cols-2 sm:grid-cols-2 grid-cols-1 gap-5">
-                        <QuantityBox max={raffle?.maxEntries || 1} />
+                        <QuantityBox max={maxTickets} />
 
                         <div className="w-full md:mb-5">
                           <PrimaryButton

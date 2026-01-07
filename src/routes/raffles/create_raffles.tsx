@@ -81,6 +81,7 @@ function CreateRaffles() {
 
     prizeImage,
     setPrizeImage,
+    ticketPricePerSol,
     prizeType,
     setPrizeType,
 
@@ -190,7 +191,6 @@ function CreateRaffles() {
       setSearchQuery("");
       setIsPrizeModalOpen(false);
     };
- 
   return (
     <div>
       <section className="pt-10 pb-[122px]">
@@ -441,7 +441,7 @@ function CreateRaffles() {
                         <AmountInput />
 
                         <p className="text-sm font-medium text-black-1000 pt-2.5 font-inter">
-                          TTV: {ttv.toLocaleString()} SOL
+                          TTV: {ttv} SOL
                         </p>
                       </div>
                     </div>
