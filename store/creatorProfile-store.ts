@@ -3,7 +3,7 @@ import { create } from "zustand";
 type MainFilter = "Rafflers" | "Auctions" | "Gumballs";
 type RafflerFilter = "created" | "purchased" | "favourite" ;
 type ActiveTab = "created" | "purchased" | "favourite";
-type SortOption = "newest" | "oldest" | "price_high" | "price_low" | "ending_soon";
+type SortOption = "newest" | "oldest" | "price_high" | "price_low" | "ending_soon" | "unclaimed_winner";
 
 interface CreatorProfileState {
   mainFilter: MainFilter;

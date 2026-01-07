@@ -1,10 +1,18 @@
 import { VerifiedTokens } from "@/utils/verifiedTokens";
 import { Link } from "@tanstack/react-router";
 import type { RaffleTypeBackend } from "types/backend/raffleTypes";
+import { PrimaryButton } from "../ui/PrimaryButton";
+import { useClaimRafflePrize } from "../../../hooks/useClaimRafflePrize";
+import toast from "react-hot-toast";
+import { useQueryClient } from "@tanstack/react-query";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { VerifiedNftCollections } from "@/utils/verifiedNftCollections";
 
 export interface RafflersCardPurchasedProps extends RaffleTypeBackend {
   ticketsBought:number;
   className?: string;
+  isWinner: boolean;
+  hasClaimed: boolean;
 }
 
 export const RafflersCardPurchased: React.FC<RafflersCardPurchasedProps> = (props) => {
@@ -20,17 +28,21 @@ export const RafflersCardPurchased: React.FC<RafflersCardPurchasedProps> = (prop
     ticketsBought,
     raffleEntries,
     className,
+    isWinner,
+    hasClaimed,
   } = props;
 
   console.log(props)
 
-  
+  console.log(isWinner, hasClaimed)
   const chancePercent = ticketSupply > 0 ? ((ticketsBought / ticketSupply) * 100).toFixed(1) : 0;
   
   const totalSpent = ticketsBought * ticketPrice;
   
   const remainingTickets = ticketSupply - ticketSold;
-
+  const { claimPrize } = useClaimRafflePrize();
+  const queryClient = useQueryClient();
+  const { publicKey } = useWallet();
   return (
     <div
       className={`bg-transparent hover:bg-gray-1300 w-full transition duration-300 border border-gray-1100 rounded-2xl ${className}`}
@@ -47,7 +59,27 @@ export const RafflersCardPurchased: React.FC<RafflersCardPurchasedProps> = (prop
             <h3 className="xl:text-2xl text-xl text-black-1000 font-bold font-inter">
               {prizeData.name}
             </h3>
-
+            <div className="flex items-center ">
+              {isWinner && 
+                <PrimaryButton
+                className="w-full h-[40px] relative right-10 "
+                onclick={() => {
+                  claimPrize.mutate({
+                    raffleId: Number(id) || 0,
+                  }, {
+                    onSuccess: () => {
+                      queryClient.invalidateQueries({ queryKey: ["profile-raffle-purchased", publicKey?.toBase58() || ""] });
+                      toast.success("Prize claimed successfully");
+                    },
+                    onError: () => {
+                      toast.error("Failed to claim prize");
+                    }
+                  })
+                }}  
+                text="Claim Prize"
+                disabled={hasClaimed || claimPrize.isPending}
+              />
+              }
             <Link
               to="/raffles/$id"
               params={{ id: raffle || id?.toString() || "" }}
@@ -69,6 +101,7 @@ export const RafflersCardPurchased: React.FC<RafflersCardPurchasedProps> = (prop
                 />
               </svg>
             </Link>
+            </div>
           </div>
 
           <div className="w-full gap-6 flex justify-between mt-6 md:flex-row flex-col">
@@ -76,7 +109,7 @@ export const RafflersCardPurchased: React.FC<RafflersCardPurchasedProps> = (prop
               {prizeData.verified && (
                 <div className="inline-flex gap-2.5 items-center">
                   <p className="text-sm text-black-1000 font-semibold font-inter">
-                    {prizeData.collection || "Verified Collection"}
+                    {prizeData.collection ? VerifiedNftCollections.find((collection) => collection.address === prizeData.collection)?.name : "Verified Collection"}
                   </p>
                   <img
                     src="/icons/verified-icon.svg"

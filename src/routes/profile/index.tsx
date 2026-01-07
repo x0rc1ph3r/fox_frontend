@@ -25,12 +25,17 @@ export const Route = createFileRoute("/profile/")({
   component: CreateProfile,
 });
 
-const sortOptions = [
+const baseSortOptions = [
   { label: "Newest First", value: "newest" },
   { label: "Oldest First", value: "oldest" },
   { label: "Price: High to Low", value: "price_high" },
   { label: "Price: Low to High", value: "price_low" },
   { label: "Ending Soon", value: "ending_soon" },
+];
+
+const rafflePurchasedSortOptions = [
+  ...baseSortOptions,
+  { label: "Unclaimed Prizes", value: "unclaimed_winner" },
 ];
 
 function CreateProfile() {
@@ -126,8 +131,16 @@ function CreateProfile() {
   const favouriteAuctions = getFavouriteAuction.data;
 
   // Sorting helper function
-  const sortItems = <T extends Record<string, any>>(items: T[]): T[] => {
+  const sortItems = <T extends Record<string, any>>(items: T[], isRafflePurchased = false): T[] => {
     if (!items || items.length === 0) return items;
+    
+    if (sortOption === "unclaimed_winner" && isRafflePurchased) {
+      return [...items]
+        .filter((item) => item.isWinner === true && item.hasClaimed === false)
+        .sort((a, b) => {
+          return new Date(b.createdAt || b.created_at || 0).getTime() - new Date(a.createdAt || a.created_at || 0).getTime();
+        });
+    }
     
     return [...items].sort((a, b) => {
       switch (sortOption) {
@@ -149,7 +162,7 @@ function CreateProfile() {
 
   // Sorted data
   const sortedRaffleCreatedCards = useMemo(() => sortItems(raffleCreatedCards), [raffleCreatedCards, sortOption]);
-  const sortedRafflePurchasedCards = useMemo(() => sortItems(rafflePurchasedCards), [rafflePurchasedCards, sortOption]);
+  const sortedRafflePurchasedCards = useMemo(() => sortItems(rafflePurchasedCards, true), [rafflePurchasedCards, sortOption]);
   const sortedGumballCreatedCards = useMemo(() => sortItems(gumballCreatedCards), [gumballCreatedCards, sortOption]);
   const sortedGumballPurchasedCards = useMemo(() => sortItems(gumballPurchasedCards), [gumballPurchasedCards, sortOption]);
   const sortedAuctionCreatedCards = useMemo(() => sortItems(auctionCreatedCards), [auctionCreatedCards, sortOption]);
@@ -158,8 +171,14 @@ function CreateProfile() {
   const sortedFavouriteGumballs = useMemo(() => sortItems(favouriteGumballs ?? []), [favouriteGumballs, sortOption]);
   const sortedFavouriteAuctions = useMemo(() => sortItems(favouriteAuctions ?? []), [favouriteAuctions, sortOption]);
 
-  // Get current sort option label for dropdown
-  const currentSortLabel = sortOptions.find(opt => opt.value === sortOption)?.label || "Sort Entries";
+  const currentSortOptions = useMemo(() => {
+    if (mainFilter === "Rafflers" && activeRafflerTab === "purchased") {
+      return rafflePurchasedSortOptions;
+    }
+    return baseSortOptions;
+  }, [mainFilter, activeRafflerTab]);
+
+  const currentSortLabel = currentSortOptions.find(opt => opt.value === sortOption)?.label || "Sort Entries";
 
   return (
     <main className="main font-inter">
@@ -387,10 +406,10 @@ function CreateProfile() {
                 </ul>
 
                 <Dropdown
-                  options={sortOptions}
+                  options={currentSortOptions}
                   value={{ label: currentSortLabel, value: sortOption }}
                   onChange={(value) => {
-                    setSortOption(value.value as "newest" | "oldest" | "price_high" | "price_low" | "ending_soon");
+                    setSortOption(value.value as "newest" | "oldest" | "price_high" | "price_low" | "ending_soon" | "unclaimed_winner");
                   }}
                 />
               </div>
@@ -430,7 +449,7 @@ function CreateProfile() {
                       >
                         {activeRafflerTab === "purchased"
                           ? sortedRafflePurchasedCards.map((card: any) => (
-                              <RafflersCardPurchased key={card.id} {...card} />
+                              <RafflersCardPurchased key={card.id} {...card} isWinner={card.isWinner} hasClaimed={card.hasClaimed} />
                             ))
                           : activeRafflerTab === "favourite"
                             ? sortedFavouriteRaffles?.map((card: any) => (
