@@ -364,6 +364,7 @@ function CreateAuctions() {
                             value={endDate}
                             onChange={setEndDate}
                             minDate={today}
+                            limit="5min-7days"
                           />
                           {startType === "manual" && (
                             <ol className="flex items-center gap-4 pt-2.5">

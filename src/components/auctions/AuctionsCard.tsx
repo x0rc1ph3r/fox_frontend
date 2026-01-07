@@ -119,7 +119,7 @@ export const AuctionsCard: React.FC<AuctionsCardProps> = (props) => {
                 ? "bg-green-500 animate-pulse"
                 : computedStatus === "UPCOMING"
                   ? "bg-blue-500"
-                  : "bg-red-500"
+                  : computedStatus==="COMPLETED"?"bg-green-500": "bg-red-500"
             }`}
           />
           <p className="text-[10px] font-bold text-black-1000 uppercase">

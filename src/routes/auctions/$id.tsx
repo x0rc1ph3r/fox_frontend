@@ -125,6 +125,16 @@ function AuctionDetails() {
     return highestBidInSol * incrementFactor;
   }, [auction]);
 
+  const isWrongBid = useMemo(()=>{
+    if(!bidAmountInput){
+      return false;
+    }else{
+      if(auction?.hasAnyBid){
+        return !(parseFloat(bidAmountInput) >= minBidInSol)
+      }
+      return !(parseFloat(bidAmountInput) > minBidInSol)
+    }
+  },[bidAmountInput])
   // Handle Bid Submission
   const handlePlaceBid = async () => {
     const amount = Number(bidAmountInput);
@@ -415,22 +425,25 @@ function AuctionDetails() {
                                 onChange={(e) =>
                                   setBidAmountInput(e.target.value)
                                 }
-                                placeholder={`Min. ${minBidInSol.toFixed(3)}`}
-                                disabled={isBiddingAuction}
-                                className="w-full px-5 py-4 bg-gray-1300 border border-gray-1100 rounded-xl outline-none focus:border-primary-color transition font-inter font-semibold"
+                                placeholder={auction.hasAnyBid?`Min. Bid ${minBidInSol.toFixed(5)}`:` Bid > ${minBidInSol.toFixed(5)}`}
+                                disabled={isBiddingAuction }
+                                className={`w-full px-5 py-4 bg-gray-1300 border border-gray-1100 rounded-xl outline-none ${isWrongBid?" border-red-500":" "} transition font-inter font-semibold`}
                               />
                               <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-sm">
                                 {auction.currency}
                               </div>
                             </div>
                             <p className="text-[10px] text-gray-500">
-                              Your bid must be at least {minBidInSol.toFixed(4)}{" "}
+                              {auction.hasAnyBid ?
+                              `You bid must be atleast ${minBidInSol.toFixed(5)}`:
+                              `Your bid must be greater than ${minBidInSol.toFixed(5)}`
+                            }
                               {auction.currency}
                             </p>
                           </div>
                         </div>
                         <button
-                          disabled={isBiddingAuction}
+                          disabled={isBiddingAuction || isWrongBid}
                           className="w-full py-4 cursor-pointer bg-primary-color text-white font-bold rounded-2xl hover:brightness-110 transition shadow-lg shadow-orange-200  disabled:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:bg-gray-400"
                           onClick={handlePlaceBid}
                         >
@@ -441,8 +454,8 @@ function AuctionDetails() {
                             </div>
                           ) : (
                             <>
-                              Place a Bid (Min.{" "}
-                              {!auction.hasAnyBid
+                              Place a Bid
+                              {/* {!auction.hasAnyBid
                                 ? typeof auction.reservePrice === "string" &&
                                   auction.reservePrice
                                   ? parseInt(auction.reservePrice) /
@@ -455,8 +468,8 @@ function AuctionDetails() {
                                     ) *
                                     (1 +
                                       (auction.bidIncrementPercent ?? 0) / 100)
-                                  ).toFixed(3)}{" "}
-                              {auction.currency})
+                                  ).toFixed(5)}{" "}
+                              {auction.currency}) */}
                             </>
                           )}
                         </button>

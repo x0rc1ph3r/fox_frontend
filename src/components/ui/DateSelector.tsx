@@ -4,6 +4,7 @@ interface DateSelectorProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange'> {
   label?: string;
   value?: Date | null;
+  limit?:string|null;
   onChange?: (date: Date | null) => void;
   minDate?: Date;
 }
@@ -21,6 +22,7 @@ export default function DateSelector({
   label, 
   value, 
   minDate,
+  limit,
   onChange,
   ...restProps 
 }: DateSelectorProps) {
@@ -49,16 +51,21 @@ export default function DateSelector({
   
   // Format the min date
   const minValue = useMemo(() => formatDateToString(minDate), [minDate]);
-
+  
   return (
     <div className="w-full flex flex-col justify-end relative">
       {label && (
+        <div className="flex gap-3">
         <label
           htmlFor={restProps.id}
           className="text-sm mb-2.5 block text-gray-1200 font-medium font-inter"
         >
           {label}
         </label>
+        {limit && 
+        <p className="text-sm text-gray-1200">Time Period Limit ({limit})</p>
+        }
+        </div>
       )}
       <div className="w-full relative">
         <input

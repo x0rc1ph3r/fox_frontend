@@ -368,6 +368,7 @@ function CreateRaffles() {
                             value={endDate}
                             onChange={setEndDate}
                             minDate={today}
+                            limit="1h-7d"
                           />
                           <ol className="flex items-center gap-4 pt-2.5">
                             {(["24hr", "36hr", "48hr"] as const).map(

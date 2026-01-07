@@ -126,6 +126,7 @@ export const GumballSetup = () => {
                           onChange={setStartDate}
                           minDate={new Date()}
                           disabled={isCreatingGumball}
+                          limit="2d-7d"
                         /> 
                       </div>
                        <div className="">
