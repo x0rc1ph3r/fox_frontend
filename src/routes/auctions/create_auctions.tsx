@@ -17,9 +17,12 @@ import { useGumballStore } from "store/useGumballStore";
 import clsx from "clsx";
 import { useFetchUserNfts } from "hooks/useFetchUserNfts";
 import { useGetCollectionFP } from "hooks/useGetCollectionFP";
+import { useAuctionAnchorProgram } from "hooks/useAuctionAnchorProgram";
+import { calculateRent } from "hooks/helpers";
 
 function CreateAuctions() {
   const { createAuction } = useCreateAuction();
+  const { getAuctionConfig } = useAuctionAnchorProgram();
   const {
     openVerifiedCollectionsModal,
     agreedToTerms,
@@ -56,9 +59,10 @@ function CreateAuctions() {
   } = useGumballStore();
 
   const { collectionFPs, collectionFPMap } = useGetCollectionFP();
-
+  const { data: auctionConfig, isLoading: isLoadingAuctionConfig, isError: isErrorAuctionConfig } = getAuctionConfig;
+  const [rentFee, setRentFee] = useState(0);
+  const [creationFee, setCreationFee] = useState(0);
   const [isCreatingAuction, setIsCreatingAuction] = useState(false);
-  const [solBalance, setSolBalance] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const toggleDropdown = () => setIsOpen((prev) => !prev);
@@ -94,6 +98,18 @@ function CreateAuctions() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (isLoadingAuctionConfig || isErrorAuctionConfig) return;
+    setCreationFee(auctionConfig?.creationFeeLamports.toNumber() ?? 0);
+    async function fetchRentFee() {
+      const rent = await calculateRent(188)
+      const rentAta = await calculateRent(165);
+      if (rent && rentAta)
+      setRentFee(rent?.rentLamports + rentAta?.rentLamports);
+    }
+    fetchRentFee();
+  }, [auctionConfig, isLoadingAuctionConfig, isErrorAuctionConfig]);
 
   const tabs = [
     { name: "Start Immediately", type: "manual" as const },
@@ -462,6 +478,9 @@ function CreateAuctions() {
                             )}
                           </div>
                         </div>
+                        <p className="text-sm font-medium text-black-1000 py-2.5 font-inter">
+                          Rent: {rentFee / 1e9} SOL
+                        </p>
                       </div>
 
                       <div className="w-full">
@@ -548,10 +567,16 @@ function CreateAuctions() {
                             </li>
                           ))}
                         </ol>
-                        <p className="text-sm font-medium text-black-1000 py-2.5 font-inter">
-                          Your balance: {solBalance} SOL
-                        </p>
                       </div>
+                    </div>
+
+                    <div className="flex justify-around">
+                      <p className="text-sm font-medium text-black-1000 pb-2.5 font-inter">
+                        Creation Fee: {creationFee / 1e9} SOL
+                      </p>
+                      <p className="text-sm font-medium text-black-1000 pb-2.5 font-inter">
+                        Total Fee: {(creationFee + rentFee) / 1e9} SOL
+                      </p>
                     </div>
 
                     <div>

@@ -92,6 +92,8 @@ function CreateRaffles() {
   } = useCreateRaffleStore();
 
   const {createRaffle} = useCreateRaffle();
+  const { getRaffleConfig } = useRaffleAnchorProgram();
+  const { data: raffleConfig, isLoading: isLoadingRaffleConfig, isError: isErrorRaffleConfig } = getRaffleConfig;
   const { collectionFPs, collectionFPMap } = useGetCollectionFP();
   const [isPrizeModalOpen, setIsPrizeModalOpen] = useState(false);
     const [nftData, setNftData] = useState<{
@@ -112,6 +114,10 @@ function CreateRaffles() {
     setEndTimePeriod(period);
   };
 
+  const creationFee = useMemo(() => {
+    if (isLoadingRaffleConfig || isErrorRaffleConfig) return 0;
+    return raffleConfig?.creationFeeLamports.toNumber() ?? 0;
+  }, [raffleConfig, isLoadingRaffleConfig, isErrorRaffleConfig]);
 
   const [selectedNftId, setSelectedNftId] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
@@ -446,6 +452,14 @@ function CreateRaffles() {
                       </div>
                     </div>
                     <AdvancedSettingsAccordion />
+                    <div className="flex justify-around">
+                    <p className="text-sm font-medium text-black-1000 pb-2.5 font-inter">
+                      Creation Fee: {creationFee / 1e9} SOL
+                    </p>
+                    <p className="text-sm font-medium text-black-1000 pb-2.5 font-inter">
+                      Total Fee: {(creationFee / 1e9) + rent} SOL
+                    </p>
+                    </div>
 
                     <div>
                       <div className="mb-10 grid xl:grid-cols-2 gap-5 md:gap-4">
