@@ -18,8 +18,6 @@ import {
   hasActiveFilters,
   type AuctionItem,
 } from "../../utils/sortAndFilter";
-import { useAuctionAnchorProgram } from "hooks/useAuctionAnchorProgram";
-import { BN } from "@coral-xyz/anchor";
 
 const options = [
   { label: "Recently Added", value: "Recently Added" },
@@ -38,7 +36,6 @@ function Auctions() {
   const { filter, setFilter } = useAuctionsStore();
   const { data, fetchNextPage, hasNextPage, isLoading } =
     useAuctionsQuery(filter);
-    const {getAllAuctions} = useAuctionAnchorProgram();
   const { sort, setSort, searchQuery, setSearchQuery } = useGlobalStore();
 
   const {
@@ -127,7 +124,6 @@ function Auctions() {
   return (
     <main className="main font-inter">
       <section className="w-full lg:pt-[60px] pt-5 pb-20 md:pb-[120px]">
-        <button onClick={() => console.log(getAllAuctions.data?.map((auction) => ({id:auction?.account.auctionId, startTime:new Date(new BN(auction?.account.startTime).toNumber()*1000).toISOString(), endTime:new Date(new BN(auction?.account.endTime).toNumber()*1000).toISOString()})))}>Get All Auctions</button>
         <div className="w-full max-w-[1440px] px-5 mx-auto">
           <div className="w-full flex items-center justify-between gap-5 lg:gap-10 flex-wrap">
             <ul className="flex items-center gap-3 md:gap-5 md:w-auto w-full">

@@ -11,6 +11,7 @@ import { useQueryFavourites } from "../../../hooks/useQueryFavourites";
 import { useBidAuction } from "hooks/useBidAuction";
 import { useCancelAuction } from "hooks/useCancelAuction";
 import { VerifiedTokens } from "@/utils/verifiedTokens";
+import { VerifiedNftCollections } from "@/utils/verifiedNftCollections";
 
 export const Route = createFileRoute("/auctions/$id")({
   component: AuctionDetails,
@@ -192,50 +193,45 @@ function AuctionDetails() {
                 alt={auction.prizeName}
               />
 
-              {/* Creator Info */}
+              {/* NFT Collection Info */}
               <div className="w-full pb-7 pt-6 md:py-10 hidden md:flex items-center justify-between">
-                <div className="flex items-center gap-3 2xl:gap-5">
-                  <img
-                    src={`https://api.dicebear.com/7.x/identicon/svg?seed=${auction.createdBy}`}
-                    className="w-12 h-12 rounded-full border bg-gray-100"
-                    alt="avatar"
-                  />
-                  <div>
-                    <h3 className="text-lg font-bold text-black-1000 font-inter leading-none">
-                      {shortenAddress(auction.createdBy)}
+                
+                <div className="w-full pb-7 pt-6 md:py-10 hidden md:flex items-center justify-between">
+                  <div className="flex items-center gap-3 2xl:gap-5">
+                    <img
+                      src={VerifiedNftCollections.find((collection) => collection.name === auction.collectionName)?.image}
+                      className="w-12 h-12 rounded-full object-cover"
+                      alt=""
+                    />
+                    <h3 className="md:text-[28px] text-lg font-bold text-black-1000 font-inter">
+                      {auction.collectionName}
                     </h3>
-                    <p className="text-xs text-gray-500 mt-1">Creator</p>
                   </div>
-                </div>
 
-                <ul className="flex items-center gap-4">
-                  {auction.creator?.twitterId && (
+                  <ul className="flex items-center gap-6">
                     <li>
-                      <a
-                        href={`https://x.com/${auction.creator.twitterId}`}
-                        target="_blank"
-                      >
+                      <a href={VerifiedNftCollections.find((collection) => collection.name === auction.collectionName)?.twitter}>
                         <img
                           src="/icons/twitter-icon.svg"
-                          className="w-6 h-6"
-                          alt="twitter"
+                          className="w-7 h-7 object-contain"
+                          alt=""
                         />
                       </a>
                     </li>
-                  )}
-                  <li>
-                    <a
-                      href={`https://solscan.io/account/${auction.createdBy}`}
-                      target="_blank"
-                    >
-                      <img
-                        src="/icons/mcp-server-icon.svg"
-                        className="w-6 h-6"
-                        alt="solana"
-                      />
-                    </a>
-                  </li>
-                </ul>
+
+                    <li>
+                      <a href={VerifiedNftCollections.find((collection) => collection.name === auction.collectionName)?.website}>
+                        {" "}
+                        <img
+                          src="/icons/mcp-server-icon.svg"
+                          className="w-7 h-7 object-contain"
+                          alt=""
+                        />
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              
               </div>
 
               {/* Traits / Details (Static placeholders as API returns null) */}
