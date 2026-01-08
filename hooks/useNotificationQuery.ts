@@ -6,11 +6,11 @@ import { useCheckAuth } from "./useCheckAuth";
 
 export const useNotificationQuery =  ()=>{
     const {publicKey} = useWallet();
-    const { isAuth, walletAddress } = useNavbarStore();
+    const { isAuth } = useNavbarStore();
     const currentWallet = publicKey?.toBase58() ?? "";
     const { checkAndInvalidateToken } = useCheckAuth();
     
-    const isReady = isAuth && !!publicKey && walletAddress === currentWallet;
+    const isReady = isAuth && !!publicKey;
 
     const isValidToken = async () => {
       if(!publicKey){
