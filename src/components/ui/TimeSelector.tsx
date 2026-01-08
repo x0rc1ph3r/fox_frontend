@@ -1,4 +1,5 @@
 import React, { useRef, useMemo } from "react";
+import { useCreateRaffleStore } from "../../../store/createRaffleStore";
 
 interface TimeSelectorProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange'> {
@@ -24,6 +25,7 @@ export default function TimeSelector({
   const handleIconClick = () => {
     inputRef.current?.showPicker?.();
   };
+  const {getEndTimestamp} = useCreateRaffleStore();
 
   // Convert 12-hour format to 24-hour format for input[type="time"]
   const inputValue = useMemo(() => {
@@ -55,7 +57,46 @@ export default function TimeSelector({
       );
     }
   };
+const isInvalidTime = useMemo(() => {
+  try {
+    const endTimestampSeconds = getEndTimestamp() || 0;
+    console.log("endTimestampSeconds", endTimestampSeconds);
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    console.log("nowSeconds", nowSeconds);
+    const diffSeconds = endTimestampSeconds ? endTimestampSeconds - nowSeconds : 0;
+    console.log("diffSeconds", diffSeconds);
+    const diffMinutes = diffSeconds / 60;
+    const diffDays = diffSeconds / (60 * 60 * 24);
 
+    if (diffSeconds < 0) {
+      return { 
+        isValid: false, 
+        error: "Selected time cannot be in the past" 
+      };
+    }
+
+    if (diffMinutes < 5) {
+      return { 
+        isValid: false, 
+        error: "Selected time must be at least 5 minutes from now" 
+      };
+    }
+
+    if (diffDays > 7) {
+      return { 
+        isValid: false, 
+        error: "Selected time cannot be more than 7 days from now" 
+      };
+    }
+
+    return { isValid: true, error: null };
+  } catch (error) {
+    return { 
+      isValid: false, 
+      error: "Invalid date or time selected" 
+    };
+  }
+}, [ hour, minute, period]);
   return (
     <div className="w-full flex flex-col justify-end relative">
       {label && (
@@ -73,7 +114,7 @@ export default function TimeSelector({
           value={inputValue}
           onChange={handleChange}
           {...props}
-          className={`w-full text-base font-medium ${hasValue ? 'text-black-1000' : 'text-gray-1200'} placeholder:text-gray-1200 outline outline-gray-1100 focus:outline-primary-color h-12 md:px-5 px-3 md:pr-5 py-3 rounded-lg border-transparent appearance-none`}
+          className={`w-full text-base font-medium ${hasValue ? 'text-black-1000' : 'text-gray-1200'} placeholder:text-gray-1200 outline outline-gray-1100 h-12 md:px-5 px-3 md:pr-5 py-3 rounded-lg border-transparent appearance-none ${isInvalidTime.isValid ? "" : "border border-red-500"}`}
         />
         <span
           onClick={handleIconClick}

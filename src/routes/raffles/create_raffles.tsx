@@ -197,6 +197,17 @@ function CreateRaffles() {
       setSearchQuery("");
       setIsPrizeModalOpen(false);
     };
+
+    const isDateInvalid = useMemo(() => {
+      if (!endDate) return false;
+      return endDate < today || endDate > new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+    }, [endDate, today]);
+
+    const isInvalidSupply = useMemo(() => {
+      if (!supply) return false;
+      return parseInt(supply) < 3 || parseInt(supply) > 10000;
+    }, [supply]);
+  
   return (
     <div>
       <section className="pt-10 pb-[122px]">
@@ -374,7 +385,9 @@ function CreateRaffles() {
                             value={endDate}
                             onChange={setEndDate}
                             minDate={today}
+                            maxDate={new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)}
                             limit="1h-7d"
+                            className={isDateInvalid ? "border-red-500" : ""}
                           />
                           <ol className="flex items-center gap-4 pt-2.5">
                             {(["24hr", "36hr", "48hr"] as const).map(
@@ -432,6 +445,7 @@ function CreateRaffles() {
                           }}
                           min={3}
                           max={10000}
+                          className={isInvalidSupply ? "border border-red-500" : ""}
                         />
 
                         <p className="text-sm font-medium text-black-1000 pt-2.5 font-inter">

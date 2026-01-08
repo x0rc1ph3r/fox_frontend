@@ -234,7 +234,20 @@ function CreateAuctions() {
     setSearchQuery("");
     setIsPrizeModalOpen(false);
   };
+  const isInvalidReservePrice = useMemo(() => {
+    if (!basePrice) return false;
+    return parseFloat(basePrice) <= 0;
+  }, [basePrice]);
+  
+  const isInvalidBidIncrement = useMemo(() => {
+    if (!bidIncrement) return false;
+    return parseInt(bidIncrement) <= 0;
+  }, [bidIncrement]);
 
+  const isInvalidTimeExtension = useMemo(() => {
+    if (!timeExtension) return false;
+    return parseInt(timeExtension) <= 0;
+  }, [timeExtension]);
   return (
     <div>
       <section className="pt-10 pb-[122px]">
@@ -352,7 +365,7 @@ function CreateAuctions() {
                               label="Start Date"
                               value={startDate}
                               onChange={setStartDate}
-                              minDate={new Date()}
+                              minDate={today}
                               disabled={isCreatingAuction}
                             />
                           </div>
@@ -379,7 +392,8 @@ function CreateAuctions() {
                             label="Auction end date"
                             value={endDate}
                             onChange={setEndDate}
-                            minDate={today}
+                            minDate={startType === "manual" ? today : startDate || today}
+                            maxDate={startType === "manual" ? new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000) : new Date(startDate?.getTime()! + 7 * 24 * 60 * 60 * 1000) || new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)}
                             limit="5min-7days"
                           />
                           {startType === "manual" && (
@@ -433,7 +447,7 @@ function CreateAuctions() {
                             onChange={(e) => {
                               setBasePrice(e.target.value);
                             }}
-                            className="text-black-1000 focus:outline-0 bg-white focus:border-primary-color placeholder:text-gray-1200 text-base w-full font-inter px-5 h-12 border border-solid border-gray-1100 rounded-lg font-medium"
+                            className={`text-black-1000 focus:outline-0 bg-white placeholder:text-gray-1200 text-base w-full font-inter px-5 h-12 border border-solid border-gray-1100 rounded-lg font-medium ${isInvalidReservePrice ? "border border-red-500" : ""}`}
                             autoComplete="off"
                             placeholder="Enter Amount"
                           />
@@ -497,7 +511,7 @@ function CreateAuctions() {
                             onChange={(e) => {
                               setBidIncrement(e.target.value);
                             }}
-                            className="text-black-1000 focus:outline-0 bg-white focus:border-primary-color placeholder:text-gray-1200 text-base w-full font-inter px-5 h-12 border border-solid border-gray-1100 rounded-lg font-medium"
+                            className={`text-black-1000 focus:outline-0 bg-white placeholder:text-gray-1200 text-base w-full font-inter px-5 h-12 border border-solid border-gray-1100 rounded-lg font-medium ${isInvalidBidIncrement ? "border border-red-500" : ""}`}
                             autoComplete="off"
                             placeholder=""
                           />
@@ -540,7 +554,7 @@ function CreateAuctions() {
                             onChange={(e) => {
                               setTimeExtension(e.target.value);
                             }}
-                            className="text-black-1000 focus:outline-0 bg-white focus:border-primary-color placeholder:text-gray-1200 text-base w-full font-inter px-5 h-12 border border-solid border-gray-1100 rounded-lg font-medium"
+                            className={`text-black-1000 focus:outline-0 bg-white placeholder:text-gray-1200 text-base w-full font-inter px-5 h-12 border border-solid border-gray-1100 rounded-lg font-medium ${isInvalidTimeExtension ? "border border-red-500" : ""}`}
                             autoComplete="off"
                             placeholder=""
                           />

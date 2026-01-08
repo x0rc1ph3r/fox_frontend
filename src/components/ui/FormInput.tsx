@@ -17,7 +17,7 @@ export default function FormInput({ label, className, ...props }: FormInputProps
       )}
       <input
         {...props}
-        className={`w-full text-base font-medium text-black-1000 placeholder:text-gray-1200 outline outline-gray-1100 focus:outline-primary-color h-12 px-5 py-3 rounded-lg border-transparent ${className}`}
+        className={`w-full text-base font-medium text-black-1000 placeholder:text-gray-1200 outline outline-gray-1100 h-12 px-5 py-3 rounded-lg  ${className}`}
       />
     </div>
   );

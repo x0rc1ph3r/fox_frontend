@@ -25,6 +25,10 @@ export default function TokenPrizeInput() {
       document.addEventListener("mousedown", handleClickOutside);
       return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
+    const isInvalidTokenPrizeAmount = useMemo(() => {
+      if (!tokenPrizeAmount) return false;
+      return parseFloat(tokenPrizeAmount) <= 0;
+    }, [tokenPrizeAmount]);
   
   useEffect(() => {
     if (userVerifiedTokens.length > 0) {
@@ -46,7 +50,7 @@ export default function TokenPrizeInput() {
           setTokenPrizeAmount(e.target.value);
           getComputedVal(tokenPrice?.price || 0, SolPrice?.price || 0);
         }}
-        className="text-black-1000 focus:outline-0 bg-white focus:border-primary-color placeholder:text-gray-1200 text-base w-full font-inter px-5 h-12 border border-solid border-gray-1100 rounded-lg font-medium"
+        className={`text-black-1000 focus:outline-0 bg-white placeholder:text-gray-1200 text-base w-full font-inter px-5 h-12 border border-solid border-gray-1100 rounded-lg font-medium ${isInvalidTokenPrizeAmount ? "border border-red-500" : ""}`}
         autoComplete="off"
         placeholder="Enter Amount"
         disabled={userVerifiedTokens?.length == 0}

@@ -180,7 +180,7 @@ export const useCreateRaffle = () => {
     maxEntries: Math.floor(
       (parseInt(ticketLimitPerWallet) * parseInt(supply)) / 100
     ),
-    numberOfWinners: parseInt(numberOfWinners),
+    numberOfWinners: 1,
     prizeData: {
       type: prizeType === "nft" ? "NFT" : "TOKEN",
       address: prizeType === "nft" ? nftPrizeMint : tokenPrizeMint,
@@ -239,9 +239,9 @@ export const useCreateRaffle = () => {
           10 **
           (VerifiedTokens.find((token) => token.address === tokenPrizeMint)
             ?.decimals || 0),
-        numWinners: parseInt(numberOfWinners),
+        numWinners: 1,
         winShares: winShares,
-        isUniqueWinners: parseInt(numberOfWinners) == 1,
+        isUniqueWinners: false,
         startRaffle: true,
 
         ticketMint: ticketCurrency.address,

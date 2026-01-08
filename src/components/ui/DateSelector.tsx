@@ -7,6 +7,8 @@ interface DateSelectorProps
   limit?:string|null;
   onChange?: (date: Date | null) => void;
   minDate?: Date;
+  maxDate?: Date;
+  className?: string;
 }
 
 // Helper to format Date to YYYY-MM-DD string for input[type="date"]
@@ -22,8 +24,10 @@ export default function DateSelector({
   label, 
   value, 
   minDate,
+  maxDate,
   limit,
   onChange,
+  className,
   ...restProps 
 }: DateSelectorProps) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -39,6 +43,7 @@ export default function DateSelector({
         // Parse YYYY-MM-DD format
         const [year, month, day] = dateValue.split("-").map(Number);
         const date = new Date(year, month - 1, day);
+
         onChange(date);
       } else {
         onChange(null);
@@ -51,7 +56,7 @@ export default function DateSelector({
   
   // Format the min date
   const minValue = useMemo(() => formatDateToString(minDate), [minDate]);
-  
+  const maxValue = useMemo(() => formatDateToString(maxDate), [maxDate]);
   return (
     <div className="w-full flex flex-col justify-end relative">
       {label && (
@@ -67,13 +72,14 @@ export default function DateSelector({
         }
         </div>
       )}
-      <div className="w-full relative">
+      <div className={`w-full relative ${className}`}>
         <input
           type="date"
           ref={inputRef}
           value={inputValue}
           onChange={handleChange}
           min={minValue}
+          max={maxValue}
           {...restProps}
           className={`w-full text-sm md:text-base font-medium ${inputValue ? 'text-black-1000' : 'text-gray-1200'} placeholder:text-gray-1200 outline outline-gray-1100 focus:outline-primary-color h-12 md:px-5 px-3 md:pr-5 py-3 rounded-lg border-transparent appearance-none`}
         />

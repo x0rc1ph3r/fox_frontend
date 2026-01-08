@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useCreateRaffleStore } from "../../../store/createRaffleStore";
 import { VerifiedTokens } from "@/utils/verifiedTokens";
 import { useGetTokenPrice } from "hooks/useGetTokenPrice";
@@ -31,6 +31,11 @@ export default function AmountInput() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const isInvalidTicketPrice = useMemo(() => {
+    if (!ticketPrice) return false;
+    return parseFloat(ticketPrice) <= 0;
+  }, [ticketPrice]);
+
   return (
     <div className="relative">
       <input
@@ -42,7 +47,7 @@ export default function AmountInput() {
           setTicketPricePerSol((parseFloat(e.target.value) * (ticketTokenPrice?.price/solPrice?.price)).toFixed(5));
           getComputedTTV();
         }}
-        className="text-black-1000 focus:outline-0 bg-white focus:border-primary-color placeholder:text-gray-1200 text-base w-full font-inter px-5 h-12 border border-solid border-gray-1100 rounded-lg font-medium"
+        className={`text-black-1000 focus:outline-0 bg-white placeholder:text-gray-1200 text-base w-full font-inter px-5 h-12 border border-solid border-gray-1100 rounded-lg font-medium ${isInvalidTicketPrice ? "border border-red-500" : ""}`}
         autoComplete="off"
         placeholder="Enter Amount"
       />
