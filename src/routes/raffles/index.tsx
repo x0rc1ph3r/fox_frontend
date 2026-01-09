@@ -23,6 +23,7 @@ import { useGumballsQuery } from "../../../hooks/useGumballsQuery";
 import { useFiltersStore } from "../../../store/filters-store";
 import { sortRaffles, filterRaffles, getActiveFiltersList, hasActiveFilters, type PageType } from "../../utils/sortAndFilter";
 import { useFetchUserNfts } from "hooks/useFetchUserNfts";
+import { useAuctionAnchorProgram } from "hooks/useAuctionAnchorProgram";
 
 const sortingOptions = [
   { label: "Recently Added", value: "Recently Added" },
@@ -42,13 +43,12 @@ export const Route = createFileRoute("/raffles/")({
 
 function RafflesPage() {
   const { filter, setFilter } = useRafflesStore();
-    const { data, fetchNextPage, hasNextPage, isLoading,isError,error } = useRaffles(filter);
+    const { data, fetchNextPage, hasNextPage, isLoading } = useRaffles(filter);
     const { sort, setSort, searchQuery, setSearchQuery } = useGlobalStore();
-    const { getAllRaffles, getRaffleConfig, getRaffleById } = useRaffleAnchorProgram();
-    const { ticketQuantityById, setTicketQuantityById, getTicketQuantityById } = useBuyRaffleTicketStore();
+    const { getAllRaffles} = useRaffleAnchorProgram();
+    const { setTicketQuantityById, getTicketQuantityById } = useBuyRaffleTicketStore();
     const {data: gumballs} = useGumballsQuery("All Gumballs");
-    const testRaffleById = useQuery(getRaffleById(39));
-    const { userNfts, isLoading: isLoadingNfts, error: errorNfts } = useFetchUserNfts();
+    const { userNfts } = useFetchUserNfts();
     const {
       raffleType,
       selectedToken,
@@ -109,7 +109,7 @@ function RafflesPage() {
       
       return allRaffles;
     }, [data, searchQuery, sort, filtersApplied, raffleType, selectedToken, selectedCollection, floorMin, floorMax, endTimeAfter, endTimeBefore]);
-
+    
     useEffect(() => {
       setSearchQuery("");
     }, []);
@@ -129,6 +129,7 @@ function RafflesPage() {
   return (
     <main className="flex-1 font-inter">
       <section className="w-full md:pt-0 pt-5">
+        
         <div className="w-full max-w-[1440px] md:px-5 px-4 mx-auto">
           <Link
             to={"/"}

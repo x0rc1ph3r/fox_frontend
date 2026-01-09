@@ -19,6 +19,7 @@ import { useFetchUserNfts } from "hooks/useFetchUserNfts";
 import { useGetCollectionFP } from "hooks/useGetCollectionFP";
 import { useAuctionAnchorProgram } from "hooks/useAuctionAnchorProgram";
 import { calculateRent } from "hooks/helpers";
+import { formatTimePeriod } from "@/utils/helpers";
 
 function CreateAuctions() {
   const { createAuction } = useCreateAuction();
@@ -246,8 +247,15 @@ function CreateAuctions() {
 
   const isInvalidTimeExtension = useMemo(() => {
     if (!timeExtension) return false;
-    return parseInt(timeExtension) <= 0;
-  }, [timeExtension]);
+    return (parseInt(timeExtension)*60) < (auctionConfig?.minimumTimeExtension ?? 0) || (parseInt(timeExtension)*60) > (auctionConfig?.maximumTimeExtension ?? 0);
+  }, [timeExtension, auctionConfig]);
+
+  const timePeriod = useMemo(()=>{
+    const minTimePeriod = formatTimePeriod(auctionConfig?.minimumAuctionPeriod ?? 0);
+    const maxTimePeriod = formatTimePeriod(auctionConfig?.maximumAuctionPeriod ?? 0);
+    return `${minTimePeriod} - ${maxTimePeriod}`;
+  }, [auctionConfig]);
+
   return (
     <div>
       <section className="pt-10 pb-[122px]">
@@ -393,8 +401,8 @@ function CreateAuctions() {
                             value={endDate}
                             onChange={setEndDate}
                             minDate={startType === "manual" ? today : startDate || today}
-                            maxDate={startType === "manual" ? new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000) : new Date(startDate?.getTime()! + 7 * 24 * 60 * 60 * 1000) || new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)}
-                            limit="5min-7days"
+                            maxDate={startType === "manual" ? new Date(today.getTime() + (auctionConfig?.maximumAuctionPeriod ?? 0) * 1000) : new Date(startDate?.getTime()! + (auctionConfig?.maximumAuctionPeriod ?? 0) * 1000) || new Date(today.getTime() + (auctionConfig?.maximumAuctionPeriod ?? 0) * 1000)}
+                            limit={timePeriod}
                           />
                           {startType === "manual" && (
                             <ol className="flex items-center gap-4 pt-2.5">

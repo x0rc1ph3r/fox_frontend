@@ -26,6 +26,7 @@ import { useGetCollectionFP } from "hooks/useGetCollectionFP";
 import clsx from "clsx";
 import { VerifiedNftCollections } from "@/utils/verifiedNftCollections";
 import { VerifiedTokens } from "@/utils/verifiedTokens";
+import { formatTimePeriod } from "@/utils/helpers";
 
 function CreateRaffles() {
   const {
@@ -104,8 +105,7 @@ function CreateRaffles() {
       floorPrice: number;
       collectionAddress: string;
     } | null>(null);
-
-
+    
   const today = useMemo(() => new Date(), []);
 
   const handleTimeChange = (hour: string, minute: string, period: "AM" | "PM") => {
@@ -207,6 +207,15 @@ function CreateRaffles() {
       if (!supply) return false;
       return parseInt(supply) < 3 || parseInt(supply) > 10000;
     }, [supply]);
+
+    console.log("raffleConfig", raffleConfig);
+
+    
+    const timePeriod = useMemo(()=>{
+      const minDate = formatTimePeriod(raffleConfig?.minimumRafflePeriod ?? 0);
+      const maxDate = formatTimePeriod(raffleConfig?.maximumRafflePeriod ?? 0);
+      return `${minDate} - ${maxDate}`;
+    },[raffleConfig])
   
   return (
     <div>
@@ -385,8 +394,8 @@ function CreateRaffles() {
                             value={endDate}
                             onChange={setEndDate}
                             minDate={today}
-                            maxDate={new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)}
-                            limit="1h-7d"
+                            maxDate={new Date(today.getTime() + (raffleConfig?.maximumRafflePeriod ?? 0) * 1000)}
+                            limit={timePeriod}
                             className={isDateInvalid ? "border-red-500" : ""}
                           />
                           <ol className="flex items-center gap-4 pt-2.5">
