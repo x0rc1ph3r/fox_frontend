@@ -227,3 +227,19 @@ export const createRaffleTx = async (params: CreateRaffleTxParams) => {
         throw error;
     }
 }
+
+export const claimPrizeBackTx = async (raffleId: string) => {
+    try {
+        const response = await api.get(`/raffle/claim-prize-back-tx/${raffleId}`, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+            }
+        });
+        return response.data;
+    }
+    catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
