@@ -11,6 +11,16 @@ export const getRaffles = async (page: number, limit: number) => {
     }
 }
 
+export const getCollectionFP = async (symbol: string) => {
+    try {
+        const response = await api.get(`/raffle/collection/floorPrice/${symbol}`);
+        return response.data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
 export const createRaffleOverBackend = async (raffle: RaffleTypeBackend) => {
     try {
         const response = await api.post("/raffle/create", raffle, {
