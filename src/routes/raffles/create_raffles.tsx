@@ -198,10 +198,33 @@ function CreateRaffles() {
       setIsPrizeModalOpen(false);
     };
 
-    const isDateInvalid = useMemo(() => {
-      if (!endDate) return false;
-      return endDate < today || endDate > new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
-    }, [endDate, today]);
+    const isTimePeriodInvalid = useMemo(() => {
+      if (!endDate || !endTimeHour || !endTimeMinute) return false;
+      
+      // Construct the end timestamp
+      let hour24 = parseInt(endTimeHour) || 12;
+      if (endTimePeriod === "PM" && hour24 !== 12) {
+        hour24 += 12;
+      } else if (endTimePeriod === "AM" && hour24 === 12) {
+        hour24 = 0;
+      }
+      
+      const endDateTime = new Date(endDate);
+      endDateTime.setHours(hour24, parseInt(endTimeMinute) || 0, 0, 0);
+      
+      const nowSeconds = Math.floor(Date.now() / 1000);
+      const endSeconds = Math.floor(endDateTime.getTime() / 1000);
+      const diffSeconds = endSeconds - nowSeconds;
+      
+      const minPeriod = raffleConfig?.minimumRafflePeriod ?? 0;
+      const maxPeriod = raffleConfig?.maximumRafflePeriod ?? 0;
+      
+      if (diffSeconds < minPeriod || diffSeconds > maxPeriod) {
+        return true;
+      }
+      
+      return false;
+    }, [endDate, endTimeHour, endTimeMinute, endTimePeriod, raffleConfig]);
 
     const isInvalidSupply = useMemo(() => {
       if (!supply) return false;
@@ -387,6 +410,11 @@ function CreateRaffles() {
                   <div>
                     
                     <div className="w-full my-5 md:my-10">
+                      {isTimePeriodInvalid && (
+                        <p className="md:text-sm text-xs font-medium font-inter text-red-500 pb-2.5">
+                          Please select a valid date and time (Time period must be between {timePeriod})
+                        </p>
+                      )}
                       <div className="grid md:grid-cols-2 gap-5">
                         <div className="">
                           <DateSelector
@@ -396,7 +424,7 @@ function CreateRaffles() {
                             minDate={today}
                             maxDate={new Date(today.getTime() + (raffleConfig?.maximumRafflePeriod ?? 0) * 1000)}
                             limit={timePeriod}
-                            className={isDateInvalid ? "border-red-500" : ""}
+                            className={isTimePeriodInvalid ? "invalid" : ""}
                           />
                           <ol className="flex items-center gap-4 pt-2.5">
                             {(["24hr", "36hr", "48hr"] as const).map(
@@ -428,6 +456,7 @@ function CreateRaffles() {
                             period={endTimePeriod}
                             onTimeChange={handleTimeChange}
                             hasValue={!!endDate}
+                            isInvalid={isTimePeriodInvalid}
                           />
                         </div>
                       </div>
@@ -456,7 +485,11 @@ function CreateRaffles() {
                           max={10000}
                           className={isInvalidSupply ? "border border-red-500" : ""}
                         />
-
+                        {isInvalidSupply && (
+                          <p className="md:text-sm text-xs font-medium font-inter text-red-500 pt-2.5">
+                            Please enter a valid supply (Min: 3 / Max: 10,000)
+                          </p>
+                        )}
                         <p className="text-sm font-medium text-black-1000 pt-2.5 font-inter">
                           Rent: {rent.toFixed(4)} SOL
                         </p>

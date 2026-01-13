@@ -256,6 +256,70 @@ function CreateAuctions() {
     return `${minTimePeriod} - ${maxTimePeriod}`;
   }, [auctionConfig]);
 
+  const timeExtensionPeriod = useMemo(()=>{
+    const minTimeExtension = formatTimePeriod(auctionConfig?.minimumTimeExtension ?? 0);
+    const maxTimeExtension = formatTimePeriod(auctionConfig?.maximumTimeExtension ?? 0);
+    return `${minTimeExtension} - ${maxTimeExtension}`;
+  }, [auctionConfig]);
+
+  const isEndTimePeriodInvalid = useMemo(() => {
+    if (!endDate || !endTimeHour || !endTimeMinute) return false;
+    
+    let hour24 = parseInt(endTimeHour) || 12;
+    if (endTimePeriod === "PM" && hour24 !== 12) {
+      hour24 += 12;
+    } else if (endTimePeriod === "AM" && hour24 === 12) {
+      hour24 = 0;
+    }
+    
+    const endDateTime = new Date(endDate);
+    endDateTime.setHours(hour24, parseInt(endTimeMinute) || 0, 0, 0);
+    
+    let startSeconds: number;
+    if (startType === "manual") {
+      startSeconds = Math.floor(Date.now() / 1000);
+    } else {
+      startSeconds = getStartTimestamp() || Math.floor(Date.now() / 1000);
+    }
+    
+    const endSeconds = Math.floor(endDateTime.getTime() / 1000);
+    const diffSeconds = endSeconds - startSeconds;
+    
+    const minPeriod = auctionConfig?.minimumAuctionPeriod ?? 0;
+    const maxPeriod = auctionConfig?.maximumAuctionPeriod ?? 0;
+    
+    if (diffSeconds < minPeriod || diffSeconds > maxPeriod) {
+      return true;
+    }
+    
+    return false;
+  }, [endDate, endTimeHour, endTimeMinute, endTimePeriod, startType, getStartTimestamp, auctionConfig]);
+
+  const isStartTimePeriodInvalid = useMemo(() => {
+    if (startType !== "schedule") return false;
+    if (!startDate || !startTimeHour || !startTimeMinute) return false;
+    
+    let hour24 = parseInt(startTimeHour) || 12;
+    if (startTimePeriod === "PM" && hour24 !== 12) {
+      hour24 += 12;
+    } else if (startTimePeriod === "AM" && hour24 === 12) {
+      hour24 = 0;
+    }
+    
+    const startDateTime = new Date(startDate);
+    startDateTime.setHours(hour24, parseInt(startTimeMinute) || 0, 0, 0);
+    
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    const startSeconds = Math.floor(startDateTime.getTime() / 1000);
+    
+    if (startSeconds <= nowSeconds) {
+      return true;
+    }
+    
+    return false;
+  }, [startDate, startTimeHour, startTimeMinute, startTimePeriod, startType]);
+
+  console.log("auctionConfig", getAuctionConfig.data);
   return (
     <div>
       <section className="pt-10 pb-[122px]">
@@ -367,32 +431,46 @@ function CreateAuctions() {
                         ))}
                       </ul>
                       {startType === "schedule" && (
-                        <div className="pb-10 grid grid-cols-2 md:gap-5 gap-3">
-                          <div className="">
-                            <DateSelector
-                              label="Start Date"
-                              value={startDate}
-                              onChange={setStartDate}
-                              minDate={today}
-                              disabled={isCreatingAuction}
-                            />
-                          </div>
-                          <div className="">
-                            <TimeSelector
-                              label="Start Time"
-                              hour={startTimeHour}
-                              minute={startTimeMinute}
-                              period={startTimePeriod}
-                              onTimeChange={(hour, minute, period) => {
-                                setStartTimeHour(hour);
-                                setStartTimeMinute(minute);
-                                setStartTimePeriod(period);
-                              }}
-                              disabled={isCreatingAuction}
-                              hasValue={!!startDate}
-                            />
+                        <div className="pb-10">
+                          {isStartTimePeriodInvalid && (
+                            <p className="md:text-sm text-xs font-medium font-inter text-red-500 pb-2.5">
+                              Please select a valid start date and time (must be in the future)
+                            </p>
+                          )}
+                          <div className="grid grid-cols-2 md:gap-5 gap-3">
+                            <div className="">
+                              <DateSelector
+                                label="Start Date"
+                                value={startDate}
+                                onChange={setStartDate}
+                                minDate={today}
+                                disabled={isCreatingAuction}
+                                className={isStartTimePeriodInvalid ? "invalid" : ""}
+                              />
+                            </div>
+                            <div className="">
+                              <TimeSelector
+                                label="Start Time"
+                                hour={startTimeHour}
+                                minute={startTimeMinute}
+                                period={startTimePeriod}
+                                onTimeChange={(hour, minute, period) => {
+                                  setStartTimeHour(hour);
+                                  setStartTimeMinute(minute);
+                                  setStartTimePeriod(period);
+                                }}
+                                disabled={isCreatingAuction}
+                                hasValue={!!startDate}
+                                isInvalid={isStartTimePeriodInvalid}
+                              />
+                            </div>
                           </div>
                         </div>
+                      )}
+                      {isEndTimePeriodInvalid && (
+                        <p className="md:text-sm text-xs font-medium font-inter text-red-500 pb-2.5">
+                          Please select a valid date and time (Time period must be between {timePeriod})
+                        </p>
                       )}
                       <div className="grid md:grid-cols-2 gap-5">
                         <div className="">
@@ -403,6 +481,7 @@ function CreateAuctions() {
                             minDate={startType === "manual" ? today : startDate || today}
                             maxDate={startType === "manual" ? new Date(today.getTime() + (auctionConfig?.maximumAuctionPeriod ?? 0) * 1000) : new Date(startDate?.getTime()! + (auctionConfig?.maximumAuctionPeriod ?? 0) * 1000) || new Date(today.getTime() + (auctionConfig?.maximumAuctionPeriod ?? 0) * 1000)}
                             limit={timePeriod}
+                            className={isEndTimePeriodInvalid ? "invalid" : ""}
                           />
                           {startType === "manual" && (
                             <ol className="flex items-center gap-4 pt-2.5">
@@ -436,6 +515,7 @@ function CreateAuctions() {
                             period={endTimePeriod}
                             onTimeChange={handleTimeChange}
                             hasValue={!!endDate}
+                            isInvalid={isEndTimePeriodInvalid}
                           />
                         </div>
                       </div>
@@ -447,58 +527,65 @@ function CreateAuctions() {
                             Reserve Price
                           </p>
                         </div>
-                        <div className="relative">
-                          <input
-                            id="amount"
-                            type="number"
-                            value={basePrice}
-                            onChange={(e) => {
-                              setBasePrice(e.target.value);
-                            }}
-                            className={`text-black-1000 focus:outline-0 bg-white placeholder:text-gray-1200 text-base w-full font-inter px-5 h-12 border border-solid border-gray-1100 rounded-lg font-medium ${isInvalidReservePrice ? "border border-red-500" : ""}`}
-                            autoComplete="off"
-                            placeholder="Enter Amount"
-                          />
-                          <div
-                            ref={dropdownRef}
-                            className="absolute z-20 top-1/2 right-5 -translate-y-1/2 bg-white border-l border-solid border-gray-1100"
-                          >
-                            <button
-                              type="button"
-                              className="flex items-center gap-1.5 px-3 cursor-pointer font-inter text-base font-medium text-black-1000 py-1"
-                              onClick={toggleDropdown}
+                        <div>
+                          <div className="relative">
+                            <input
+                              id="amount"
+                              type="number"
+                              value={basePrice}
+                              onChange={(e) => {
+                                setBasePrice(e.target.value);
+                              }}
+                              className={`text-black-1000 focus:outline-0 bg-white placeholder:text-gray-1200 text-base w-full font-inter px-5 h-12 border border-solid ${isInvalidReservePrice ? "border-red-500" : "border-gray-1100"} rounded-lg font-medium`}
+                              autoComplete="off"
+                              placeholder="Enter Amount"
+                            />
+                            <div
+                              ref={dropdownRef}
+                              className="absolute z-20 top-1/2 right-5 -translate-y-1/2 bg-white border-l border-solid border-gray-1100"
                             >
-                              <p>{symbol}</p>
-                              <span>
-                                <img
-                                  src="/icons/down-arw.svg"
-                                  alt="toggle"
-                                  className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
-                                />
-                              </span>
-                            </button>
+                              <button
+                                type="button"
+                                className="flex items-center gap-1.5 px-3 cursor-pointer font-inter text-base font-medium text-black-1000 py-1"
+                                onClick={toggleDropdown}
+                              >
+                                <p>{symbol}</p>
+                                <span>
+                                  <img
+                                    src="/icons/down-arw.svg"
+                                    alt="toggle"
+                                    className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                                  />
+                                </span>
+                              </button>
 
-                            {isOpen && (
-                              <ol className="absolute top-full right-0 w-full bg-white border border-gray-1100 rounded-md mt-3 z-10">
-                                {VerifiedTokens.map((token) => (
-                                  <li key={token.symbol}>
-                                    <button
-                                      type="button"
-                                      className="w-full text-left px-3 py-2 hover:bg-gray-100"
-                                      onClick={() =>
-                                        handleSelect(
-                                          token.address,
-                                          token.symbol
-                                        )
-                                      }
-                                    >
-                                      {token.symbol}
-                                    </button>
-                                  </li>
-                                ))}
-                              </ol>
-                            )}
+                              {isOpen && (
+                                <ol className="absolute top-full right-0 w-full bg-white border border-gray-1100 rounded-md mt-3 z-10">
+                                  {VerifiedTokens.map((token) => (
+                                    <li key={token.symbol}>
+                                      <button
+                                        type="button"
+                                        className="w-full text-left px-3 py-2 hover:bg-gray-100"
+                                        onClick={() =>
+                                          handleSelect(
+                                            token.address,
+                                            token.symbol
+                                          )
+                                        }
+                                      >
+                                        {token.symbol}
+                                      </button>
+                                    </li>
+                                  ))}
+                                </ol>
+                              )}
+                            </div>
                           </div>
+                          {isInvalidReservePrice && (
+                            <p className="md:text-sm text-xs font-medium font-inter text-red-500 pt-2.5">
+                              Please enter a valid reserve price (must be greater than 0)
+                            </p>
+                          )}
                         </div>
                         <p className="text-sm font-medium text-black-1000 py-2.5 font-inter">
                           Rent: {rentFee / 1e9} SOL
@@ -519,7 +606,7 @@ function CreateAuctions() {
                             onChange={(e) => {
                               setBidIncrement(e.target.value);
                             }}
-                            className={`text-black-1000 focus:outline-0 bg-white placeholder:text-gray-1200 text-base w-full font-inter px-5 h-12 border border-solid border-gray-1100 rounded-lg font-medium ${isInvalidBidIncrement ? "border border-red-500" : ""}`}
+                            className={`text-black-1000 focus:outline-0 bg-white placeholder:text-gray-1200 text-base w-full font-inter px-5 h-12 border border-solid ${isInvalidBidIncrement ? "border-red-500" : "border-gray-1100"} rounded-lg font-medium`}
                             autoComplete="off"
                             placeholder=""
                           />
@@ -529,6 +616,11 @@ function CreateAuctions() {
                             </div>
                           </div>
                         </div>
+                        {isInvalidBidIncrement && (
+                          <p className="md:text-sm text-xs font-medium font-inter text-red-500 pt-2.5">
+                            Please enter a valid bid increment (must be greater than 0)
+                          </p>
+                        )}
                         <ol className="flex items-center gap-4 pt-2.5 pb-10">
                           {(["5", "10", "20"] as const).map((duration) => (
                             <li key={duration} className="w-full">
@@ -553,6 +645,9 @@ function CreateAuctions() {
                           <p className="text-gray-1200 font-inter text-sm font-medium">
                             Time extension period
                           </p>
+                          <p className="text-gray-1200 font-inter text-sm font-medium">
+                            {timeExtensionPeriod}
+                          </p>
                         </div>
                         <div className="relative">
                           <input
@@ -562,7 +657,7 @@ function CreateAuctions() {
                             onChange={(e) => {
                               setTimeExtension(e.target.value);
                             }}
-                            className={`text-black-1000 focus:outline-0 bg-white placeholder:text-gray-1200 text-base w-full font-inter px-5 h-12 border border-solid border-gray-1100 rounded-lg font-medium ${isInvalidTimeExtension ? "border border-red-500" : ""}`}
+                            className={`text-black-1000 focus:outline-0 bg-white placeholder:text-gray-1200 text-base w-full font-inter px-5 h-12 border border-solid ${isInvalidTimeExtension ? "border-red-500" : "border-gray-1100"} rounded-lg font-medium`}
                             autoComplete="off"
                             placeholder=""
                           />
@@ -572,6 +667,11 @@ function CreateAuctions() {
                             </div>
                           </div>
                         </div>
+                        {isInvalidTimeExtension && (
+                          <p className="md:text-sm text-xs font-medium font-inter text-red-500 pt-2.5">
+                            Please enter a valid time extension (must be between {timeExtensionPeriod})
+                          </p>
+                        )}
                         <ol className="flex items-center gap-4 pt-2.5 pb-10">
                           {(["5", "10", "15"] as const).map((duration) => (
                             <li key={duration} className="w-full">

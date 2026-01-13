@@ -9,6 +9,7 @@ interface TimeSelectorProps
   period?: "AM" | "PM";
   onTimeChange?: (hour: string, minute: string, period: "AM" | "PM") => void;
   hasValue?: boolean;
+  isInvalid?: boolean;
 }
 
 export default function TimeSelector({ 
@@ -18,6 +19,7 @@ export default function TimeSelector({
   period = "PM",
   onTimeChange,
   hasValue = false,
+  isInvalid = false,
   ...props 
 }: TimeSelectorProps) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -114,7 +116,7 @@ const isInvalidTime = useMemo(() => {
           value={inputValue}
           onChange={handleChange}
           {...props}
-          className={`w-full text-base font-medium ${hasValue ? 'text-black-1000' : 'text-gray-1200'} placeholder:text-gray-1200 outline outline-gray-1100 h-12 md:px-5 px-3 md:pr-5 py-3 rounded-lg border-transparent appearance-none ${isInvalidTime.isValid ? "" : "border border-red-500"}`}
+          className={`w-full text-base font-medium ${hasValue ? 'text-black-1000' : 'text-gray-1200'} placeholder:text-gray-1200 outline ${isInvalid ? "outline-red-500" : "outline-gray-1100"} h-12 md:px-5 px-3 md:pr-5 py-3 rounded-lg border-transparent appearance-none`}
         />
         <span
           onClick={handleIconClick}

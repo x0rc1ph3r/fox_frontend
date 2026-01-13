@@ -72,7 +72,7 @@ export default function DateSelector({
         }
         </div>
       )}
-      <div className={`w-full relative ${className}`}>
+      <div className="w-full relative">
         <input
           type="date"
           ref={inputRef}
@@ -81,7 +81,7 @@ export default function DateSelector({
           min={minValue}
           max={maxValue}
           {...restProps}
-          className={`w-full text-sm md:text-base font-medium ${inputValue ? 'text-black-1000' : 'text-gray-1200'} placeholder:text-gray-1200 outline outline-gray-1100 focus:outline-primary-color h-12 md:px-5 px-3 md:pr-5 py-3 rounded-lg border-transparent appearance-none`}
+          className={`w-full text-sm md:text-base font-medium ${inputValue ? 'text-black-1000' : 'text-gray-1200'} placeholder:text-gray-1200 outline ${className ? 'outline-red-500' : 'outline-gray-1100'} focus:outline-primary-color h-12 md:px-5 px-3 md:pr-5 py-3 rounded-lg border-transparent appearance-none`}
         />
         <span
           onClick={handleIconClick}

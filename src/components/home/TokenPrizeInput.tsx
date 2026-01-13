@@ -41,6 +41,7 @@ export default function TokenPrizeInput() {
   console.log("tokenPrizeMint",tokenPrizeMint);
   console.log("tokenPrice",tokenPrice);
   return (
+    <div>
     <div className="relative">
       <input
         id="amount"
@@ -55,6 +56,7 @@ export default function TokenPrizeInput() {
         placeholder="Enter Amount"
         disabled={userVerifiedTokens?.length == 0}
       />
+      
       {userVerifiedTokens?.length != 0 && (
        
       <div
@@ -99,7 +101,14 @@ export default function TokenPrizeInput() {
         )}
       </div>
       )}
+     
 
+    </div>
+    {isInvalidTokenPrizeAmount && tokenPrizeAmount.length > 0 && userVerifiedTokens?.length != 0 && (
+      <p className="md:text-sm text-xs font-medium font-inter text-red-500 pt-2.5">
+        Please enter a valid token prize amount
+      </p>
+    )}
     </div>
   );
 }
