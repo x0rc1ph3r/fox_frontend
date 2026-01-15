@@ -105,7 +105,7 @@ export function useAuctionAnchorProgram() {
     //                 AUCTION_ADMIN_PUBKEY,
     //                 new BN(1000_000_00),
     //                 100,
-    //                 24 * 60 * 60,
+    //                 5 * 60,
     //                 24 * 60 * 60 * 7,
     //                 0,
     //                 24 * 60 * 60
