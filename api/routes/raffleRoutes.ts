@@ -36,23 +36,6 @@ export const createRaffleOverBackend = async (raffle: RaffleTypeBackend) => {
     }
 }
 
-export const verifyRaffleCreation = async (raffleId: string, txSignature: string) => {
-    try {
-        const response = await api.post(`/raffle/confirm/${raffleId}`, {
-            txSignature
-        }, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
-            }
-        });
-        return response.data;
-    } catch (error) {
-        console.error(error);
-        throw error;
-    }
-}
-
 export const getRaffleById = async (raffleId: string) => {
     try {
         const response = await api.get(`/raffle/${raffleId}`);

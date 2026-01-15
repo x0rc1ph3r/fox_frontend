@@ -1,6 +1,6 @@
 import { useCreateRaffleStore } from "../store/createRaffleStore";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {toast} from "react-toastify";
+import { toast } from "react-toastify";
 import { useRaffleAnchorProgram } from "./useRaffleAnchorProgram";
 import { Transaction } from "@solana/web3.js";
 import type { RaffleTypeBackend } from "types/backend/raffleTypes";
@@ -9,8 +9,6 @@ import { VerifiedTokens } from "../src/utils/verifiedTokens";
 import {
   createRaffleOverBackend,
   createRaffleTx,
-  deleteRaffle,
-  verifyRaffleCreation,
 } from "../api/routes/raffleRoutes";
 import { useRouter } from "@tanstack/react-router";
 // import { VerifiedNftCollections } from "@/utils/verifiedNftCollections";
@@ -145,78 +143,30 @@ export const useCreateRaffle = () => {
 
   const now = Math.floor(Date.now() / 1000);
 
-  const deleteRaffleOverBackend = async (raffleId: number) => {
-    try {
-      const response = await deleteRaffle(raffleId.toString());
-      if (response.error) {
-        throw new Error("Failed to delete raffle");
-      }
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  }
+  // const deleteRaffleOverBackend = async (raffleId: number) => {
+  //   try {
+  //     const response = await deleteRaffle(raffleId.toString());
+  //     if (response.error) {
+  //       throw new Error("Failed to delete raffle");
+  //     }
+  //   } catch (error) {
+  //     console.error(error);
+  //     throw error;
+  //   }
+  // }
+
   const fetchRaffleConfig = () => {
     const raffleConfig = getRaffleConfig.data;
     return raffleConfig?.raffleCount || 0;
   }
 
   const maxEntries = useMemo(() => {
-    if(ticketLimitPerWallet && parseInt(ticketLimitPerWallet) > 0 && supply && parseInt(supply) > 0){
+    if (ticketLimitPerWallet && parseInt(ticketLimitPerWallet) > 0 && supply && parseInt(supply) > 0) {
       const entries = Math.floor((parseInt(ticketLimitPerWallet) * parseInt(supply)) / 100);
       return entries > 0 ? entries : 1;
     }
     return 1;
-  },[ticketLimitPerWallet, supply]);
-
-  const raffleBackendPayload: RaffleTypeBackend = {
-    ticketAmountClaimedByCreator: false,
-    id: fetchRaffleConfig(),
-    createdAt: new Date(now * 1000),
-    endsAt: new Date(getEndTimestamp()! * 1000),
-    createdBy: publicKey?.toBase58() || "",
-    ticketPrice:
-      parseFloat(ticketPrice) *
-      10 **
-      (VerifiedTokens.find(
-        (token) => token.address === ticketCurrency.address
-      )?.decimals || 0),
-    ticketSupply: parseInt(supply),
-    ticketTokenAddress: ticketCurrency.address,
-    ticketTokenSymbol: VerifiedTokens.find((token) => token.address === ticketCurrency.address)?.symbol || "",
-    val: parseFloat(val),
-    ttv: ttv,
-    roi: parseFloat(percentage),
-    maxTickets: parseInt(maximumTickets),
-    maxEntries: maxEntries,
-    numberOfWinners: 1,
-    prizeData: {
-      type: prizeType === "nft" ? "NFT" : "TOKEN",
-      address: prizeType === "nft" ? nftPrizeMint : tokenPrizeMint,
-      mintAddress: prizeType === "nft" ? nftPrizeMint : tokenPrizeMint,
-      mint: prizeType === "nft" ? nftPrizeMint : tokenPrizeMint,
-      name: prizeType === "nft" ? nftPrizeName : VerifiedTokens.find((token) => token.address === tokenPrizeMint)?.name || "",
-      collection: prizeType === "nft" ? (nftCollection ? nftCollection : "") : undefined,
-      symbol:
-        prizeType === "nft" ?
-          "" :
-          VerifiedTokens.find((token) => token.address === tokenPrizeMint)
-            ?.symbol || "",
-      decimals:
-        prizeType === "nft" ?
-          0 :
-          VerifiedTokens.find((token) => token.address === tokenPrizeMint)
-            ?.decimals || 0,
-      verified: true,
-      image: prizeType === "nft" ? prizeImage : VerifiedTokens.find((token) => token.address === tokenPrizeMint)?.image || "",
-      floor: prizeType === "nft" ? parseFloat(floor) / 10 ** 9 : undefined,
-      amount: prizeType === "nft" ? parseFloat(floor) / 10 ** 9 :
-        parseFloat(tokenPrizeAmount) *
-        10 **
-        (VerifiedTokens.find((token) => token.address === tokenPrizeMint)
-          ?.decimals || 0),
-    },
-  };
+  }, [ticketLimitPerWallet, supply]);
 
   const createRaffle = useMutation({
     mutationKey: ["createRaffle"],
@@ -225,8 +175,7 @@ export const useCreateRaffle = () => {
         setIsCreatingRaffle(false);
         throw new Error("Validation failed");
       }
-      const data = await createRaffleOverBackend(raffleBackendPayload);
-      console.log("raffleBackendPayload", raffleBackendPayload);
+
       const { base64Transaction, minContextSlot, blockhash, lastValidBlockHeight } = await createRaffleTx({
         startTime: now + 60,
         endTime: getEndTimestamp()!,
@@ -238,7 +187,7 @@ export const useCreateRaffle = () => {
           10 **
           (VerifiedTokens.find(
             (token) => token.address === ticketCurrency.address
-          )?.decimals || 0),
+          )?.decimals ?? 0),
         isTicketSol: ticketCurrency.symbol === "SOL",
 
         maxPerWalletPct: parseInt(ticketLimitPerWallet),
@@ -247,7 +196,7 @@ export const useCreateRaffle = () => {
           parseFloat(tokenPrizeAmount) *
           10 **
           (VerifiedTokens.find((token) => token.address === tokenPrizeMint)
-            ?.decimals || 0),
+            ?.decimals ?? 0),
         numWinners: 1,
         winShares: winShares,
         isUniqueWinners: true,
@@ -270,29 +219,74 @@ export const useCreateRaffle = () => {
         signature,
       });
 
-      if (confirmation.value.err || data.error) {
+      if (confirmation.value.err) {
         throw new Error("Failed to create raffle");
-      } else {
-        const verifyData = await verifyRaffleCreation(data.raffle.id, signature);
-        if (verifyData.error) {
-          return data.raffle.id;
-        }
       }
+
+      const raffleBackendPayload: RaffleTypeBackend = {
+        ticketAmountClaimedByCreator: false,
+        id: fetchRaffleConfig(),
+        createdAt: new Date(now * 1000),
+        endsAt: new Date(getEndTimestamp()! * 1000),
+        createdBy: publicKey?.toBase58() || "",
+        ticketPrice:
+          parseFloat(ticketPrice) *
+          10 **
+          (VerifiedTokens.find(
+            (token) => token.address === ticketCurrency.address
+          )?.decimals ?? 0),
+        ticketSupply: parseInt(supply),
+        ticketTokenAddress: ticketCurrency.address,
+        ticketTokenSymbol: VerifiedTokens.find((token) => token.address === ticketCurrency.address)?.symbol || "",
+        val: parseFloat(val),
+        ttv: ttv,
+        roi: parseFloat(percentage),
+        maxTickets: parseInt(maximumTickets),
+        maxEntries: maxEntries,
+        numberOfWinners: 1,
+        prizeData: {
+          type: prizeType === "nft" ? "NFT" : "TOKEN",
+          address: prizeType === "nft" ? nftPrizeMint : tokenPrizeMint,
+          mintAddress: prizeType === "nft" ? nftPrizeMint : tokenPrizeMint,
+          mint: prizeType === "nft" ? nftPrizeMint : tokenPrizeMint,
+          name: prizeType === "nft" ? nftPrizeName : VerifiedTokens.find((token) => token.address === tokenPrizeMint)?.name || "",
+          collection: prizeType === "nft" ? (nftCollection ? nftCollection : "") : undefined,
+          symbol:
+            prizeType === "nft" ?
+              "" :
+              VerifiedTokens.find((token) => token.address === tokenPrizeMint)
+                ?.symbol || "",
+          decimals:
+            prizeType === "nft" ?
+              0 :
+              VerifiedTokens.find((token) => token.address === tokenPrizeMint)
+                ?.decimals ?? 0,
+          verified: true,
+          image: prizeType === "nft" ? prizeImage : VerifiedTokens.find((token) => token.address === tokenPrizeMint)?.image || "",
+          floor: prizeType === "nft" ? parseFloat(floor) / 10 ** 9 : undefined,
+          amount: prizeType === "nft" ? parseFloat(floor) / 10 ** 9 :
+            parseFloat(tokenPrizeAmount) *
+            10 **
+            (VerifiedTokens.find((token) => token.address === tokenPrizeMint)
+              ?.decimals ?? 0),
+        },
+        txSignature: signature,
+      };
+
+      const data = await createRaffleOverBackend(raffleBackendPayload);
+      console.log("raffleBackendPayload", raffleBackendPayload);
       return data.raffle.id;
     },
-    onMutate: async () => {
-      return { raffleId: fetchRaffleConfig() };
-    },
+    // onMutate: async () => {
+    //   return { raffleId: fetchRaffleConfig() };
+    // },
     onSuccess: (raffleId: number) => {
       queryClient.invalidateQueries({ queryKey: ["raffles", raffleId.toString()] });
       setIsCreatingRaffle(false);
       toast.success("Raffle created successfully");
       router.navigate({ to: "/raffles/$id", params: { id: raffleId.toString() } });
     },
-    onError: async (_error, _args, context) => {
-      if (context?.raffleId) {
-        await deleteRaffleOverBackend(context.raffleId);
-      }
+    onError: async () => {
       setIsCreatingRaffle(false);
       toast.error("Failed to create raffle");
     },

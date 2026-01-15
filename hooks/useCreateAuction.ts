@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {toast} from "react-toastify";
+import { toast } from "react-toastify";
 import { useAuctionAnchorProgram } from "./useAuctionAnchorProgram";
 import { PublicKey, Transaction } from "@solana/web3.js";
 // import type { AuctionTypeBackend } from "../types/backend/auctionTypes";
@@ -7,9 +7,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { VerifiedTokens, WRAPPED_SOL_MINT } from "../src/utils/verifiedTokens";
 import {
     createAuctionOverBackend,
-    deleteAuction,
     getCreateAuctionTx,
-    verifyAuctionCreation,
 } from "../api/routes/auctionRoutes";
 import { useRouter } from "@tanstack/react-router";
 import { useCheckAuth } from "./useCheckAuth";
@@ -34,18 +32,21 @@ export type AuctionOnChainArgs = {
 };
 
 const FAKE_MINT = new PublicKey(WRAPPED_SOL_MINT);
-const MIN_TIME = (5 * 60) + 100; // 24 hours in seconds
 
 export const useCreateAuction = () => {
     const { getAuctionConfig } = useAuctionAnchorProgram();
+    const { data: auctionConfig, isLoading: isLoadingAuctionConfig, isError: isErrorAuctionConfig } = getAuctionConfig;
     const router = useRouter();
     const { publicKey, sendTransaction } = useWallet();
     const queryClient = useQueryClient();
     const { checkAndInvalidateToken } = useCheckAuth();
+    const MIN_TIME = auctionConfig?.minimumAuctionPeriod
 
     const validateForm = async (args: AuctionOnChainArgs) => {
         try {
-            console.log(args.endTime+100 - args.startTime, MIN_TIME)
+            if (MIN_TIME === undefined || isLoadingAuctionConfig || isErrorAuctionConfig) {
+                throw new Error("Auction config not loaded");
+            }
             if (!publicKey) {
                 throw new Error("Wallet not connected");
             }
@@ -74,9 +75,6 @@ export const useCreateAuction = () => {
             if (!args.prizeMint) {
                 throw new Error("No NFT selected");
             }
-            if (!args.bidMint) {
-                args.bidMint = FAKE_MINT.toString()
-            }
             if (!args.startImmediately && (args.endTime + 100) - args.startTime < MIN_TIME) {
                 console.log((args.endTime + 100) - args.startTime, MIN_TIME)
                 throw new Error("End time must be at least 24 hours after start time");
@@ -97,17 +95,17 @@ export const useCreateAuction = () => {
 
     };
 
-    const deleteAuctionOverBackend = async (auctionId: number) => {
-        try {
-            const response = await deleteAuction(auctionId.toString());
-            if (response.error) {
-                throw new Error("Failed to delete auction");
-            }
-        } catch (error) {
-            console.error(error);
-            throw error;
-        }
-    }
+    // const deleteAuctionOverBackend = async (auctionId: number) => {
+    //     try {
+    //         const response = await deleteAuction(auctionId.toString());
+    //         if (response.error) {
+    //             throw new Error("Failed to delete auction");
+    //         }
+    //     } catch (error) {
+    //         console.error(error);
+    //         throw error;
+    //     }
+    // }
 
     const fetchAuctionConfig = () => {
         const auctionConfig = getAuctionConfig.data;
@@ -125,33 +123,11 @@ export const useCreateAuction = () => {
             const decimals = VerifiedTokens.find(
                 (token) => token.symbol === args.currency
             )?.decimals;
-            const data = await createAuctionOverBackend({
-                id: fetchAuctionConfig(),
-                createdBy: publicKey?.toString() || "",
-                prizeMint: args.prizeMint,
-                collectionVerified: true,
-                floorPrice: args.floorPrice,
-                startsAt: args.startImmediately ? new Date() : new Date((args.startTime+60) * 1000),
-                endsAt: new Date((args.endTime + 100) * 1000),
-                timeExtension: args.timeExtension,
-                reservePrice: (args.baseBid * Math.pow(10, decimals!)).toString(),
-                currency: args.isBidMintSol ? "SOL" : args.currency,
-                bidIncrementPercent: args.minIncrement,
-                payRoyalties: false,
-                royaltyPercentage: 0,
-                bidEscrow: args.bidMint,
-                prizeName: args.prizeName,
-                prizeImage: args.prizeImage,
-                collectionName: args.collectionName,
-                hasAnyBid: false,
-                highestBidAmount: 0,
-                highestBidderWallet: "",
-                status: "INITIALIZED",
-            });
-            if (data.error) {
-                throw new Error(data.error);
+            if (decimals === undefined) {
+                throw new Error("Unsupported currency");
             }
-            const { base64Transaction, minContextSlot, blockhash, lastValidBlockHeight } = await getCreateAuctionTx(args.startTime, args.endTime + 100, args.startImmediately, args.isBidMintSol, args.baseBid * Math.pow(10, decimals!), args.minIncrement, args.timeExtension, args.prizeMint, args.bidMint);
+
+            const { base64Transaction, minContextSlot, blockhash, lastValidBlockHeight } = await getCreateAuctionTx(args.startTime, args.endTime + 100, args.startImmediately, args.isBidMintSol, args.baseBid * Math.pow(10, decimals), args.minIncrement, args.timeExtension, args.prizeMint, args.bidMint || FAKE_MINT.toString());
             console.log("Received transaction from backend", base64Transaction);
             const decodedTx = Buffer.from(base64Transaction, "base64");
             const transaction = Transaction.from(decodedTx);
@@ -181,27 +157,46 @@ export const useCreateAuction = () => {
             if (confirmation.value.err) {
                 console.log("Failed to create auction", confirmation.value.err);
                 throw new Error("Failed to create auction");
-            } else {
-                const verifyData = await verifyAuctionCreation(data.auction.id, signature);
-                if (verifyData.error) {
-                    return data.auction.id;
-                }
             }
-            return data.auction.id;
+            const response = await createAuctionOverBackend({
+                id: fetchAuctionConfig(),
+                createdBy: publicKey?.toString() || "",
+                prizeMint: args.prizeMint,
+                collectionVerified: true,
+                floorPrice: args.floorPrice,
+                startsAt: args.startImmediately ? new Date() : new Date((args.startTime + 60) * 1000),
+                endsAt: new Date((args.endTime + 100) * 1000),
+                timeExtension: args.timeExtension,
+                reservePrice: (args.baseBid * Math.pow(10, decimals)).toString(),
+                currency: args.isBidMintSol ? "SOL" : args.currency,
+                bidIncrementPercent: args.minIncrement,
+                payRoyalties: false,
+                royaltyPercentage: 0,
+                bidEscrow: args.bidMint || FAKE_MINT.toString(),
+                prizeName: args.prizeName,
+                prizeImage: args.prizeImage,
+                collectionName: args.collectionName,
+                hasAnyBid: false,
+                highestBidAmount: 0,
+                highestBidderWallet: "",
+                status: "INITIALIZED",
+                txSignature: signature,
+            });
+            if (response.error) {
+                throw new Error(response.error);
+            }
+            return response.auction.id;
         },
-        onMutate: async () => {
-            return { auctionId: fetchAuctionConfig() };
-        },
+        // onMutate: async () => {
+        //     return { auctionId: fetchAuctionConfig() };
+        // },
         onSuccess: (auctionId: number) => {
             queryClient.invalidateQueries({ queryKey: ["auctions", auctionId.toString()] });
             toast.success("Auction created successfully");
             router.navigate({ to: "/auctions/$id", params: { id: auctionId.toString() } });
         },
-        onError: async (_error, _args, context) => {
-            if (context?.auctionId) {
-                await deleteAuctionOverBackend(context.auctionId);
-            }
-            console.error(_error);
+        onError: async (error) => {
+            console.error(error);
             toast.error("Failed to create auction");
         },
     });

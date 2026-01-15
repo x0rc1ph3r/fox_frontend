@@ -35,6 +35,7 @@ export const auctionSchema = z.object({
   highestBidderWallet: z.string().optional().default(""),
   hasAnyBid: z.boolean().optional().default(false),
   status: z.enum(["ACTIVE","INITIALIZED","COMPLETED_SUCCESSFULLY","COMPLETED_FAILED","CANCELLED"]).optional().default("INITIALIZED"),
+  txSignature: z.string().min(1),
 });
 
 export const confirmAuctionCreationSchema = z.object({

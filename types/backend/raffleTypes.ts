@@ -82,6 +82,7 @@ const raffleSchema = z.object({
     favouritedBy: z.array(z.object({
         walletAddress: z.string().min(1),
     })).optional(),
+    txSignature: z.string().min(1),
 });
 
 export type RaffleTypeBackend = z.infer<typeof raffleSchema>;
