@@ -42,7 +42,7 @@ export const useFetchUserToken = () => {
                 };
             });
             if(NETWORK === "devnet"){
-                return VerifiedTokens.filter((token) => (token.address === "So11111111111111111111111111111111111111112" || token.address === "VoteCahXMnr5FXRCvQRr7kDtYTDpo348yWmVgcrZpkn" || token.address === "BZfZhBoQSAMQVshvApFzwbKNA3dwuxKhK8m5GVCQ26yG"));
+                return VerifiedTokens.filter((token) => (token.address === "So11111111111111111111111111111111111111112" || token.address === "BZfZhBoQSAMQVshvApFzwbKNA3dwuxKhK8m5GVCQ26yG"));
             }
             return tokensWithBalance;
         },
