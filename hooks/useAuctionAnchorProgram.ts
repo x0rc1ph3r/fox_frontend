@@ -14,7 +14,6 @@ import { getTokenProgramFromMint, ensureAtaIx } from './helpers';
 export const AUCTION_PROGRAM_ID = new anchor.web3.PublicKey(auctionIdl.address);
 const FAKE_MINT = new PublicKey('So11111111111111111111111111111111111111112');
 const FAKE_ATA = new PublicKey('B9W4wPFWjTbZ9ab1okzB4D3SsGY7wntkrBKwpp5RC1Uv')
-const AUCTION_ADMIN_PUBKEY = new PublicKey('3FMdoxapmosa5vFHWKT9eVp3nKqHy8ebUhHCLFcgSKLc');
 
 function getAuctionProgram(provider: anchor.AnchorProvider): anchor.Program<Auction> {
     return new anchor.Program<Auction>(auctionIdl as anchor.Idl, provider);
