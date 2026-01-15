@@ -988,7 +988,7 @@ All consequences resulting from configuration errors are solely the responsibili
                                 </div>
       
                                 <div className="font-semibold text-black">
-                                  {nft.floorPrice?.toFixed(2) ?? "0.00"} SOL
+                                  {nft.floorPrice && nft.floorPrice > 0 ? (nft.floorPrice/10**9).toFixed(5) : "0.00"} SOL
                                 </div>
       
                                 {isSelected && (
