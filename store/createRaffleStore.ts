@@ -338,7 +338,7 @@ export const useCreateRaffleStore = create<CreateRaffleState>((set, get) => ({
     }
   },
   getComputedVal:(tokenPrice:number, SolPrice:number)=>{
-    set({ val: (Math.round((parseFloat(get().tokenPrizeAmount) * tokenPrice) / SolPrice * 1000) / 1000).toFixed(2) });
+    set({ val: (Math.round((parseFloat(get().tokenPrizeAmount) * tokenPrice) / SolPrice * 1000) / 1000).toFixed(6) });
     if(parseFloat(get().val)>0 && get().ttv>0){
       set({ percentage: (((get().ttv - parseFloat(get().val)) / get().ttv) * 100).toFixed(2)});
     }
@@ -348,7 +348,7 @@ export const useCreateRaffleStore = create<CreateRaffleState>((set, get) => ({
     const supply = parseInt(get().supply) || 0;
     const ticketPrice = parseFloat(get().ticketPricePerSol) || 0;
     const calculatedTTV = (supply * ticketPrice);
-    const ttvValue = Math.round(calculatedTTV * 1e9) / 1e9;
+    const ttvValue = Math.round(calculatedTTV * 1e6) / 1e6;
     set({ ttv: ttvValue });
     if (parseFloat(get().val) > 0 && ttvValue > 0) {
       set({

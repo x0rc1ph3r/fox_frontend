@@ -1,19 +1,20 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useCreateRaffleStore } from "../../../store/createRaffleStore";
-import { VerifiedTokens, WRAPPED_SOL_MINT } from "@/utils/verifiedTokens";
+import { VerifiedTokens, WRAPPED_SOL_MINT, NATIVE_SOL_MINT } from "@/utils/verifiedTokens";
 import { useGetTokenPrice } from "hooks/useGetTokenPrice";
 
 export default function AmountInput() {
   const { ticketPrice, supply,ticketCurrency,ticketPricePerSol, getComputedTTV,setTicketPrice, setTicketCurrency, setTicketPricePerSol } = useCreateRaffleStore();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { data: ticketTokenPrice } = useGetTokenPrice(ticketCurrency.address);
+  const ticketTokenMintForPrice = ticketCurrency.address === NATIVE_SOL_MINT ? WRAPPED_SOL_MINT : ticketCurrency.address;
+  const { data: ticketTokenPrice } = useGetTokenPrice(ticketTokenMintForPrice);
   const { data: solPrice } = useGetTokenPrice(WRAPPED_SOL_MINT);
   const toggleDropdown = () => setIsOpen((prev) => !prev);
 
   const handleSelect = (value: string) => {
     setTicketCurrency(VerifiedTokens.find((token) => token.symbol === value) || { symbol: "", address: "" });
-    setTicketPricePerSol((parseFloat(ticketPrice) * (ticketTokenPrice?.price/solPrice?.price)).toString());
+    setTicketPricePerSol((parseFloat(ticketPrice) * (ticketTokenPrice?.price!/solPrice?.price!)).toString());
     getComputedTTV();
     setIsOpen(false);
   };
@@ -45,7 +46,7 @@ export default function AmountInput() {
           value={ticketPrice}
           onChange={(e) => {
             setTicketPrice(e.target.value);
-            setTicketPricePerSol((parseFloat(e.target.value) * (ticketTokenPrice?.price/solPrice?.price)).toFixed(5));
+            setTicketPricePerSol((parseFloat(e.target.value) * (ticketTokenPrice?.price!/solPrice?.price!)).toFixed(6));
             getComputedTTV();
           }}
           className={`text-black-1000 focus:outline-0 bg-white placeholder:text-gray-1200 text-base w-full font-inter px-5 h-12 border border-solid border-gray-1100 rounded-lg font-medium ${isInvalidTicketPrice ? "border border-red-500" : ""}`}

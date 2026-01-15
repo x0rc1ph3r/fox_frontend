@@ -1,4 +1,4 @@
-import { HELIUS_KEY, NETWORK, WRAPPED_SOL_MINT } from "@/constants";
+import { WRAPPED_SOL_MINT } from "@/constants";
 import { useQueries } from "@tanstack/react-query";
 import { useMemo } from "react";
 
@@ -13,51 +13,42 @@ interface Prize {
 
 interface TokenPriceResult {
   price: number;
-  decimals: number;
-  symbol: string;
 }
 
 const fetchTokenPrice = async (tokenMint: string): Promise<TokenPriceResult | null> => {
   if (!tokenMint) return null;
   try {
     const response = await fetch(
-      `https://${NETWORK}.helius-rpc.com/?api-key=${HELIUS_KEY}`,
+      `https://api-v3.raydium.io/mint/price?mints=${tokenMint}`,
       {
-        method: 'POST',
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          jsonrpc: '2.0',
-          id: '1',
-          method: 'getAsset',
-          params: {
-            id: tokenMint,
-            options: {
-              showFungible: true,
-            },
-          },
-        }),
       }
     );
 
     if (!response.ok) {
-      throw new Error('Helius API request failed');
+      throw new Error('Raydium API request failed');
     }
 
     const data = await response.json();
 
-    if (data.result?.token_info?.price_info) {
-      return {
-        price: data.result.token_info.price_info.price_per_token,
-        decimals: data.result.token_info.decimals,
-        symbol: data.result.token_info.symbol,
-      };
+    // Raydium returns: { success: true, data: { [mint]: "priceAsString" } }
+    if (data.success && data.data && data.data[tokenMint]) {
+      const priceString = data.data[tokenMint];
+      const price = parseFloat(priceString);
+      
+      if (!isNaN(price)) {
+        return {
+          price: price,
+        };
+      }
     }
 
     return null;
   } catch (error) {
-    console.error('Helius API error:', error);
+    console.error('Raydium API error:', error);
     return null;
   }
 };
@@ -90,7 +81,7 @@ export const useGetTotalPrizeValueInSol = (prizes: Prize[] | undefined) => {
     queries: uniqueMints.map((mint) => ({
       queryKey: ['getTokenPrice', mint],
       queryFn: () => fetchTokenPrice(mint),
-      enabled: !!mint && !!HELIUS_KEY,
+      enabled: !!mint,
       staleTime: 120000,
     })),
   });
@@ -141,7 +132,8 @@ export const useGetTotalPrizeValueInSol = (prizes: Prize[] | undefined) => {
     for (const prize of tokenPrizes) {
       const tokenPrice = priceMap[prize.mint];
       if (tokenPrice) {
-        const decimals = prize.decimals ?? tokenPrice.decimals ?? 9;
+        // Use prize.decimals since Raydium doesn't provide decimals info
+        const decimals = prize.decimals ?? 9;
         const prizeAmountNum = parseFloat(prize.prizeAmount) / (10 ** decimals);
         const totalAmount = prizeAmountNum * prize.quantity;
         const valueUsd = totalAmount * tokenPrice.price;
@@ -159,7 +151,7 @@ export const useGetTotalPrizeValueInSol = (prizes: Prize[] | undefined) => {
     totalValueInSol,
     isLoading,
     isError,
-    formattedValue: isLoading ? 'Loading...' : `${totalValueInSol.toFixed(4)} SOL`,
+    formattedValue: isLoading ? 'Loading...' : `${totalValueInSol.toFixed(6)} SOL`,
   };
 };
 

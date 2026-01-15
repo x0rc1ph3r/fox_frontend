@@ -1,4 +1,3 @@
-import { HELIUS_KEY, NETWORK } from "@/constants";
 import { useQuery } from "@tanstack/react-query";
 
 export const useGetTokenPrice = (
@@ -9,52 +8,44 @@ export const useGetTokenPrice = (
         if (!tokenMint) return null;
         try {
           const response = await fetch(
-            `https://${NETWORK}.helius-rpc.com/?api-key=${HELIUS_KEY}`,
+            `https://api-v3.raydium.io/mint/price?mints=${tokenMint}`,
             {
-              method: 'POST',
+              method: 'GET',
               headers: {
                 'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                jsonrpc: '2.0',
-                id: '1',
-                method: 'getAsset',
-                params: {
-                  id: tokenMint,
-                  options: {
-                    showFungible: true,
-                  },
-                },
-              }),
+              }
             }
           );
   
           if (!response.ok) {
-            throw new Error('Helius API request failed');
+            throw new Error('Raydium API request failed');
           }
   
           const data = await response.json();
   
-          if (data.result?.token_info?.price_info) {
-            return {
-              price: data.result.token_info.price_info.price_per_token,
-              source: 'Helius',
-              supply: data.result.token_info.supply,
-              decimals: data.result.token_info.decimals,
-              symbol: data.result.token_info.symbol,
-            };
+          // Raydium returns: { success: true, data: { [mint]: "priceAsString" } }
+          if (data.success && data.data && data.data[tokenMint]) {
+            const priceString = data.data[tokenMint];
+            const price = parseFloat(priceString);
+            
+            if (!isNaN(price)) {
+              return {
+                price: price,
+                source: 'Raydium',
+              };
+            }
           }
   
           return null;
         } catch (error) {
-            console.error('Helius API error:', error);
+            console.error('Raydium API error:', error);
             return null;
           }
         }
     return useQuery({
       queryKey: ['getTokenPrice', tokenMint],
       queryFn: fetchTokenPrice,
-      enabled: !!tokenMint && !!HELIUS_KEY,
+      enabled: !!tokenMint,
       staleTime: 120000,
     });
   };
