@@ -19,7 +19,6 @@ import { useBuyRaffleTicketStore } from "store/buyraffleticketstore";
 import { NoRaffles } from "@/components/home/NoRaffles";
 import { BN } from "@coral-xyz/anchor";
 import { useQuery } from "@tanstack/react-query";
-import { useGumballsQuery } from "../../../hooks/useGumballsQuery";
 import { useFiltersStore } from "../../../store/filters-store";
 import { sortRaffles, filterRaffles, getActiveFiltersList, hasActiveFilters, type PageType } from "../../utils/sortAndFilter";
 import { useFetchUserNfts } from "hooks/useFetchUserNfts";
@@ -47,7 +46,6 @@ function RafflesPage() {
     const { sort, setSort, searchQuery, setSearchQuery } = useGlobalStore();
     const { getAllRaffles} = useRaffleAnchorProgram();
     const { setTicketQuantityById, getTicketQuantityById } = useBuyRaffleTicketStore();
-    const {data: gumballs} = useGumballsQuery("All Gumballs");
     const { userNfts } = useFetchUserNfts();
     const {
       raffleType,
@@ -84,7 +82,6 @@ function RafflesPage() {
 
     const showActiveFilters = hasActiveFilters(filterOptions, "raffles");
 
-    console.log(gumballs);
     console.log(getAllRaffles?.data)
     const raffles = useMemo(() => {
       let allRaffles = data?.pages.map((p) => p.items).flat() as unknown as RaffleTypeBackend[];
