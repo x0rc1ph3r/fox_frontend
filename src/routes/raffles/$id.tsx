@@ -363,7 +363,7 @@ function RouteComponent() {
                   <div className="w-full flex items-center justify-between md:pt-7 py-6 md:pb-10">
                     <div className="inline-flex gap-4">
                       <img
-                        src="/images/placeholder-user.png"
+                        src={raffle?.creator?.profileImage ? raffle?.creator?.profileImage : "/icons/user-avatar.png"}
                         className="w-10 h-10 rounded-full object-cover"
                         alt="no"
                       />

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { creatorSchema } from "./raffleTypes";
 
 export const auctionSchema = z.object({
   id: z.number().optional(),
@@ -36,6 +37,7 @@ export const auctionSchema = z.object({
   hasAnyBid: z.boolean().optional().default(false),
   status: z.enum(["ACTIVE","INITIALIZED","COMPLETED_SUCCESSFULLY","COMPLETED_FAILED","CANCELLED"]).optional().default("INITIALIZED"),
   txSignature: z.string().min(1),
+  creator: creatorSchema.optional(),
 });
 
 export const confirmAuctionCreationSchema = z.object({

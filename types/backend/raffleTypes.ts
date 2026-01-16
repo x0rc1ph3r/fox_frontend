@@ -46,6 +46,12 @@ enum TransactionType {
     }).optional(),
 });
 
+export const creatorSchema = z.object({
+    walletAddress: z.string().min(1),
+    twitterId: z.string().nullable().optional(),
+    profileImage: z.string().nullable().optional(),
+});
+
 const raffleSchema = z.object({
     id: z.number().gt(0).optional(),
     state: z.enum(["Active", "Ended", "Cancelled", "SuccessEnded", "FailedEnded"]).optional(),
@@ -74,15 +80,25 @@ const raffleSchema = z.object({
         userAddress: z.string().min(1),
         raffleId: z.number().gt(0),
         quantity: z.number().gt(0),
+        user:z.object({
+            walletAddress: z.string().min(1),
+            twitterId: z.string().nullable().optional(),
+            profileImage: z.string().nullable().optional(),
+        }),
         transactions: z.array(transactionSchema),
     })).optional(),
     winners: z.array(z.object({
         walletAddress: z.string().min(1),
+        twitterId: z.string().nullable().optional(),
+        profileImage: z.string().nullable().optional(),
     })).optional(), 
     favouritedBy: z.array(z.object({
         walletAddress: z.string().min(1),
+        twitterId: z.string().nullable().optional(),
+        profileImage: z.string().nullable().optional(),
     })).optional(),
     txSignature: z.string().min(1),
+    creator: creatorSchema.optional(),
 });
 
 export type RaffleTypeBackend = z.infer<typeof raffleSchema>;

@@ -216,12 +216,13 @@ import { useBuyRaffleTicketStore } from "store/buyraffleticketstore";
 import { useToggleFavourite } from "../../../hooks/useToggleFavourite";
 import { useQueryFavourites } from "../../../hooks/useQueryFavourites";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { API_URL } from "../../constants";
+
+const DEFAULT_AVATAR = "/icons/user-avatar.png";
 
 export interface CryptoCardProps {
   raffle: RaffleTypeBackend;
   soldTickets: number;
-  userAvatar?: string;
-  userName?: string;
   isFavorite?: boolean;
   className?: string;
   category?: string;
@@ -231,12 +232,14 @@ export interface CryptoCardProps {
 export const CryptoCard: React.FC<CryptoCardProps> = ({
   raffle,
   soldTickets,
-  userAvatar = "/icons/user-avatar.png",
   isFavorite = false,
   className,
   category = "General",
   rafflesType = "All Raffles",
 }) => {
+  const creatorAvatar = raffle.creator?.profileImage 
+    ? `${API_URL}${raffle.creator.profileImage}` 
+    : DEFAULT_AVATAR;
   const {publicKey} = useWallet();
   const { buyTicket } = useBuyRaffleTicket();
   const {  getTicketQuantityById, updateTicketQuantityById } = useBuyRaffleTicketStore();
@@ -291,7 +294,7 @@ export const CryptoCard: React.FC<CryptoCardProps> = ({
       <div className="w-full flex items-center justify-between p-4">
         <div className="flex items-center gap-4">
           <img
-            src={userAvatar}
+            src={creatorAvatar}
             alt={raffle.createdBy}
             className="w-6 h-6 rounded-full object-cover"
           />

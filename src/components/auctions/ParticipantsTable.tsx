@@ -5,7 +5,7 @@ interface Bid {
   id: string;
   bidAmount: number;
   bidderWallet: string;
-  bidder: { walletAddress: string; twitterId?: string };
+  bidder: { walletAddress: string; twitterId?: string | null , profileImage?: string | null};
   bidTime: string;
   transactionId: string;
 }
@@ -137,7 +137,7 @@ export const ParticipantsTable = ({
                   <td>
                     <div className="md:px-10 px-4 flex items-center gap-2.5 py-4 border-b border-gray-1100">
                       <img
-                        src="/icons/user-avatar.png"
+                        src={p.bidder.profileImage ? p.bidder.profileImage : "/icons/user-avatar.png"}
                         className="w-10 h-10 rounded-full object-cover"
                         alt="user"
                       />

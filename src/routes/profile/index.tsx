@@ -19,7 +19,13 @@ import { useQueryFavourites } from "hooks/useQueryFavourites";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { NoGumballs } from "@/components/home/NoGumballs";
 import { NoRaffles } from "@/components/home/NoRaffles";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import ProfilePictureModal from "@/components/profile/ProfilePictureModal";
+import { useUserStore } from "../../../store/userStore";
+import { updateProfilePicture } from "../../../api/routes/userRoutes";
+import { useMyProfile } from "../../../hooks/useMyProfile";
+import { toast } from "react-toastify";
+import { API_URL } from "../../constants";
 
 export const Route = createFileRoute("/profile/")({
   component: CreateProfile,
@@ -53,6 +59,48 @@ function CreateProfile() {
   } = useCreatorProfileStore();
 
   const { publicKey } = useWallet();
+  
+  const { 
+    profilePicture, 
+    setProfilePicture, 
+    isUploadingProfilePicture, 
+    setIsUploadingProfilePicture,
+    setProfilePictureError 
+  } = useUserStore();
+  const [isProfilePictureModalOpen, setIsProfilePictureModalOpen] = useState(false);
+
+  const isAuthenticated = !!publicKey && !!localStorage.getItem("authToken");
+  const { data: profileData } = useMyProfile(isAuthenticated);
+
+  useEffect(() => {
+    if (profileData?.user?.profileImage) {
+      const fullImageUrl = `${API_URL}${profileData.user.profileImage}`;
+      setProfilePicture(fullImageUrl);
+    }
+  }, [profileData, setProfilePicture]);
+
+  const handleProfilePictureChange = async (file: File, previewUrl: string) => {
+    try {
+      setIsUploadingProfilePicture(true);
+      setProfilePictureError(null);
+      setProfilePicture(previewUrl);
+      
+      const response = await updateProfilePicture(file);
+      
+      if (response.imageUrl) {
+        const fullImageUrl = `${API_URL}${response.imageUrl}`;
+        setProfilePicture(fullImageUrl);
+      }
+      
+      toast.success("Profile picture updated successfully!");
+    } catch (error) {
+      console.error("Failed to update profile picture:", error);
+      setProfilePictureError("Failed to update profile picture");
+      toast.error("Failed to update profile picture. Please try again.");
+    } finally {
+      setIsUploadingProfilePicture(false);
+    }
+  };
   const categoryMap: Record<string, "rafflers" | "gumballs" | "auctions"> = {
     Rafflers: "rafflers",
     Gumballs: "gumballs",
@@ -187,18 +235,57 @@ function CreateProfile() {
           <div className="w-full flex lg:flex-row flex-col gap-7">
             <div className="flex-1 space-y-5 md:max-w-[320px]">
               <div className="w-full bg-gray-1300 border border-gray-1100 rounded-[18px] py-5">
+                <div className="w-full flex justify-center mb-4">
+                  <div
+                    onClick={() => setIsProfilePictureModalOpen(true)}
+                    className="relative group cursor-pointer"
+                  >
+                    <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-primary-color shadow-lg transition-transform duration-300 group-hover:scale-105">
+                      <img
+                        src={profilePicture}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="flex flex-col items-center text-white">
+                        <svg
+                          className="w-6 h-6"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
+                        </svg>
+                        <span className="text-xs mt-1 font-medium">Edit</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="w-full px-4">
                   <div
                     className={`w-full flex ${publicKey ? "justify-between" : "justify-center"} items-center  gap-5 mb-4`}
                   >
                     {publicKey ? (
                       <>
-                        <h4 className="text-lg text-primary-color font-inter font-semibold">
+                        <h4 className="text-lg text-primary-color font-inter font-semibold w-full text-center">
                           {publicKey?.toBase58().slice(0, 6) +
-                            "....." +
+                            "..." +
                             publicKey?.toBase58().slice(-6)}
                         </h4>
-                        <div className="flex items-center gap-4">
+                        {/* <div className="flex items-center gap-4">
                           <a href="#">
                             <img
                               src="/icons/solana-sol-logo.svg"
@@ -206,7 +293,7 @@ function CreateProfile() {
                               alt=""
                             />
                           </a>
-                        </div>
+                        </div> */}
                       </>
                     ) : (
                       <WalletMultiButton className=" w-full h-11 px-6 py-2.5 rounded-full bg-linear-to-r from-black-1000 via-neutral-500 to-black-1000 hover:from-primary-color hover:via-primary-color hover:to-primary-color text-white  font-semibold" />
@@ -586,6 +673,14 @@ function CreateProfile() {
           </div>
         </div>
       </section>
+
+      <ProfilePictureModal
+        isOpen={isProfilePictureModalOpen}
+        onClose={() => setIsProfilePictureModalOpen(false)}
+        currentImage={profilePicture}
+        onImageChange={handleProfilePictureChange}
+        isUploading={isUploadingProfilePicture}
+      />
     </main>
   );
 }

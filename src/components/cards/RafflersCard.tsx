@@ -298,6 +298,9 @@ import { VerifiedTokens } from "@/utils/verifiedTokens";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useToggleFavourite } from "../../../hooks/useToggleFavourite";
 import { useQueryFavourites } from "../../../hooks/useQueryFavourites";
+import { API_URL } from "../../constants";
+
+const DEFAULT_AVATAR = "/icons/user-avatar.png";
 
 export interface RafflersCardProps extends RaffleTypeBackend {
   userAvatar?: string;
@@ -329,7 +332,12 @@ export const RafflersCard: React.FC<RafflersCardProps> = (props) => {
     className,
     category = "General",
     rafflesType = "active",
+    creator,
   } = props;
+
+  const creatorAvatar = creator?.profileImage 
+    ? `${API_URL}${creator.profileImage}` 
+    : DEFAULT_AVATAR;
 
   const remainingTickets = ticketSupply - ticketSold;
   
@@ -380,7 +388,7 @@ export const RafflersCard: React.FC<RafflersCardProps> = (props) => {
       <div className="w-full flex items-center justify-between p-4">
         <div className="flex items-center gap-4">
           <img
-            src="/icons/user-avatar.png"
+            src={creatorAvatar}
             alt={displayName}
             className="w-10 h-10 rounded-full object-cover"
           />

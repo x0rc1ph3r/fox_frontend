@@ -222,3 +222,54 @@ export const toggleAuctionFavourite = async (auctionId:string)=>{
         throw error;
     }
 }
+
+export const updateProfilePicture = async (imageFile: File): Promise<{ message: string; imageUrl: string }> => {
+    try {
+        const formData = new FormData();
+        formData.append('profileImage', imageFile);
+
+        const response = await api.patch(`/user/profile/image`, formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+                "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export const getProfilePicture = async (publicKey: string): Promise<{ message: string; imageUrl: string | null }> => {
+    try {
+        const response = await api.get(`/user/profile/${publicKey}/image`);
+        return response.data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export interface UserProfile {
+    id: string;
+    walletAddress: string;
+    profileImage: string | null;
+    twitterId: string | null;
+    twitterConnected: boolean;
+    createdAt: string;
+}
+
+export const getMyProfile = async (): Promise<{ message: string; user: UserProfile }> => {
+    try {
+        const response = await api.get(`/user/profile/me`, {
+            headers: {
+                "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}

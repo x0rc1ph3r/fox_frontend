@@ -4,8 +4,10 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { useToggleFavourite } from "../../../hooks/useToggleFavourite";
 import { useQueryFavourites } from "../../../hooks/useQueryFavourites";
 import { VerifiedTokens } from "../../utils/verifiedTokens";
+import { API_URL } from "../../constants";
 
-// Strictly matching the provided API object structure
+const DEFAULT_AVATAR = "/icons/user-avatar.png";
+
 export interface AuctionsCardProps {
   id: number;
   prizeName: string;
@@ -21,6 +23,11 @@ export interface AuctionsCardProps {
   highestBidAmount: number;
   highestBidderWallet: string;
   status: string;
+  creator?: {
+    walletAddress: string;
+    twitterId?: string | null;
+    profileImage?: string | null;
+  };
 }
 
 export const AuctionsCard: React.FC<AuctionsCardProps> = (props) => {
@@ -31,15 +38,18 @@ export const AuctionsCard: React.FC<AuctionsCardProps> = (props) => {
     collectionName,
     collectionVerified,
     createdBy,
-    // startsAt,
-    // endsAt,
     reservePrice,
     currency,
     className,
     highestBidAmount,
     highestBidderWallet,
     status,
+    creator,
   } = props;
+
+  const creatorAvatar = creator?.profileImage 
+    ? `${API_URL}${creator.profileImage}` 
+    : DEFAULT_AVATAR;
 
   const { publicKey } = useWallet();
   const { favouriteAuction } = useToggleFavourite(publicKey?.toString() || "");
@@ -96,9 +106,9 @@ export const AuctionsCard: React.FC<AuctionsCardProps> = (props) => {
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200">
             <img
-              src={`https://api.dicebear.com/7.x/identicon/svg?seed=${createdBy}`}
+              src={creatorAvatar}
               alt="creator"
-              className="w-full h-full"
+              className="w-full h-full object-cover"
             />
           </div>
           <div>
