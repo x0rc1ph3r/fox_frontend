@@ -19,7 +19,7 @@ export default function AmountInput() {
 
   useEffect(() => {
     if (ticketPrice && ticketTokenPrice?.price && solPrice?.price) {
-      setTicketPricePerSol((parseFloat(ticketPrice) * (ticketTokenPrice.price / solPrice.price)).toFixed(6));
+      setTicketPricePerSol((parseFloat(ticketPrice) * (ticketTokenPrice.price / solPrice.price)).toFixed(9));
       getComputedTTV();
     }
   }, [ticketCurrency.address, ticketTokenPrice?.price, solPrice?.price]);
@@ -51,7 +51,7 @@ export default function AmountInput() {
           value={ticketPrice}
           onChange={(e) => {
             setTicketPrice(e.target.value);
-            setTicketPricePerSol((parseFloat(e.target.value) * (ticketTokenPrice?.price!/solPrice?.price!)).toFixed(6));
+            setTicketPricePerSol((parseFloat(e.target.value) * (ticketTokenPrice?.price!/solPrice?.price!)).toFixed(9));
             getComputedTTV();
           }}
           className={`text-black-1000 focus:outline-0 bg-white placeholder:text-gray-1200 text-base w-full font-inter px-5 h-12 border border-solid border-gray-1100 rounded-lg font-medium ${isInvalidTicketPrice ? "border border-red-500" : ""}`}
