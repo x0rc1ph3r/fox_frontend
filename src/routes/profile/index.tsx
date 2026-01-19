@@ -505,12 +505,12 @@ function CreateProfile() {
                 />
               </div>
 
-              <div className="w-full my-10 flex items-center justify-between bg-gray-1400 border border-gray-1100 rounded-[10px] px-5 py-3">
+              {/* <div className="w-full my-10 flex items-center justify-between bg-gray-1400 border border-gray-1100 rounded-[10px] px-5 py-3">
                 <p className="md:text-base text-sm font-inter font-semibold text-black-1000">
                   Set as profile default page
                 </p>
                 <InputSwitch checked={enabled} onChange={setEnabled} />
-              </div>
+              </div> */}
 
               <div className="w-full">
                 {mainFilter === "Rafflers" && (
